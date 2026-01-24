@@ -10,11 +10,8 @@ class AlunoController extends Controller
 {
     public function index()
     {
-        $alunos = Aluno::with(['responsaveis', 'matriculas'])->get();
-
-        return response()->json([
-            'data' => $alunos
-        ]);
+        $alunos = Aluno::all();
+        return view('view_alunos.index', compact('alunos'));
     }
 
     public function store(Request $request)
@@ -26,70 +23,70 @@ class AlunoController extends Controller
             'aluno_foto' => 'required|image|max:2048',
         ]);
 
-        $path = $request->file('aluno_foto')->store('alunos', 'public');
+        $aluno = new Aluno();
+        $aluno->aluno_nome = $request->aluno_nome;
+        $aluno->aluno_nascimento = $request->aluno_nascimento;
+        $aluno->aluno_desc = $request->aluno_desc;
 
-        $aluno = Aluno::create([
-            'aluno_nome' => $request->aluno_nome,
-            'aluno_nascimento' => $request->aluno_nascimento,
-            'aluno_desc' => $request->aluno_desc,
-            'aluno_foto' => $path,
-        ]);
+        if ($request->hasFile('aluno_foto')) {
+            $file = $request->file('aluno_foto');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('images/alunos'), $filename);
+            $aluno->aluno_foto = $filename;
+        }
 
-        return response()->json([
-            'message' => 'Aluno criado com sucesso',
-            'data' => $aluno
-        ], 201);
+        $aluno->save();
+
+        return redirect()->route('alunos')->with('success', 'Aluno cadastrado com sucesso!');
     }
 
-    public function show($id)
+    public function edit($id)
     {
-        $aluno = Aluno::with(['responsaveis', 'matriculas', 'mensalidades'])
-            ->findOrFail($id);
-
-        return response()->json([
-            'data' => $aluno
-        ]);
+        $aluno = Aluno::findOrFail($id);
+        return view('view_alunos.edit', compact('aluno'));
     }
 
     public function update(Request $request, $id)
     {
-        $aluno = Aluno::findOrFail($id);
-
         $request->validate([
-            'aluno_nome' => 'sometimes|string|max:120',
-            'aluno_nascimento' => 'sometimes|date',
-            'aluno_desc' => 'sometimes|string|max:120',
-            'aluno_foto' => 'sometimes|image|max:2048',
+            'aluno_nome' => 'required|string|max:120',
+            'aluno_nascimento' => 'required|date',
+            'aluno_desc' => 'required|string|max:120',
+            'aluno_foto' => 'nullable|image|max:2048',
         ]);
+
+        $aluno = Aluno::findOrFail($id);
+        $aluno->aluno_nome = $request->aluno_nome;
+        $aluno->aluno_nascimento = $request->aluno_nascimento;
+        $aluno->aluno_desc = $request->aluno_desc;
 
         if ($request->hasFile('aluno_foto')) {
-            if ($aluno->aluno_foto) {
-                Storage::disk('public')->delete($aluno->aluno_foto);
+            // Deletar foto antiga opcional
+            if ($aluno->aluno_foto && file_exists(public_path('images/alunos/' . $aluno->aluno_foto))) {
+                unlink(public_path('images/alunos/' . $aluno->aluno_foto));
             }
 
-            $aluno->aluno_foto = $request->file('aluno_foto')->store('alunos', 'public');
+            $file = $request->file('aluno_foto');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('images/alunos'), $filename);
+            $aluno->aluno_foto = $filename;
         }
 
-        $aluno->update($request->except('aluno_foto'));
+        $aluno->save();
 
-        return response()->json([
-            'message' => 'Aluno atualizado com sucesso',
-            'data' => $aluno
-        ]);
+        return redirect()->route('alunos')->with('success', 'Aluno atualizado com sucesso!');
     }
 
     public function destroy($id)
     {
         $aluno = Aluno::findOrFail($id);
 
-        if ($aluno->aluno_foto) {
-            Storage::disk('public')->delete($aluno->aluno_foto);
+        if ($aluno->aluno_foto && file_exists(public_path('images/alunos/' . $aluno->aluno_foto))) {
+            unlink(public_path('images/alunos/' . $aluno->aluno_foto));
         }
 
         $aluno->delete();
 
-        return response()->json([
-            'message' => 'Aluno removido com sucesso'
-        ], 204);
+        return redirect()->route('alunos')->with('success', 'Aluno removido com sucesso!');
     }
 }

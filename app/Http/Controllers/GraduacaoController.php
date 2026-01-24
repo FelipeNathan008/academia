@@ -11,9 +11,7 @@ class GraduacaoController extends Controller
     {
         $graduacoes = Graduacao::all();
 
-        return response()->json([
-            'data' => $graduacoes
-        ]);
+        return view('view_admin.graduacoes', compact('graduacoes'));
     }
 
     public function store(Request $request)
@@ -25,10 +23,7 @@ class GraduacaoController extends Controller
 
         $graduacao = Graduacao::create($request->all());
 
-        return response()->json([
-            'message' => 'Graduação cadastrada com sucesso',
-            'data' => $graduacao
-        ], 201);
+        return redirect()->route('graduacoes')->with('success', 'Graduação cadastrada com sucesso!');
     }
 
     public function show($id)
@@ -39,6 +34,14 @@ class GraduacaoController extends Controller
             'data' => $graduacao
         ]);
     }
+
+    public function edit($id)
+    {
+        $graduacao = Graduacao::findOrFail($id);
+        return view('view_admin.graduacoes_edit', compact('graduacao'));
+    }
+
+
 
     public function update(Request $request, $id)
     {
@@ -51,10 +54,7 @@ class GraduacaoController extends Controller
 
         $graduacao->update($request->all());
 
-        return response()->json([
-            'message' => 'Graduação atualizada com sucesso',
-            'data' => $graduacao
-        ]);
+        return redirect()->route('graduacoes')->with('success', 'Graduação atualizada com sucesso!');
     }
 
     public function destroy($id)
@@ -62,8 +62,6 @@ class GraduacaoController extends Controller
         $graduacao = Graduacao::findOrFail($id);
         $graduacao->delete();
 
-        return response()->json([
-            'message' => 'Graduação removida com sucesso'
-        ], 204);
+        return redirect()->route('graduacoes')->with('success', 'Graduação atualizada com sucesso!');
     }
 }

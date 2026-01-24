@@ -4,16 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Professor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Graduacao;
+use App\Models\DetalhesProfessor;
 
 class ProfessorController extends Controller
 {
     public function index()
     {
-        $professores = Professor::with(['grades', 'detalhes'])->get();
-
-        return response()->json([
-            'data' => $professores
-        ]);
+        $professores = Professor::all();
+        $graduacoes = Graduacao::all(); // todas graduações
+        $detalhes = DetalhesProfessor::all(); // detalhes já cadastrados
+        return view('view_professores.index', compact('professores', 'graduacoes', 'detalhes'));
     }
 
     public function store(Request $request)
@@ -22,52 +24,73 @@ class ProfessorController extends Controller
             'prof_nome' => 'required|string|max:120',
             'prof_nascimento' => 'required|date',
             'prof_desc' => 'required|string|max:150',
-            'prof_foto' => 'required|string|max:255',
+            'prof_foto' => 'nullable|image|max:2048',
         ]);
 
-        $professor = Professor::create($request->all());
+        $professor = new Professor();
+        $professor->prof_nome = $request->prof_nome;
+        $professor->prof_nascimento = $request->prof_nascimento;
+        $professor->prof_desc = $request->prof_desc;
 
-        return response()->json([
-            'message' => 'Professor cadastrado com sucesso',
-            'data' => $professor
-        ], 201);
+        if ($request->hasFile('prof_foto')) {
+            $file = $request->file('prof_foto');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('images/professores'), $filename);
+            $professor->prof_foto = $filename;
+        }
+
+        $professor->save();
+
+        return redirect()->route('professores')->with('success', 'Professor cadastrado com sucesso!');
     }
 
-    public function show($id)
+    public function edit($id)
     {
-        $professor = Professor::with(['grades', 'detalhes'])->findOrFail($id);
-
-        return response()->json([
-            'data' => $professor
-        ]);
+        $professor = Professor::findOrFail($id);
+        return view('view_professores.edit', compact('professor'));
     }
 
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'prof_nome' => 'required|string|max:120',
+            'prof_nascimento' => 'required|date',
+            'prof_desc' => 'required|string|max:150',
+            'prof_foto' => 'nullable|image|max:2048',
+        ]);
+
         $professor = Professor::findOrFail($id);
 
-        $request->validate([
-            'prof_nome' => 'sometimes|string|max:120',
-            'prof_nascimento' => 'sometimes|date',
-            'prof_desc' => 'sometimes|string|max:150',
-            'prof_foto' => 'sometimes|string|max:255',
-        ]);
+        $professor->prof_nome = $request->prof_nome;
+        $professor->prof_nascimento = $request->prof_nascimento;
+        $professor->prof_desc = $request->prof_desc;
 
-        $professor->update($request->all());
+        if ($request->hasFile('prof_foto')) {
+            // Deletar foto antiga opcional
+            if ($professor->prof_foto && file_exists(public_path('images/professores/' . $professor->prof_foto))) {
+                unlink(public_path('images/professores/' . $professor->prof_foto));
+            }
 
-        return response()->json([
-            'message' => 'Professor atualizado com sucesso',
-            'data' => $professor
-        ]);
+            $file = $request->file('prof_foto');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('images/professores'), $filename);
+            $professor->prof_foto = $filename;
+        }
+
+        $professor->save();
+
+        return redirect()->route('professores')->with('success', 'Professor atualizado com sucesso!');
     }
+
 
     public function destroy($id)
     {
         $professor = Professor::findOrFail($id);
+        if ($professor->prof_foto) {
+            Storage::disk('public')->delete($professor->prof_foto);
+        }
         $professor->delete();
 
-        return response()->json([
-            'message' => 'Professor removido com sucesso'
-        ], 204);
+        return redirect()->route('professores')->with('success', 'Professor removido com sucesso!');
     }
 }

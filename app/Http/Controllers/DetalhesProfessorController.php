@@ -20,22 +20,14 @@ class DetalhesProfessorController extends Controller
     {
         $request->validate([
             'professor_id_professor' => 'required|exists:professor,id_professor',
-            'det_gradu_nome_cor'     => 'required|string|max:80',
-            'det_grau'               => 'required|integer',
-            'det_modalidade'         => 'required|string|max:100',
+            'det_gradu_nome_cor' => 'required|string|max:80',
+            'det_grau' => 'required|integer',
+            'det_modalidade' => 'required|string|max:50',
         ]);
 
-        $detalhe = DetalhesProfessor::create([
-            'professor_id_professor' => $request->professor_id_professor,
-            'det_gradu_nome_cor'     => $request->det_gradu_nome_cor,
-            'det_grau'               => $request->det_grau,
-            'det_modalidade'         => $request->det_modalidade,
-        ]);
+        DetalhesProfessor::create($request->all());
 
-        return response()->json([
-            'message' => 'Detalhe do professor criado com sucesso',
-            'data' => $detalhe
-        ], 201);
+        return redirect()->back()->with('success', 'Graduação do professor cadastrado!');
     }
 
     public function show($id)
@@ -68,11 +60,9 @@ class DetalhesProfessorController extends Controller
 
     public function destroy($id)
     {
-        $detalhe = DetalhesProfessor::findOrFail($id);
-        $detalhe->delete();
+        $det = DetalhesProfessor::findOrFail($id);
+        $det->delete();
 
-        return response()->json([
-            'message' => 'Detalhe do professor removido com sucesso'
-        ], 204);
+        return back()->with('success', 'Graduação removida com sucesso!');
     }
 }
