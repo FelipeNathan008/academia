@@ -71,10 +71,10 @@
 
             <tbody>
                 @forelse ($graduacoes as $graduacao)
-                <tr>
-                    <td>{{ $graduacao->gradu_nome_cor }}</td>
-                    <td>{{ $graduacao->gradu_grau }}</td>
-                    <td class="flex gap-2">
+                <tr class="border-b hover:bg-gray-50 transition">
+                    <td class="py-3 px-4">{{ $graduacao->gradu_nome_cor }}</td>
+                    <td class="py-3 px-4">{{ $graduacao->gradu_grau }}</td>
+                    <td class="py-3 px-4 flex gap-2">
                         <!-- Editar -->
                         <a href="{{ route('graduacoes.edit', $graduacao->id_graduacao) }}"
                             style="background-color: #8E251F; color: white;"
@@ -95,6 +95,7 @@
                         </form>
                     </td>
                 </tr>
+
                 @empty
                 <tr>
                     <td colspan="3" class="text-center text-gray-500 py-6">
@@ -104,6 +105,7 @@
                 @endforelse
             </tbody>
         </table>
+
     </div>
 
     <!-- JS -->

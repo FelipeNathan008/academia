@@ -88,7 +88,8 @@
 
         <tbody>
             @forelse ($alunos as $aluno)
-            <tr id="aluno-row-{{ $aluno->id_aluno }}"
+            <tr class="border-b hover:bg-gray-50 transition" {{-- <<<<<< ADICIONE ESSA LINHA --}}
+                id="aluno-row-{{ $aluno->id_aluno }}"
                 data-id="{{ $aluno->id_aluno }}"
                 data-nome="{{ $aluno->aluno_nome }}"
                 data-nascimento="{{ $aluno->aluno_nascimento }}"
@@ -96,15 +97,15 @@
                 data-desc="{{ $aluno->aluno_desc }}">
 
                 <!-- NOME -->
-                <td>{{ $aluno->aluno_nome }}</td>
+                <td class="py-3 px-4">{{ $aluno->aluno_nome }}</td>
 
                 <!-- NASCIMENTO FORMATO BRASILEIRO -->
-                <td>
+                <td class="py-3 px-4">
                     {{ $aluno->aluno_nascimento ? \Carbon\Carbon::parse($aluno->aluno_nascimento)->format('d/m/Y') : '-' }}
                 </td>
 
                 <!-- FOTO -->
-                <td>
+                <td class="py-3 px-4">
                     @if($aluno->aluno_foto)
                     <div class="w-12 h-12 overflow-hidden">
                         <img src="{{ asset('images/alunos/' . $aluno->aluno_foto) }}"
@@ -117,8 +118,14 @@
                 </td>
 
                 <!-- AÇÕES -->
-                <td>
+                <td class="py-3 px-4">
                     <div class="flex gap-2">
+                        <a href="{{ route('responsaveis.index', $aluno->id_aluno) }}"
+                            style="background-color: #2563eb; color: white;"
+                            class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
+                            Responsável
+                        </a>
+
                         <!-- Botão Editar -->
                         <a href="{{ route('alunos.edit', $aluno->id_aluno) }}"
                             style="background-color: #8E251F; color: white;"
@@ -143,13 +150,12 @@
             </tr>
             @empty
             <tr>
-                <td colspan="4" class="text-center">Nenhum aluno cadastrado</td>
+                <td colspan="4" class="text-center py-6 text-gray-500">Nenhum aluno cadastrado</td>
             </tr>
             @endforelse
         </tbody>
-
-
     </table>
+
 </div>
 
 <!-- JS -->

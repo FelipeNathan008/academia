@@ -7,22 +7,29 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Graduacao;
 use App\Models\DetalhesProfessor;
+use App\Models\Modalidade;
 
 class ProfessorController extends Controller
 {
     public function index()
     {
         $professores = Professor::all();
-        $graduacoes = Graduacao::all(); // todas graduações
-        $detalhes = DetalhesProfessor::all(); // detalhes já cadastrados
-        return view('view_professores.index', compact('professores', 'graduacoes', 'detalhes'));
+        $graduacoes = Graduacao::all();
+        $detalhes = DetalhesProfessor::all();
+            $modalidades = Modalidade::all();
+
+        return view('view_professores.index', compact('professores', 'graduacoes', 'detalhes','modalidades'));
     }
 
     public function store(Request $request)
     {
+        $request->merge([
+            'prof_telefone' => preg_replace('/\D/', '', $request->prof_telefone),
+        ]);
         $request->validate([
             'prof_nome' => 'required|string|max:120',
             'prof_nascimento' => 'required|date',
+            'prof_telefone' => 'required|string|max:20',
             'prof_desc' => 'required|string|max:150',
             'prof_foto' => 'nullable|image|max:2048',
         ]);
@@ -30,6 +37,7 @@ class ProfessorController extends Controller
         $professor = new Professor();
         $professor->prof_nome = $request->prof_nome;
         $professor->prof_nascimento = $request->prof_nascimento;
+        $professor->prof_telefone = $request->prof_telefone;
         $professor->prof_desc = $request->prof_desc;
 
         if ($request->hasFile('prof_foto')) {
@@ -52,9 +60,13 @@ class ProfessorController extends Controller
 
     public function update(Request $request, $id)
     {
+        $request->merge([
+            'prof_telefone' => preg_replace('/\D/', '', $request->prof_telefone),
+        ]);
         $request->validate([
             'prof_nome' => 'required|string|max:120',
             'prof_nascimento' => 'required|date',
+            'prof_telefone' => 'required|string|max:20',
             'prof_desc' => 'required|string|max:150',
             'prof_foto' => 'nullable|image|max:2048',
         ]);
@@ -63,6 +75,7 @@ class ProfessorController extends Controller
 
         $professor->prof_nome = $request->prof_nome;
         $professor->prof_nascimento = $request->prof_nascimento;
+        $professor->prof_telefone = $request->prof_telefone;
         $professor->prof_desc = $request->prof_desc;
 
         if ($request->hasFile('prof_foto')) {
@@ -86,11 +99,15 @@ class ProfessorController extends Controller
     public function destroy($id)
     {
         $professor = Professor::findOrFail($id);
-        if ($professor->prof_foto) {
-            Storage::disk('public')->delete($professor->prof_foto);
+        $professor->detalhes()->delete();
+        
+        if ($professor->prof_foto && file_exists(public_path('images/professores/' . $professor->prof_foto))) {
+            unlink(public_path('images/professores/' . $professor->prof_foto));
         }
+
         $professor->delete();
 
-        return redirect()->route('professores')->with('success', 'Professor removido com sucesso!');
+        return redirect()->route('professores')
+            ->with('success', 'Professor e graduações removidos com sucesso!');
     }
 }

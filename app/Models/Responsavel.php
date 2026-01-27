@@ -14,7 +14,12 @@ class Responsavel extends Model
         'resp_nome',
         'resp_parentesco',
         'resp_cpf',
+        'resp_cep',
+        'resp_telefone',
+        'resp_email',
         'resp_logradouro',
+        'resp_numero',
+        'resp_complemento',
         'resp_bairro',
         'resp_cidade'
     ];

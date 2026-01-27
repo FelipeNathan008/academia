@@ -9,12 +9,11 @@ class ModalidadeController extends Controller
 {
     public function index()
     {
-        $modalidades = Modalidade::with('valores')->get();
+        $modalidades = Modalidade::all();
 
-        return response()->json([
-            'data' => $modalidades
-        ]);
+        return view('view_admin.modalidades', compact('modalidades'));
     }
+
 
     public function store(Request $request)
     {
@@ -23,22 +22,28 @@ class ModalidadeController extends Controller
             'mod_desc' => 'required|string',
         ]);
 
-        $modalidade = Modalidade::create($request->all());
+        Modalidade::create($request->all());
 
-        return response()->json([
-            'message' => 'Modalidade cadastrada com sucesso',
-            'data' => $modalidade
-        ], 201);
+        return redirect()->route('modalidades')
+            ->with('success', 'Modalidade cadastrada com sucesso!');
     }
 
     public function show($id)
     {
-        $modalidade = Modalidade::with('valores')->findOrFail($id);
+        $modalidade = Modalidade::findOrFail($id);
 
         return response()->json([
             'data' => $modalidade
         ]);
     }
+
+    public function edit($id)
+    {
+        $modalidade = Modalidade::findOrFail($id);
+
+        return view('view_admin.modalidades_edit', compact('modalidade'));
+    }
+
 
     public function update(Request $request, $id)
     {
@@ -51,10 +56,8 @@ class ModalidadeController extends Controller
 
         $modalidade->update($request->all());
 
-        return response()->json([
-            'message' => 'Modalidade atualizada com sucesso',
-            'data' => $modalidade
-        ]);
+        return redirect()->route('modalidades')
+            ->with('success', 'Modalidade atualizada com sucesso!');
     }
 
     public function destroy($id)
@@ -62,8 +65,7 @@ class ModalidadeController extends Controller
         $modalidade = Modalidade::findOrFail($id);
         $modalidade->delete();
 
-        return response()->json([
-            'message' => 'Modalidade removida com sucesso'
-        ], 204);
+        return redirect()->route('modalidades')
+            ->with('success', 'Modalidade removida com sucesso!');
     }
 }

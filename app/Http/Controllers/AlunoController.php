@@ -81,12 +81,14 @@ class AlunoController extends Controller
     {
         $aluno = Aluno::findOrFail($id);
 
+        $aluno->responsaveis()->delete();
+
         if ($aluno->aluno_foto && file_exists(public_path('images/alunos/' . $aluno->aluno_foto))) {
             unlink(public_path('images/alunos/' . $aluno->aluno_foto));
         }
-
         $aluno->delete();
 
-        return redirect()->route('alunos')->with('success', 'Aluno removido com sucesso!');
+        return redirect()->route('alunos')
+            ->with('success', 'Aluno e responsáveis removidos com sucesso!');
     }
 }

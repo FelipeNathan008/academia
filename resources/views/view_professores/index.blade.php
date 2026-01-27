@@ -40,6 +40,17 @@
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
                 </div>
 
+                <!-- TELEFONE -->
+                <div>
+                    <label class="text-sm font-medium text-gray-600">Telefone</label>
+                    <input type="text"
+                        name="prof_telefone"
+                        id="prof_telefone"
+                        required
+                        placeholder="(99) 99999-9999"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+                </div>
+
                 <!-- DESCRIÇÃO -->
                 <div class="md:col-span-2">
                     <label class="text-sm font-medium text-gray-600">Observações</label>
@@ -74,17 +85,13 @@
 <!-- LISTAGEM -->
 <div class="bg-white rounded-2xl shadow-md p-6">
     <h3 class="text-xl font-bold mb-6 text-gray-700">Lista de Professores</h3>
-    @if(session('success'))
-    <div class="mb-6 p-4 bg-green-100 text-green-700 rounded-lg">
-        {{ session('success') }}
-    </div>
-    @endif
 
     <table class="w-full text-left border-collapse">
         <thead>
             <tr class="border-b border-gray-300 text-gray-600 text-sm">
                 <th class="py-3 px-4">Nome</th>
                 <th class="py-3 px-4">Nascimento</th>
+                <th class="py-3 px-4">Telefone</th>
                 <th class="py-3 px-4">Foto</th>
                 <th class="py-3 px-4">Ações</th>
             </tr>
@@ -92,10 +99,19 @@
 
         <tbody>
             @forelse ($professores as $professor)
-            <tr>
-                <td>{{ $professor->prof_nome }}</td>
-                <td>{{ $professor->prof_nascimento ? \Carbon\Carbon::parse($professor->prof_nascimento)->format('d/m/Y') : '-' }}</td>
-                <td>
+            <tr class="border-b hover:bg-gray-50 transition">
+                <td class="py-3 px-4">{{ $professor->prof_nome }}</td>
+                <td class="py-3 px-4">
+                    {{ $professor->prof_nascimento ? \Carbon\Carbon::parse($professor->prof_nascimento)->format('d/m/Y') : '-' }}
+                </td>
+                <td class="py-3 px-4">
+                    @if($professor->prof_telefone)
+                    {{ preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $professor->prof_telefone) }}
+                    @else
+                    -
+                    @endif
+                </td>
+                <td class="py-3 px-4">
                     @if($professor->prof_foto)
                     <div class="w-12 h-12 overflow-hidden">
                         <img src="{{ asset('images/professores/' . $professor->prof_foto) }}"
@@ -105,12 +121,7 @@
                     -
                     @endif
                 </td>
-                <td class="flex gap-2">
-                    <a href="{{ route('professores.edit', $professor->id_professor) }}"
-                        style="background-color: #8E251F; color: white;"
-                        class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
-                        Editar
-                    </a>
+                <td class="py-3 px-4 flex gap-2">
 
                     <!-- Botão Graduações -->
                     <button type="button"
@@ -120,6 +131,12 @@
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200">
                         Graduações
                     </button>
+
+                    <a href="{{ route('professores.edit', $professor->id_professor) }}"
+                        style="background-color: #8E251F; color: white;"
+                        class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
+                        Editar
+                    </a>
 
                     <form action="{{ route('professores.destroy', $professor->id_professor) }}" method="POST"
                         onsubmit="return confirm('Deseja excluir este professor?');">
@@ -136,7 +153,7 @@
 
             <!-- Linha oculta de Graduações -->
             <tr id="graduacoes-{{ $professor->id_professor }}" class="hidden bg-gray-100">
-                <td colspan="4" class="py-2 px-4">
+                <td colspan="5" class="py-2 px-4">
                     <h4 class="font-bold mb-2">Cadastrar Graduações do Professor</h4>
 
                     <form action="{{ route('detalhes.store') }}" method="POST">
@@ -151,7 +168,6 @@
                                 onchange="preencherGrau(this)"
                                 required>
                                 <option value="">Selecione</option>
-
                                 @foreach($graduacoes as $graduacao)
                                 <option value="{{ $graduacao->gradu_nome_cor }}"
                                     data-grau="{{ $graduacao->gradu_grau }}">
@@ -161,28 +177,37 @@
                             </select>
                         </div>
 
-                        <!-- Grau preenchido automaticamente -->
                         <!-- Grau -->
                         <div class="mb-2">
                             <label class="block text-sm font-medium text-gray-600">Grau</label>
                             <input type="number"
                                 name="det_grau"
                                 class="w-full border rounded-lg px-3 py-2 bg-gray-100 grau-input"
-                                required
-                                readonly>
+                                required readonly>
                         </div>
 
                         <!-- Modalidade -->
                         <div class="mb-2">
                             <label class="block text-sm font-medium text-gray-600">Modalidade</label>
-                            <select name="det_modalidade"
-                                class="w-full border rounded-lg px-3 py-2"
-                                required>
+                            <select name="det_modalidade" class="w-full border rounded-lg px-3 py-2" required>
                                 <option value="">Selecione</option>
-                                <option value="Jiujitsu">Jiujitsu</option>
+                                @foreach($modalidades as $modalidade)
+                                <option value="{{ $modalidade->mod_nome }}">
+                                    {{ $modalidade->mod_nome }}
+                                </option>
+                                @endforeach
                             </select>
+
                         </div>
 
+                        <!-- Data da Graduação -->
+                        <div class="mb-2">
+                            <label class="block text-sm font-medium text-gray-600">Data da Graduação</label>
+                            <input type="date"
+                                name="det_data"
+                                class="w-full border rounded-lg px-3 py-2"
+                                required>
+                        </div>
 
                         <button type="submit" class="px-4 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920]">
                             Salvar
@@ -194,7 +219,8 @@
                         <h4 class="font-bold mb-3 text-gray-700">Graduações Cadastradas</h4>
 
                         @php
-                        $lista = $detalhes->where('professor_id_professor', $professor->id_professor);
+                        $lista = $detalhes->where('professor_id_professor', $professor->id_professor)
+                        ->sortByDesc('created_at');
                         @endphp
 
                         @if($lista->count())
@@ -202,11 +228,11 @@
                             @foreach($lista as $det)
                             <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border">
                                 <div>
-                                    <p class="font-semibold text-gray-800">
-                                        {{ $det->det_gradu_nome_cor }}
-                                    </p>
+                                    <p class="font-semibold text-gray-800">{{ $det->det_gradu_nome_cor }}</p>
                                     <p class="text-sm text-gray-600">
-                                        Grau: {{ $det->det_grau }} • Modalidade: {{ $det->det_modalidade }}
+                                        Grau: {{ $det->det_grau }} •
+                                        Modalidade: {{ $det->det_modalidade }} •
+                                        Data: {{ \Carbon\Carbon::parse($det->det_data)->format('d/m/Y') }}
                                     </p>
                                 </div>
 
@@ -216,9 +242,7 @@
                                     onsubmit="return confirm('Deseja remover esta graduação?');">
                                     @csrf
                                     @method('DELETE')
-
-                                    <button
-                                        class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                                    <button class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
                                         Excluir
                                     </button>
                                 </form>
@@ -229,7 +253,6 @@
                         <p class="text-sm text-gray-500">Nenhuma graduação cadastrada.</p>
                         @endif
                     </div>
-
                 </td>
             </tr>
 
@@ -238,8 +261,8 @@
                 <td colspan="4" class="text-center text-gray-500 py-6">Nenhum professor cadastrado</td>
             </tr>
             @endforelse
-
         </tbody>
+
     </table>
 </div>
 
@@ -274,6 +297,23 @@
         const grau = select.options[select.selectedIndex].dataset.grau || '';
         const inputGrau = select.closest('td').querySelector('.grau-input');
         inputGrau.value = grau;
+    }
+
+    const tel = document.getElementById('prof_telefone');
+
+    if (tel) {
+        tel.addEventListener('input', () => {
+            let v = tel.value.replace(/\D/g, '');
+
+            if (v.length > 11) v = v.slice(0, 11);
+
+            let f = '';
+            if (v.length > 0) f = '(' + v.slice(0, 2);
+            if (v.length >= 3) f += ') ' + v.slice(2, 7);
+            if (v.length >= 8) f += '-' + v.slice(7, 11);
+
+            tel.value = f;
+        });
     }
 </script>
 

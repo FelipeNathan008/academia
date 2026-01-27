@@ -23,6 +23,7 @@ class DetalhesProfessorController extends Controller
             'det_gradu_nome_cor' => 'required|string|max:80',
             'det_grau' => 'required|integer',
             'det_modalidade' => 'required|string|max:50',
+            'det_data' => 'required|date',
         ]);
 
         DetalhesProfessor::create($request->all());
@@ -48,6 +49,8 @@ class DetalhesProfessorController extends Controller
             'det_gradu_nome_cor'     => 'sometimes|string|max:80',
             'det_grau'               => 'sometimes|integer',
             'det_modalidade'         => 'sometimes|string|max:100',
+            'det_data' => 'required|date',
+
         ]);
 
         $detalhe->update($request->all());
