@@ -72,7 +72,26 @@
             <tbody>
                 @forelse ($graduacoes as $graduacao)
                 <tr class="border-b hover:bg-gray-50 transition">
-                    <td class="py-3 px-4">{{ $graduacao->gradu_nome_cor }}</td>
+                    <td class="py-3 px-4">
+                        <span
+                            class="bolinha-faixa"
+                            data-faixa="{{ strtolower($graduacao->gradu_nome_cor) }}"
+                            style="
+                                display:inline-block;
+                                width:20px;
+                                height:20px;
+                                border:2px solid #000;
+                                border-radius:50%;
+                                margin-right:8px;
+                                vertical-align:middle;
+                                background-color:transparent;
+                            ">
+                        </span>
+
+                        {{ $graduacao->gradu_nome_cor }}
+                    </td>
+
+
                     <td class="py-3 px-4">{{ $graduacao->gradu_grau }}</td>
                     <td class="py-3 px-4 flex gap-2">
                         <!-- Editar -->
@@ -110,6 +129,24 @@
 
     <!-- JS -->
     <script>
+        document.querySelectorAll('.bolinha-faixa').forEach(bolinha => {
+            const faixa = bolinha.dataset.faixa;
+
+            let cor = 'transparent';
+
+            if (faixa.includes('branca')) cor = '#ffffff';
+            else if (faixa.includes('cinza e branca')) cor = '#808080';
+            else if (faixa.includes('amarela')) cor = '#facc15';
+            else if (faixa.includes('laranja')) cor = '#f97316';
+            else if (faixa.includes('verde')) cor = '#22c55e';
+            else if (faixa.includes('azul')) cor = '#2563eb';
+            else if (faixa.includes('roxa')) cor = '#7c3aed';
+            else if (faixa.includes('marrom')) cor = '#78350f';
+            else if (faixa.includes('preta')) cor = '#000000';
+
+            bolinha.style.backgroundColor = cor;
+        });
+
         function toggleCadastro() {
             const form = document.getElementById('cadastroForm');
             form.classList.toggle('hidden');

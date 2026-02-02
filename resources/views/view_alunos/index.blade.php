@@ -11,7 +11,7 @@
     </div>
 
     <button onclick="toggleCadastro()"
-        class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow-md hover:bg-[#732920] hover:shadow-lg transition-all">
+        class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow-md hover:bg-[#732920] transition">
         + Cadastrar Aluno
     </button>
 </div>
@@ -21,51 +21,44 @@
     <form id="formCadastro" action="{{ route('alunos.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="bg-white rounded-2xl shadow-md p-8">
-            <h3 id="tituloCadastro" class="text-xl font-bold mb-6 text-gray-700">Cadastrar Aluno</h3>
+            <h3 class="text-xl font-bold mb-6">Cadastrar Aluno</h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- NOME -->
                 <div>
-                    <label class="text-sm font-medium text-gray-600">Nome Completo</label>
-                    <input type="text" name="aluno_nome" id="cad_nome" maxlength="120" required
-                        placeholder="Ex: João da Silva"
+                    <label>Nome Completo</label>
+                    <input type="text" name="aluno_nome" required
+                        placeholder="Ex: Lucas Andrade"
                         oninput="validarNome(this)"
-                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+                        class="w-full border rounded-lg px-4 py-2 mt-1">
                 </div>
 
-                <!-- NASCIMENTO -->
                 <div>
-                    <label class="text-sm font-medium text-gray-600">Data de Nascimento</label>
-                    <input type="date" name="aluno_nascimento" id="cad_nascimento" required
-                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+                    <label>Data de Nascimento</label>
+                    <input type="date" name="aluno_nascimento" required
+                        class="w-full border rounded-lg px-4 py-2 mt-1">
                 </div>
 
-                <!-- DESCRIÇÃO -->
                 <div class="md:col-span-2">
-                    <label class="text-sm font-medium text-gray-600">Observações</label>
-                    <textarea name="aluno_desc" id="cad_desc" maxlength="120" required
-                        placeholder="Ex: Aluno iniciante, sem restrições médicas"
-                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none"
-                        rows="3"></textarea>
+                    <label>Observações</label>
+                    <textarea name="aluno_desc" rows="4" required
+                        placeholder="Ex: Aluno iniciante visando melhora na saúde"
+                        class="w-full border rounded-lg px-4 py-2 mt-1"></textarea>
                 </div>
 
-                <!-- FOTO -->
                 <div class="md:col-span-2">
-                    <label class="text-sm font-medium text-gray-600">Foto do Aluno</label>
-                    <input type="file" name="aluno_foto" id="cad_foto" accept="image/*" required
-                        class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-50">
+                    <label>Foto do Aluno</label>
+                    <input type="file" name="aluno_foto" required
+                        class="w-full border rounded-lg px-4 py-2 mt-1">
                 </div>
             </div>
 
-            <!-- AÇÕES -->
             <div class="flex justify-end gap-4 border-t pt-6 mt-8">
-                <button type="button" onclick="fecharCadastro()"
-                    class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">
+                <button type="button" onclick="fecharCadastro()" class="px-4 py-2 border rounded-lg">
                     Cancelar
                 </button>
                 <button type="submit"
-                    class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920] transition">
-                    Salvar Aluno
+                    class="px-5 py-2 bg-[#8E251F] text-white rounded-lg">
+                    Salvar
                 </button>
             </div>
         </div>
@@ -74,13 +67,14 @@
 
 <!-- LISTAGEM -->
 <div class="bg-white rounded-2xl shadow-md p-6">
-    <h3 class="text-xl font-bold mb-6 text-gray-700">Lista de Alunos</h3>
+    <h3 class="text-xl font-bold mb-6">Lista de Alunos</h3>
 
     <table class="w-full text-left border-collapse">
         <thead>
-            <tr class="border-b border-gray-300 text-gray-600 text-sm">
+            <tr class="border-b text-gray-600 text-sm">
                 <th class="py-3 px-4">Nome</th>
                 <th class="py-3 px-4">Nascimento</th>
+                <th class="py-3 px-4">Idade</th>
                 <th class="py-3 px-4">Foto</th>
                 <th class="py-3 px-4">Ações</th>
             </tr>
@@ -88,95 +82,99 @@
 
         <tbody>
             @forelse ($alunos as $aluno)
-            <tr class="border-b hover:bg-gray-50 transition" {{-- <<<<<< ADICIONE ESSA LINHA --}}
-                id="aluno-row-{{ $aluno->id_aluno }}"
-                data-id="{{ $aluno->id_aluno }}"
-                data-nome="{{ $aluno->aluno_nome }}"
-                data-nascimento="{{ $aluno->aluno_nascimento }}"
-                data-foto="{{ $aluno->aluno_foto }}"
-                data-desc="{{ $aluno->aluno_desc }}">
+            @php
+            $nascimento = \Carbon\Carbon::parse($aluno->aluno_nascimento);
+            $hoje = \Carbon\Carbon::today();
+            @endphp
 
-                <!-- NOME -->
+            <tr class="border-b hover:bg-gray-50{{ $nascimento->isBirthday() ? 'bg-green-100' : '' }}
+            {{ !$nascimento->isBirthday() && $nascimento->month === $hoje->month ? 'bg-yellow-50' : '' }}">
                 <td class="py-3 px-4">{{ $aluno->aluno_nome }}</td>
-
-                <!-- NASCIMENTO FORMATO BRASILEIRO -->
                 <td class="py-3 px-4">
-                    {{ $aluno->aluno_nascimento ? \Carbon\Carbon::parse($aluno->aluno_nascimento)->format('d/m/Y') : '-' }}
+                    {{ \Carbon\Carbon::parse($aluno->aluno_nascimento)->format('d/m/Y') }}
                 </td>
-
-                <!-- FOTO -->
                 <td class="py-3 px-4">
-                    @if($aluno->aluno_foto)
-                    <div class="w-12 h-12 overflow-hidden">
-                        <img src="{{ asset('images/alunos/' . $aluno->aluno_foto) }}"
-                            alt="Foto"
-                            style="width:48px; height:48px; object-fit:cover;">
-                    </div>
-                    @else
-                    -
+                    {{ $nascimento->age }} anos
+
+                    @if ($nascimento->isBirthday())
+                    <span style="margin-left:6px; padding:2px 8px; font-size:0.75rem; font-weight:600;
+                        border-radius:9999px; color:#166534; background-color:#bbf7d0;">
+                        🧁 Hoje
+                    </span>
+
+                    @elseif ($nascimento->month === $hoje->month)
+                    <span style="margin-left:6px; padding:2px 8px; font-size:0.75rem; font-weight:600;
+                        border-radius:9999px; color:#854d0e; background-color:#fef3c7;">
+                        🎉 Este mês
+                    </span>
                     @endif
                 </td>
 
-                <!-- AÇÕES -->
                 <td class="py-3 px-4">
-                    <div class="flex gap-2">
-                        <a href="{{ route('responsaveis.index', $aluno->id_aluno) }}"
-                            style="background-color: #2563eb; color: white;"
-                            class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
-                            Responsável
-                        </a>
-
-                        <!-- Botão Editar -->
-                        <a href="{{ route('alunos.edit', $aluno->id_aluno) }}"
-                            style="background-color: #8E251F; color: white;"
-                            class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
-                            Editar
-                        </a>
-
-                        <!-- Botão Excluir -->
-                        <form action="{{ route('alunos.destroy', $aluno->id_aluno) }}" method="POST"
-                            onsubmit="return confirm('Tem certeza que deseja excluir este aluno?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit"
-                                style="background-color: #c02600; color: white;"
-                                class="px-4 py-2 rounded-lg shadow hover:bg-[#D65A3E] transition duration-200">
-                                Excluir
-                            </button>
-                        </form>
-                    </div>
+                    @if($aluno->aluno_foto)
+                    <img src="{{ asset('images/alunos/'.$aluno->aluno_foto) }}"
+                        style="width:48px;height:48px;object-fit:cover">
+                    @else -
+                    @endif
                 </td>
+                <td class="py-3 px-4 flex gap-2">
 
+
+                    <a href="{{ route('responsaveis.index', $aluno->id_aluno) }}"
+                        style="background-color: #3b64bd; color: white;"
+                        class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
+                        Responsáveis
+                    </a>
+
+                    <a href="{{ route('detalhes-aluno.index', ['id' => $aluno->id_aluno]) }}"
+                        style="background-color: #174ab9; color: white;"
+                        class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
+                    Graduações
+                    </a>
+
+                    <a href="{{ route('alunos.edit', $aluno->id_aluno) }}"
+                        class="px-4 py-2 bg-[#8E251F] text-white rounded-lg">
+                        Editar
+                    </a>
+                    <!-- Botão Excluir -->
+                    <form action="{{ route('alunos.destroy', $aluno->id_aluno) }}"
+                        method="POST"
+                        onsubmit="return confirm('Deseja remover esta graduação?');">
+                        @csrf
+                        @method('DELETE')
+                        <button class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                            Excluir
+                        </button>
+                    </form>
+                </td>
             </tr>
+
+
             @empty
             <tr>
-                <td colspan="4" class="text-center py-6 text-gray-500">Nenhum aluno cadastrado</td>
+                <td colspan="5" class="text-center py-6 text-gray-500">
+                    Nenhum aluno cadastrado
+                </td>
             </tr>
             @endforelse
         </tbody>
     </table>
-
 </div>
 
-<!-- JS -->
 <script>
-    // Toggle Cadastro
     function toggleCadastro() {
-        const form = document.getElementById('cadastroForm');
-        form.classList.toggle('hidden');
-        form.scrollIntoView({
-            behavior: 'smooth'
-        });
-        // Resetar campos
-        document.getElementById('formCadastro').reset();
+        document.getElementById('cadastroForm').classList.toggle('hidden');
     }
 
     function fecharCadastro() {
         document.getElementById('cadastroForm').classList.add('hidden');
     }
 
+    function toggleGraduacoes(button) {
+        const id = button.getAttribute('data-id');
+        document.getElementById('graduacoes-' + id).classList.toggle('hidden');
+    }
 
-    // Validação de nome
     function validarNome(input) {
         input.value = input.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
     }

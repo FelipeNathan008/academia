@@ -30,4 +30,8 @@ class Aluno extends Model
     {
         return $this->hasMany(Mensalidade::class, 'aluno_id_aluno', 'id_aluno');
     }
+    public function detalhes()
+    {
+        return $this->hasMany(DetalhesAluno::class, 'aluno_id_aluno', 'id_aluno');
+    }
 }

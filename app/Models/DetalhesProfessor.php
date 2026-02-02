@@ -14,7 +14,8 @@ class DetalhesProfessor extends Model
         'det_gradu_nome_cor',
         'det_grau',
         'det_modalidade',
-        'det_data'
+        'det_data',
+        'det_certificado'
     ];
 
     public function professor()

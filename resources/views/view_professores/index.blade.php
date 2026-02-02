@@ -54,7 +54,7 @@
                 <!-- DESCRIÇÃO -->
                 <div class="md:col-span-2">
                     <label class="text-sm font-medium text-gray-600">Observações</label>
-                    <textarea name="prof_desc" id="cad_desc" maxlength="120" required rows="3"
+                    <textarea name="prof_desc" id="cad_desc" required rows="3"
                         placeholder="Ex: Professor de Judô, horários flexíveis"
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none"></textarea>
                 </div>
@@ -62,7 +62,7 @@
                 <!-- FOTO -->
                 <div class="md:col-span-2">
                     <label class="text-sm font-medium text-gray-600">Foto do Professor</label>
-                    <input type="file" name="prof_foto" id="cad_foto" accept="image/*"
+                    <input type="file" name="prof_foto" id="cad_foto" required accept="image/*"
                         class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-50">
                 </div>
             </div>
@@ -91,6 +91,7 @@
             <tr class="border-b border-gray-300 text-gray-600 text-sm">
                 <th class="py-3 px-4">Nome</th>
                 <th class="py-3 px-4">Nascimento</th>
+                <th class="py-3 px-4">Idade</th>
                 <th class="py-3 px-4">Telefone</th>
                 <th class="py-3 px-4">Foto</th>
                 <th class="py-3 px-4">Ações</th>
@@ -99,11 +100,45 @@
 
         <tbody>
             @forelse ($professores as $professor)
-            <tr class="border-b hover:bg-gray-50 transition">
+
+            @php
+            $nascimento = $professor->prof_nascimento
+            ? \Carbon\Carbon::parse($professor->prof_nascimento)
+            : null;
+            $hoje = \Carbon\Carbon::today();
+            @endphp
+
+            <tr class="border-b transition professor-row"
+                data-prof="{{ $professor->id_professor }}">
                 <td class="py-3 px-4">{{ $professor->prof_nome }}</td>
+
                 <td class="py-3 px-4">
-                    {{ $professor->prof_nascimento ? \Carbon\Carbon::parse($professor->prof_nascimento)->format('d/m/Y') : '-' }}
+                    {{ $professor->prof_nascimento
+                    ? \Carbon\Carbon::parse($professor->prof_nascimento)->format('d/m/Y')
+                    : '-' }}
                 </td>
+
+                <td class="py-3 px-4">
+                    @if($nascimento)
+                    {{ $nascimento->age }} anos
+
+                    @if ($nascimento->isBirthday())
+                    <span style="margin-left:6px; padding:2px 8px; font-size:0.75rem; font-weight:600;
+                    border-radius:9999px; color:#166534; background-color:#bbf7d0;">
+                        🧁 Hoje
+                    </span>
+                    @elseif ($nascimento->month === $hoje->month)
+                    <span style="margin-left:6px; padding:2px 8px; font-size:0.75rem; font-weight:600;
+                    border-radius:9999px; color:#854d0e; background-color:#fef3c7;">
+                        🎉 Este mês
+                    </span>
+                    @endif
+                    @else
+                    -
+                    @endif
+                </td>
+
+
                 <td class="py-3 px-4">
                     @if($professor->prof_telefone)
                     {{ preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $professor->prof_telefone) }}
@@ -124,13 +159,11 @@
                 <td class="py-3 px-4 flex gap-2">
 
                     <!-- Botão Graduações -->
-                    <button type="button"
-                        data-id="{{ $professor->id_professor }}"
-                        onclick="toggleGraduacoes(this)"
-                        style="background-color: #2563eb; color: white;"
-                        class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200">
+                    <a href="{{ route('detalhes-professor.index', ['id' => $professor->id_professor]) }}"
+                        style="background-color: #174ab9; color: white;"
+                        class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
                         Graduações
-                    </button>
+                    </a>
 
                     <a href="{{ route('professores.edit', $professor->id_professor) }}"
                         style="background-color: #8E251F; color: white;"
@@ -148,111 +181,6 @@
                             Excluir
                         </button>
                     </form>
-                </td>
-            </tr>
-
-            <!-- Linha oculta de Graduações -->
-            <tr id="graduacoes-{{ $professor->id_professor }}" class="hidden bg-gray-100">
-                <td colspan="5" class="py-2 px-4">
-                    <h4 class="font-bold mb-2">Cadastrar Graduações do Professor</h4>
-
-                    <form action="{{ route('detalhes.store') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="professor_id_professor" value="{{ $professor->id_professor }}">
-
-                        <!-- Selecionar Graduação -->
-                        <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-600">Graduação</label>
-                            <select name="det_gradu_nome_cor"
-                                class="w-full border rounded-lg px-3 py-2"
-                                onchange="preencherGrau(this)"
-                                required>
-                                <option value="">Selecione</option>
-                                @foreach($graduacoes as $graduacao)
-                                <option value="{{ $graduacao->gradu_nome_cor }}"
-                                    data-grau="{{ $graduacao->gradu_grau }}">
-                                    {{ $graduacao->gradu_nome_cor }} | {{ $graduacao->gradu_grau }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Grau -->
-                        <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-600">Grau</label>
-                            <input type="number"
-                                name="det_grau"
-                                class="w-full border rounded-lg px-3 py-2 bg-gray-100 grau-input"
-                                required readonly>
-                        </div>
-
-                        <!-- Modalidade -->
-                        <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-600">Modalidade</label>
-                            <select name="det_modalidade" class="w-full border rounded-lg px-3 py-2" required>
-                                <option value="">Selecione</option>
-                                @foreach($modalidades as $modalidade)
-                                <option value="{{ $modalidade->mod_nome }}">
-                                    {{ $modalidade->mod_nome }}
-                                </option>
-                                @endforeach
-                            </select>
-
-                        </div>
-
-                        <!-- Data da Graduação -->
-                        <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-600">Data da Graduação</label>
-                            <input type="date"
-                                name="det_data"
-                                class="w-full border rounded-lg px-3 py-2"
-                                required>
-                        </div>
-
-                        <button type="submit" class="px-4 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920]">
-                            Salvar
-                        </button>
-                    </form>
-
-                    <!-- Listagem de detalhes já cadastrados -->
-                    <div class="mt-6">
-                        <h4 class="font-bold mb-3 text-gray-700">Graduações Cadastradas</h4>
-
-                        @php
-                        $lista = $detalhes->where('professor_id_professor', $professor->id_professor)
-                        ->sortByDesc('created_at');
-                        @endphp
-
-                        @if($lista->count())
-                        <div class="space-y-3">
-                            @foreach($lista as $det)
-                            <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border">
-                                <div>
-                                    <p class="font-semibold text-gray-800">{{ $det->det_gradu_nome_cor }}</p>
-                                    <p class="text-sm text-gray-600">
-                                        Grau: {{ $det->det_grau }} •
-                                        Modalidade: {{ $det->det_modalidade }} •
-                                        Data: {{ \Carbon\Carbon::parse($det->det_data)->format('d/m/Y') }}
-                                    </p>
-                                </div>
-
-                                <!-- Botão Excluir -->
-                                <form action="{{ route('detalhes.destroy', $det->id_det_professor) }}"
-                                    method="POST"
-                                    onsubmit="return confirm('Deseja remover esta graduação?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-                                        Excluir
-                                    </button>
-                                </form>
-                            </div>
-                            @endforeach
-                        </div>
-                        @else
-                        <p class="text-sm text-gray-500">Nenhuma graduação cadastrada.</p>
-                        @endif
-                    </div>
                 </td>
             </tr>
 
@@ -282,22 +210,12 @@
         document.getElementById('cadastroForm').classList.add('hidden');
     }
 
-    function toggleGraduacoes(button) {
-        const id = button.getAttribute('data-id');
-        const row = document.getElementById(`graduacoes-${id}`);
-        row.classList.toggle('hidden');
-    }
 
     // Validação de nome
     function validarNome(input) {
         input.value = input.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
     }
 
-    function preencherGrau(select) {
-        const grau = select.options[select.selectedIndex].dataset.grau || '';
-        const inputGrau = select.closest('td').querySelector('.grau-input');
-        inputGrau.value = grau;
-    }
 
     const tel = document.getElementById('prof_telefone');
 

@@ -11,15 +11,22 @@ class GradeHorario extends Model
 
     protected $fillable = [
         'professor_id_professor',
+        'horario_treino_id_hora',
         'grade_modalidade',
         'grade_dia_semana',
         'grade_inicio',
         'grade_fim',
-        'grade_desc'
+        'grade_turma',
+        'grade_desc',
     ];
 
     public function professor()
     {
         return $this->belongsTo(Professor::class, 'professor_id_professor', 'id_professor');
+    }
+
+    public function horarioTreino()
+    {
+        return $this->belongsTo(HorarioTreino::class, 'horario_treino_id_hora', 'id_hora');
     }
 }

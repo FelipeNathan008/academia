@@ -9,11 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('horario_treino', function (Blueprint $table) {
-            $table->integer('id_hora')->primary();
+            $table->increments('id_hora');
             $table->time('hora_inicio');
             $table->time('hora_fim');
             $table->string('hora_semana', 80);
             $table->string('hora_modalidade', 100);
+            $table->timestamps();
         });
     }
 

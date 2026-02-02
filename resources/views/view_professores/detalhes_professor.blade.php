@@ -1,0 +1,278 @@
+@extends('layouts.dashboard')
+
+@section('title', 'Graduações do Professor')
+
+@section('content')
+
+<!-- BREADCRUMB -->
+<nav class="mb-6 text-sm text-gray-500">
+    <ol class="flex items-center gap-2">
+        <li>
+            <a href="{{ route('professores.index') }}" class="hover:text-[#8E251F] transition">
+                Professores
+            </a>
+        </li>
+        <li>/</li>
+        <li class="text-gray-400">{{ $professor->prof_nome }}</li>
+        <li>/</li>
+        <li class="font-semibold text-gray-700">Graduações</li>
+    </ol>
+</nav>
+@if ($errors->any())
+<div class="bg-red-100 text-red-700 p-3 rounded mb-3">
+    <ul>
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+</div>
+@endif
+<!-- TOPO -->
+<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+    <div class="flex items-center gap-4">
+        <a href="{{ route('professores') }}" class="flex items-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
+            ← Voltar
+        </a>
+
+        <h2 class="text-3xl font-extrabold text-gray-800">Graduações do Professor</h2>
+    </div>
+
+    <button onclick="toggleCadastro()"
+        class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow-md hover:bg-[#732920] hover:shadow-lg transition-all">
+        + Cadastrar Graduação
+    </button>
+</div>
+
+<!-- CARD DO PROFESSOR -->
+<div class="mb-8">
+    <div class="bg-white border-l-8 border-[#174ab9] rounded-2xl shadow-lg p-6">
+        <p class="text-xs uppercase tracking-widest text-gray-500">Professor selecionado</p>
+        <h3 class="text-2xl font-extrabold text-gray-800 mt-1">{{ $professor->prof_nome }}</h3>
+        <p class="mt-2 text-sm text-gray-600">
+            Telefone:
+            <strong class="text-gray-800">
+                {{ $professor->prof_telefone
+                    ? preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $professor->prof_telefone)
+                    : '-' }}
+            </strong>
+        </p>
+    </div>
+</div>
+
+<!-- FORMULÁRIO -->
+<div id="cadastroForm" class="hidden mb-10">
+    <form action="{{ route('detalhes-professor.store', $professor->id_professor) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="hidden" name="professor_id_professor" value="{{ $professor->id_professor }}">
+
+        <div class="bg-white rounded-2xl shadow-md p-8">
+            <h3 class="text-xl font-bold mb-6 text-gray-700">Cadastrar Graduação do Professor</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="text-sm font-medium text-gray-600">Graduação</label>
+                    <select name="det_gradu_nome_cor" onchange="preencherGraus(this)" class="w-full border rounded-lg px-3 py-2" required>
+                        <option value="">Selecione uma graduação</option>
+                        @php
+                        $cores = [];
+                        @endphp
+                        @foreach($graduacoesTotais as $g)
+                        @if(!in_array($g->gradu_nome_cor, $cores))
+                        @php
+                        $cores[] = $g->gradu_nome_cor;
+                        // pega todos os graus dessa cor
+                        $grausDaCor = $graduacoesTotais->filter(fn($x) => $x->gradu_nome_cor == $g->gradu_nome_cor)->pluck('gradu_grau')->sort()->values()->all();
+                        @endphp
+                        <option value="{{ $g->gradu_nome_cor }}" data-graus="{{ implode(',', $grausDaCor) }}">
+                            {{ $g->gradu_nome_cor }}
+                        </option>
+                        @endif
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Grau</label>
+                        <select name="det_grau" class="w-full border rounded-lg px-3 py-2 grau-input" required>
+                            <option value="">Selecione primeiro uma graduação</option>
+                        </select>
+                    </div>
+
+                </div>
+
+
+                <div>
+                    <label class="text-sm font-medium text-gray-600">Modalidade</label>
+                    <select name="det_modalidade" class="w-full border rounded-lg px-3 py-2" required>
+                        <option value="">Selecione</option>
+                        @foreach($modalidades as $modalidade)
+                        <option value="{{ $modalidade->mod_nome }}">{{ $modalidade->mod_nome }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium text-gray-600">Data</label>
+                    <input type="date" name="det_data" class="w-full border rounded-lg px-3 py-2" required>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="text-sm font-medium text-gray-600">Certificado (Imagem ou PDF) - Opcional</label>
+                    <input type="file" name="det_certificado" class="w-full border rounded-lg px-3 py-2" accept=".jpg,.jpeg,.png,.pdf">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-4 border-t pt-6 mt-8">
+                <button type="button" onclick="fecharCadastro()" class="px-4 py-2 border rounded-lg hover:bg-gray-100">Cancelar</button>
+                <button type="submit" class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920]">Salvar</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- LISTAGEM EM TABELA -->
+<div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+    <h3 class="text-xl font-bold mb-6 text-gray-700">Graduações Cadastradas</h3>
+
+    @php
+    $lista = $graduacoes->sort(function ($a, $b) {
+    $ordem = [
+    'preta' => 1,
+    'marrom' => 2,
+    'roxa' => 3,
+    'azul' => 4,
+    'verde' => 5,
+    'laranja'=> 6,
+    'amarela'=> 7,
+    'branca' => 8,
+    ];
+
+    $faixaA = strtolower($a->det_gradu_nome_cor);
+    $faixaB = strtolower($b->det_gradu_nome_cor);
+
+    $ordA = 99;
+    $ordB = 99;
+
+    foreach ($ordem as $nome => $valor) {
+    if (str_contains($faixaA, $nome)) $ordA = $valor;
+    if (str_contains($faixaB, $nome)) $ordB = $valor;
+    }
+
+    $grauA = intval($a->det_grau);
+    $grauB = intval($b->det_grau);
+
+    return $ordA === $ordB ? $grauB <=> $grauA : $ordA <=> $ordB;
+            });
+            @endphp
+
+
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b text-gray-600 text-sm">
+                        <th class="py-3 px-4">Graduação</th>
+                        <th class="py-3 px-4">Grau</th>
+                        <th class="py-3 px-4">Modalidade</th>
+                        <th class="py-3 px-4">Data</th>
+                        <th class="py-3 px-4">Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @forelse ($lista as $det)
+                    <tr class="border-b hover:bg-gray-50 transition">
+                        <td class="py-3 px-4">
+                            <span class="bolinha-faixa" data-faixa="{{ strtolower($det->det_gradu_nome_cor) }}" style="display:inline-block; width:16px; height:16px; border-radius:50%; margin-right:8px; vertical-align:middle; border:2px solid #000; background-color:transparent;"></span>
+                            {{ $det->det_gradu_nome_cor }}
+                        </td>
+                        <td class="py-3 px-4">{{ $det->det_grau }}</td>
+                        <td class="py-3 px-4">{{ $det->det_modalidade }}</td>
+                        <td class="py-3 px-4">{{ \Carbon\Carbon::parse($det->det_data)->format('d/m/Y') }}</td>
+                        <td class="py-3 px-4">
+
+                        <td class="py-3 px-4 flex gap-2">
+
+                            @if($det->det_certificado)
+                            <a href="{{ asset($det->det_certificado) }}" target="_blank"
+                                style="background-color: #174ab9; color: white;"
+                                class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
+                                Ver Certificado
+                            </a>
+                            @endif
+
+                            <a href="{{ route('detalhes-professor.edit', $det->id_det_professor) }}"
+                                style="background-color: #8E251F; color: white;"
+                                class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
+                                Editar
+                            </a>
+                            
+                            <form action="{{ route('detalhes.destroy', $det->id_det_professor) }}" method="POST" onsubmit="return confirm('Deseja remover esta graduação?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Excluir</button>
+                            </form>
+                        </td>
+
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="text-center py-6 text-gray-500">Nenhuma graduação cadastrada</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+</div>
+
+<script>
+    function toggleCadastro() {
+        const form = document.getElementById('cadastroForm');
+        form.classList.toggle('hidden');
+        form.scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+
+    function fecharCadastro() {
+        document.getElementById('cadastroForm').classList.add('hidden');
+    }
+
+    function preencherGraus(select) {
+        const grauSelect = select.closest('form').querySelector('.grau-input');
+        grauSelect.innerHTML = '';
+        if (!select.value) {
+            grauSelect.innerHTML = '<option value="">Selecione primeiro uma graduação</option>';
+            return;
+        }
+
+        const graus = select.selectedOptions[0].dataset.graus.split(',').sort((a, b) => a - b);
+
+        grauSelect.innerHTML = '<option value="">Selecione um grau</option>';
+
+        graus.forEach(grau => {
+            const option = document.createElement('option');
+            option.value = grau;
+            option.textContent = grau;
+            grauSelect.appendChild(option);
+        });
+    }
+
+
+    // Bolinhas de cor
+    document.querySelectorAll('.bolinha-faixa').forEach(bolinha => {
+        const faixa = bolinha.dataset.faixa;
+        let cor = 'transparent';
+        if (faixa.includes('cinza e branca')) cor = '#808080';
+        else if (faixa.includes('branca')) cor = '#ffffff';
+        else if (faixa.includes('amarela')) cor = '#facc15';
+        else if (faixa.includes('laranja')) cor = '#f97316';
+        else if (faixa.includes('verde')) cor = '#22c55e';
+        else if (faixa.includes('azul')) cor = '#2563eb';
+        else if (faixa.includes('roxa')) cor = '#7c3aed';
+        else if (faixa.includes('marrom')) cor = '#78350f';
+        else if (faixa.includes('preta')) cor = '#000000';
+        bolinha.style.backgroundColor = cor;
+    });
+</script>
+
+@endsection

@@ -44,7 +44,7 @@
             <!-- Observações -->
             <div class="md:col-span-2">
                 <label class="text-sm font-medium text-gray-600">Observações</label>
-                <textarea name="prof_desc" id="edit_desc" rows="3" maxlength="120" required
+                <textarea name="prof_desc" id="edit_desc" rows="3" required
                     class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">{{ old('prof_desc', $professor->prof_desc) }}</textarea>
             </div>
 
@@ -53,7 +53,7 @@
                 <label class="text-sm font-medium text-gray-600">Foto Atual</label>
                 <div class="mb-2">
                     @if($professor->prof_foto)
-                    <img src="{{ asset('images/professores/' . $professor->prof_foto) }}"
+                    <img src="{{ asset('images/professores/' . $professor->prof_foto) }}"required
                         alt="Foto do Professor" class="w-20 h-20 object-cover border rounded-md">
                     @else
                     <span class="text-gray-500">Nenhuma foto cadastrada</span>

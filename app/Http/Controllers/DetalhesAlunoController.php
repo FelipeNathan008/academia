@@ -2,59 +2,63 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DetalhesProfessor;
+use App\Models\Aluno;
+use App\Models\DetalhesAluno;
 use App\Models\Graduacao;
 use App\Models\Modalidade;
-use App\Models\Professor;
 use Illuminate\Http\Request;
 
-class DetalhesProfessorController extends Controller
+class DetalhesAlunoController extends Controller
 {
     public function index($id)
     {
-        $professor = Professor::findOrFail($id);
+        $aluno = Aluno::findOrFail($id);
         $modalidades = Modalidade::all();
-        $graduacoes = DetalhesProfessor::where('professor_id_professor', $id)->get();
+        $graduacoes = DetalhesAluno::where('aluno_id_aluno', $id)->get();
         $graduacoesTotais = Graduacao::all();
 
-        return view('view_professores.detalhes_professor', compact(
-            'professor',
+        return view('view_alunos.detalhes_aluno', compact(
+            'aluno',
             'graduacoes',
             'graduacoesTotais',
             'modalidades'
         ));
     }
 
-
     public function store(Request $request, $id)
     {
         $request->validate([
             'det_gradu_nome_cor' => 'required|string|max:80',
             'det_grau'           => 'required|integer',
-            'det_modalidade'     => 'required|string|max:50',
+            'det_modalidade'     => 'required|string|max:100',
             'det_data'           => 'required|date',
-            'det_certificado'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120', // agora opcional
+            'det_certificado'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
-        $dados = $request->all();
-        $dados['professor_id_professor'] = $id;
+        $dados = [
+            'aluno_id_aluno'     => $id,
+            'det_gradu_nome_cor' => $request->det_gradu_nome_cor,
+            'det_grau'           => $request->det_grau,
+            'det_modalidade'     => $request->det_modalidade,
+            'det_data'           => $request->det_data,
+        ];
 
         if ($request->hasFile('det_certificado')) {
             $file = $request->file('det_certificado');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('images/professores-certificados'), $filename);
-            $dados['det_certificado'] = 'images/professores-certificados/' . $filename;
+            $file->move(public_path('images/alunos-certificados'), $filename);
+            $dados['det_certificado'] = 'images/alunos-certificados/' . $filename;
         }
 
-        DetalhesProfessor::create($dados);
+        DetalhesAluno::create($dados); // Agora vai salvar o caminho corretamente
 
-
-        return redirect()->back()->with('success', 'Graduação do professor cadastrada!');
+        return redirect()->back()->with('success', 'Graduação do aluno cadastrada com sucesso!');
     }
+
 
     public function show($id)
     {
-        $detalhe = DetalhesProfessor::with('professor')->findOrFail($id);
+        $detalhe = DetalhesAluno::with('aluno')->findOrFail($id);
 
         return response()->json([
             'data' => $detalhe
@@ -63,14 +67,14 @@ class DetalhesProfessorController extends Controller
 
     public function edit($id)
     {
-        $detalhe = DetalhesProfessor::findOrFail($id);
-        $professor = $detalhe->professor;
+        $detalhe = DetalhesAluno::findOrFail($id);
+        $aluno = $detalhe->aluno;
         $modalidades = Modalidade::all();
         $graduacoesTotais = Graduacao::all();
 
-        return view('view_professores.detalhes_professor_edit', compact(
+        return view('view_alunos.detalhes_aluno_edit', compact(
             'detalhe',
-            'professor',
+            'aluno',
             'modalidades',
             'graduacoesTotais'
         ));
@@ -78,38 +82,40 @@ class DetalhesProfessorController extends Controller
 
     public function update(Request $request, $id)
     {
-        $detalhe = DetalhesProfessor::findOrFail($id);
+        $detalhe = DetalhesAluno::findOrFail($id);
 
         $request->validate([
-            'det_gradu_nome_cor' => 'required|string|max:80',
-            'det_grau'           => 'required|integer',
-            'det_modalidade'     => 'required|string|max:50',
-            'det_data'           => 'required|date',
+            'det_gradu_nome_cor' => 'sometimes|string|max:80',
+            'det_grau'           => 'sometimes|integer',
+            'det_modalidade'     => 'sometimes|string|max:100',
+            'det_data'           => 'sometimes|date',
             'det_certificado'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
-
-        $dados = $request->all();
+        $dados = $request->only(['det_gradu_nome_cor', 'det_grau', 'det_modalidade', 'det_data']);
 
         if ($request->hasFile('det_certificado')) {
+            // Remove arquivo antigo
             if ($detalhe->det_certificado && file_exists(public_path($detalhe->det_certificado))) {
                 unlink(public_path($detalhe->det_certificado));
             }
 
             $file = $request->file('det_certificado');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('images/professores-certificados'), $filename);
-            $dados['det_certificado'] = 'images/professores-certificados/' . $filename;
+            $file->move(public_path('images/alunos-certificados'), $filename);
+            $dados['det_certificado'] = 'images/alunos-certificados/' . $filename;
         }
 
         $detalhe->update($dados);
-        return redirect()->route('detalhes-professor.index', $detalhe->professor_id_professor)
+
+        return redirect()->route('detalhes-aluno.index', $detalhe->aluno_id_aluno)
             ->with('success', 'Graduação do professor atualizada com sucesso!');
     }
 
+
     public function destroy($id)
     {
-        $detalhe = DetalhesProfessor::findOrFail($id);
+        $detalhe = DetalhesAluno::findOrFail($id);
 
         // Apaga o arquivo do certificado, se existir
         if ($detalhe->det_certificado && file_exists(public_path($detalhe->det_certificado))) {

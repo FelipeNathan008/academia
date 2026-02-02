@@ -223,6 +223,13 @@
                 </td>
                 <td class="py-3 px-4">
                     <div class="flex gap-2">
+
+                        <a href="{{ route('responsaveis.edit', $resp->id_responsavel) }}"
+                            style="background-color: #174ab9; color: white;"
+                            class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
+                            Matrícula
+                        </a>
+
                         <a href="{{ route('responsaveis.edit', $resp->id_responsavel) }}"
                             style="background-color: #8E251F; color: white;"
                             class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">

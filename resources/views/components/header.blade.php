@@ -3,7 +3,7 @@
     <!-- Botão Hamburger + Avatar + Logout -->
     <div class="flex items-center gap-4">
         <!-- Botão Hamburger -->
-        <div onclick="toggleSidebar()" class="menu-icon" id="menuIcon">
+        <div onclick="toggleSidebar()" class="menu-icon sidebar-closed:!open" id="menuIcon">
             <span></span>
             <span></span>
             <span></span>
@@ -24,7 +24,7 @@
         @endif
         @endauth
     </div>
-   
+
     <!-- Logout -->
     <form method="POST" action="{{ route('logout') }}">
         @csrf

@@ -51,6 +51,14 @@
         transition: width 0.3s ease;
     }
 
+    html.sidebar-closed aside#sidebar {
+        width: 0;
+        overflow: hidden;
+    }
+
+    html.sidebar-closed .menu-icon {
+        transform: rotate(0deg);
+    }
 
     /* Menu */
     nav {
@@ -58,7 +66,18 @@
     }
 </style>
 
-<aside id="sidebar" class="closed w-64 bg-[#3A403E] text-[#9A9F9A] border-r shadow-sm transition-all">
+<script>
+    (function() {
+        const isClosed = localStorage.getItem('sidebarClosed');
+        if (isClosed === 'true' || isClosed === null) {
+            document.documentElement.classList.add('sidebar-closed');
+        }
+    })();
+</script>
+
+<aside id="sidebar"
+    class="w-64 bg-[#3A403E] text-[#9A9F9A] border-r shadow-sm transition-all
+           sidebar-closed:closed">
     <!-- Topo -->
     <div class="p-6 flex items-center justify-between">
         <span class="text-xl font-bold text-white">DudaJJ</span>
@@ -72,9 +91,11 @@
         'Dashboard' => 'dashboard',
         'Alunos/Responsáveis' => 'alunos', // Sempre leva para alunos
         'Professores' => 'professores',
+        'Grade de Horários' => 'grade_horarios',
         'Administração' => [
         'Graduações' => 'graduacoes',
         'Modalidades' => 'modalidades',
+        'Horarios de Treino' => 'horario_treino',
         ],
         ];
         @endphp
@@ -127,10 +148,14 @@
         if ($label === 'Alunos/Responsáveis') {
         $isActive = in_array(Route::currentRouteName(), [
         'alunos', 'alunos.edit',
-        'responsaveis.index', 'responsaveis.edit'
+        'responsaveis.index', 'responsaveis.edit',
+        'detalhes-aluno.index', 'detalhes-aluno.edit'
         ]);
         } elseif ($label === 'Professores') {
-        $isActive = in_array(Route::currentRouteName(), ['professores', 'professores.edit']);
+        $isActive = in_array(Route::currentRouteName(), [
+        'professores', 'professores.edit',
+        'detalhes-professor.index', 'detalhes-professor.edit'
+        ]);
         } else {
         $isActive = request()->routeIs($route);
         }
@@ -148,33 +173,12 @@
 </aside>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const sidebar = document.getElementById('sidebar');
-        const icon = document.getElementById('menuIcon');
-
-        const isClosed = localStorage.getItem('sidebarClosed');
-
-        // Se NÃO existir ainda, assume fechado
-        if (isClosed === null || isClosed === 'true') {
-            sidebar.classList.add('closed');
-            icon.classList.remove('open');
-            localStorage.setItem('sidebarClosed', 'true');
-        } else {
-            sidebar.classList.remove('closed');
-            icon.classList.add('open');
-        }
-    });
-
-
     function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const icon = document.getElementById('menuIcon');
-
-        const isNowClosed = sidebar.classList.toggle('closed');
-        icon.classList.toggle('open', !isNowClosed);
-
-        localStorage.setItem('sidebarClosed', isNowClosed);
+        document.documentElement.classList.toggle('sidebar-closed');
+        const isClosed = document.documentElement.classList.contains('sidebar-closed');
+        localStorage.setItem('sidebarClosed', isClosed);
     }
+
 
     function toggleSubMenu(id) {
         document.querySelectorAll('[id^="submenu-"]').forEach(el => {

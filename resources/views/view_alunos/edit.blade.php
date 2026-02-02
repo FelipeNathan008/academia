@@ -31,16 +31,18 @@
             <!-- Observações -->
             <div class="md:col-span-2">
                 <label class="text-sm font-medium text-gray-600">Observações</label>
-                <textarea name="aluno_desc" id="edit_desc" rows="3" maxlength="120" required
-                    class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">{{ old('aluno_desc', $aluno->aluno_desc) }}</textarea>
+                <textarea name="aluno_desc" id="edit_desc" rows="4" required
+                    class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+                {{ old('aluno_desc', $aluno->aluno_desc) }}
+                </textarea>
             </div>
 
             <!-- Foto -->
             <div class="md:col-span-2">
                 <label class="text-sm font-medium text-gray-600">Foto Atual</label>
                 <div class="mb-2">
-                    <img src="{{ $aluno->aluno_foto ? asset('images/alunos/' . $aluno->aluno_foto) : '' }}" 
-                         alt="Foto do Aluno" class="w-20 h-20 object-cover border rounded-md">
+                    <img src="{{ $aluno->aluno_foto ? asset('images/alunos/' . $aluno->aluno_foto) : '' }}"
+                        alt="Foto do Aluno" class="w-20 h-20 object-cover border rounded-md">
                 </div>
 
                 <label class="text-sm font-medium text-gray-600">Alterar Foto</label>
@@ -50,8 +52,8 @@
         </div>
 
         <div class="flex justify-end gap-4 mt-6">
-            <a href="{{ route('alunos') }}" 
-               class="px-5 py-2 border rounded-lg hover:bg-gray-100 transition">Voltar</a>
+            <a href="{{ route('alunos') }}"
+                class="px-5 py-2 border rounded-lg hover:bg-gray-100 transition">Voltar</a>
 
             <button type="submit"
                 class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920] transition">

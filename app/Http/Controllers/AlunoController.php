@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Aluno;
+use App\Models\DetalhesAluno;
+use App\Models\Graduacao;
+use App\Models\Modalidade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -11,7 +14,11 @@ class AlunoController extends Controller
     public function index()
     {
         $alunos = Aluno::all();
-        return view('view_alunos.index', compact('alunos'));
+        $graduacoes = Graduacao::all();
+        $detalhes = DetalhesAluno::all();
+        $modalidades = Modalidade::all();
+
+        return view('view_alunos.index', compact('alunos', 'graduacoes', 'detalhes', 'modalidades'));
     }
 
     public function store(Request $request)
@@ -19,7 +26,7 @@ class AlunoController extends Controller
         $request->validate([
             'aluno_nome' => 'required|string|max:120',
             'aluno_nascimento' => 'required|date',
-            'aluno_desc' => 'required|string|max:120',
+            'aluno_desc' => 'required|string',
             'aluno_foto' => 'required|image|max:2048',
         ]);
 
@@ -37,7 +44,7 @@ class AlunoController extends Controller
 
         $aluno->save();
 
-        return redirect()->route('alunos')->with('success', 'Aluno cadastrado com sucesso!');
+        return redirect()->route('responsaveis.index', $aluno->id_aluno);
     }
 
     public function edit($id)
@@ -51,7 +58,7 @@ class AlunoController extends Controller
         $request->validate([
             'aluno_nome' => 'required|string|max:120',
             'aluno_nascimento' => 'required|date',
-            'aluno_desc' => 'required|string|max:120',
+            'aluno_desc' => 'required|string',
             'aluno_foto' => 'nullable|image|max:2048',
         ]);
 

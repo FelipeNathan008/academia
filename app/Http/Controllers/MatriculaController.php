@@ -20,7 +20,7 @@ class MatriculaController extends Controller
     {
         $request->validate([
             'aluno_id_aluno' => 'required|exists:aluno,id_aluno',
-            'matri_desc' => 'required|string|max:150',
+            'matri_desc' => 'required|string',
         ]);
 
         $matricula = Matricula::create($request->all());
@@ -46,7 +46,7 @@ class MatriculaController extends Controller
 
         $request->validate([
             'aluno_id_aluno' => 'sometimes|exists:aluno,id_aluno',
-            'matri_desc' => 'sometimes|string|max:150',
+            'matri_desc' => 'sometimes|string',
         ]);
 
         $matricula->update($request->all());

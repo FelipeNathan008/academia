@@ -14,11 +14,29 @@ class ProfessorController extends Controller
     public function index()
     {
         $professores = Professor::all();
-        $graduacoes = Graduacao::all();
-        $detalhes = DetalhesProfessor::all();
-            $modalidades = Modalidade::all();
 
-        return view('view_professores.index', compact('professores', 'graduacoes', 'detalhes','modalidades'));
+        $graduacoes = Graduacao::select('gradu_nome_cor')
+            ->selectRaw('MAX(gradu_grau) as max_grau')
+            ->groupBy('gradu_nome_cor')
+            ->orderByRaw("
+            CASE gradu_nome_cor
+                WHEN 'Faixa Branca' THEN 1
+                WHEN 'Faixa Azul' THEN 2
+                WHEN 'Faixa Roxa' THEN 3
+                WHEN 'Faixa Marrom' THEN 4
+                WHEN 'Faixa Preta' THEN 5
+                ELSE 99
+            END
+        ")
+            ->get();
+
+        $detalhes = DetalhesProfessor::all();
+        $modalidades = Modalidade::all();
+
+        return view(
+            'view_professores.index',
+            compact('professores', 'graduacoes', 'detalhes', 'modalidades')
+        );
     }
 
     public function store(Request $request)
@@ -30,7 +48,7 @@ class ProfessorController extends Controller
             'prof_nome' => 'required|string|max:120',
             'prof_nascimento' => 'required|date',
             'prof_telefone' => 'required|string|max:20',
-            'prof_desc' => 'required|string|max:150',
+            'prof_desc' => 'required|string',
             'prof_foto' => 'nullable|image|max:2048',
         ]);
 
@@ -67,7 +85,7 @@ class ProfessorController extends Controller
             'prof_nome' => 'required|string|max:120',
             'prof_nascimento' => 'required|date',
             'prof_telefone' => 'required|string|max:20',
-            'prof_desc' => 'required|string|max:150',
+            'prof_desc' => 'required|string',
             'prof_foto' => 'nullable|image|max:2048',
         ]);
 
@@ -100,7 +118,7 @@ class ProfessorController extends Controller
     {
         $professor = Professor::findOrFail($id);
         $professor->detalhes()->delete();
-        
+
         if ($professor->prof_foto && file_exists(public_path('images/professores/' . $professor->prof_foto))) {
             unlink(public_path('images/professores/' . $professor->prof_foto));
         }

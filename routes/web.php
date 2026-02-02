@@ -3,9 +3,12 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AlunoController;
+use App\Http\Controllers\DetalhesAlunoController;
 use App\Http\Controllers\GraduacaoController;
 use App\Http\Controllers\ProfessorController;
 use App\Http\Controllers\DetalhesProfessorController;
+use App\Http\Controllers\GradeHorarioController;
+use App\Http\Controllers\HorarioTreinoController;
 use App\Http\Controllers\ModalidadeController;
 use App\Http\Controllers\ResponsavelController;
 
@@ -57,11 +60,37 @@ Route::middleware('auth')->group(function () {
     Route::put('modalidades/update/{id}', [ModalidadeController::class, 'update'])->name('modalidades.update');
 });
 
+Route::middleware('auth')->group(function () {
+    Route::get('/horario-treino', [HorarioTreinoController::class, 'index'])->name('horario_treino');
+    Route::post('/horario-treino', [HorarioTreinoController::class, 'store'])->name('horario_treino.store');
+    Route::get('/horario-treino/{id}/edit', [HorarioTreinoController::class, 'edit'])->name('horario_treino.edit');
+    Route::put('/horario-treino/{id}', [HorarioTreinoController::class, 'update'])->name('horario_treino.update');
+    Route::delete('/horario-treino/{id}', [HorarioTreinoController::class, 'destroy'])->name('horario_treino.destroy');
+});
 
 Route::middleware('auth')->group(function () {
-    Route::post('/detalhes', [DetalhesProfessorController::class, 'store'])->name('detalhes.store');
-    Route::delete('/detalhes/{id}', [DetalhesProfessorController::class, 'destroy'])->name('detalhes.destroy');
+    Route::get('/grade_horarios', [GradeHorarioController::class, 'index'])->name('grade_horarios');
+    Route::post('/grade_horarios', [GradeHorarioController::class, 'store'])->name('grade_horarios.store');
+    Route::get('/grade_horarios/{id}/edit', [GradeHorarioController::class, 'edit'])->name('grade_horarios.edit');
+    Route::put('grade_horarios/update/{id}', [GradeHorarioController::class, 'update'])->name('grade_horarios.update');
+    Route::delete('/grade_horarios/{id}', [GradeHorarioController::class, 'destroy'])->name('grade_horarios.destroy');
 });
+
+Route::middleware('auth')->group(function () {
+    Route::get('/alunos/{id}/detalhes', [DetalhesAlunoController::class, 'index'])->name('detalhes-aluno.index');
+    Route::post('/alunos/{id}/detalhes', [DetalhesAlunoController::class, 'store'])->name('detalhes-aluno.store');
+    Route::get('/detalhes-aluno/{id}/edit', [DetalhesAlunoController::class, 'edit'])->name('detalhes-aluno.edit');
+    Route::put('/detalhes-aluno/{id}', [DetalhesAlunoController::class, 'update'])->name('detalhes-aluno.update');
+    Route::delete('/detalhes-aluno/{id}', [DetalhesAlunoController::class, 'destroy'])->name('detalhes-aluno.destroy');
+});
+Route::middleware('auth')->group(function () {
+    Route::get('/professores/{id}/detalhes', [DetalhesProfessorController::class, 'index'])->name('detalhes-professor.index');
+    Route::post('/professores/{id}/detalhes', [DetalhesProfessorController::class, 'store'])->name('detalhes-professor.store');
+    Route::get('/detalhes-professor/{id}/edit', [DetalhesProfessorController::class, 'edit'])->name('detalhes-professor.edit');
+    Route::put('/detalhes-professor/{id}', [DetalhesProfessorController::class, 'update'])->name('detalhes-professor.update');
+    Route::delete('/detalhes-professor/{id}', [DetalhesProfessorController::class, 'destroy'])->name('detalhes.destroy');
+});
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/responsaveis/{id}', [ResponsavelController::class, 'index'])->name('responsaveis.index');
@@ -70,6 +99,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/responsaveis/{id}', [ResponsavelController::class, 'update'])->name('responsaveis.update');
     Route::delete('/responsaveis/{id}', [ResponsavelController::class, 'destroy'])->name('responsaveis.destroy');
 });
+
+
 
 // Breeze auth routes
 require __DIR__ . '/auth.php';
