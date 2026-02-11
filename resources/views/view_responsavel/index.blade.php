@@ -4,35 +4,10 @@
 
 @section('content')
 
-<!-- BREADCRUMB -->
-<nav class="mb-6 text-sm text-gray-500">
-    <ol class="flex items-center gap-2">
-        <li>
-            <a href="{{ route('alunos') }}" class="hover:text-[#8E251F] transition">
-                Alunos
-            </a>
-        </li>
-        <li>/</li>
-        <li class="text-gray-400">
-            {{ $aluno->aluno_nome }}
-        </li>
-        <li>/</li>
-        <li class="font-semibold text-gray-700">
-            Responsáveis
-        </li>
-    </ol>
-</nav>
-
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
 
     <div class="flex items-center gap-4">
-        <a href="{{ route('alunos') }}"
-            class="flex items-center gap-2 px-4 py-2 border rounded-lg
-                  text-gray-600 hover:bg-gray-100 transition">
-            ← Voltar
-        </a>
-
         <h2 class="text-3xl font-extrabold text-gray-800">
             Responsáveis
         </h2>
@@ -45,31 +20,11 @@
     </button>
 </div>
 
-<!-- CARD DO ALUNO -->
-<div class="mb-8">
-    <div class="bg-white border-l-8 border-[#8E251F] rounded-2xl shadow-lg p-6">
-        <p class="text-xs uppercase tracking-widest text-gray-500">
-            Aluno selecionado
-        </p>
-
-        <h3 class="text-2xl font-extrabold text-gray-800 mt-1">
-            {{ $aluno->aluno_nome }}
-        </h3>
-
-        <p class="mt-2 text-sm text-gray-600">
-            Data de nascimento:
-            <strong class="text-gray-800">
-                {{ \Carbon\Carbon::parse($aluno->aluno_nascimento)->format('d/m/Y') }}
-            </strong>
-        </p>
-    </div>
-</div>
 
 <!-- FORMULÁRIO -->
 <div id="cadastroForm" class="hidden mb-10">
-    <form action="{{ route('responsaveis.store') }}" method="POST">
+    <form action="{{ route('responsaveis.store') }}" method="POST" >
         @csrf
-        <input type="hidden" name="aluno_id_aluno" value="{{ $id_aluno }}">
 
         <div class="bg-white rounded-2xl shadow-md p-8">
             <h3 class="text-xl font-bold mb-6 text-gray-700">
@@ -223,11 +178,11 @@
                 </td>
                 <td class="py-3 px-4">
                     <div class="flex gap-2">
-
-                        <a href="{{ route('responsaveis.edit', $resp->id_responsavel) }}"
+                        
+                        <a href="{{ route('alunos', $resp->id_responsavel) }}"
                             style="background-color: #174ab9; color: white;"
                             class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
-                            Matrícula
+                            Alunos
                         </a>
 
                         <a href="{{ route('responsaveis.edit', $resp->id_responsavel) }}"

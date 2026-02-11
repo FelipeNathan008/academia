@@ -7,7 +7,7 @@
 <div class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
     <ul class="list-disc list-inside">
         @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
+        <li>{{ $error }}</li>
         @endforeach
     </ul>
 </div>
@@ -38,7 +38,7 @@
 
             <div class="flex-1">
                 <label class="text-sm font-medium text-gray-600">Modalidade</label>
-                <select id="modalidadeSelect"
+                <select id="modalidadeSelect" name="grade_modalidade"
                     class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100">
                     <option value="">Selecione a modalidade</option>
                     @foreach ($horariosTreino->unique('hora_modalidade') as $h)
@@ -52,49 +52,57 @@
             </div>
         </div>
 
-        <!-- HORÁRIO -->
-        <div class="mb-4">
-            <label class="text-sm font-medium text-gray-600">Horário Treino</label>
-            <select id="horarioTreinoSelect" name="horario_treino_id_hora" required
-                class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
-                <option value="">Selecione o horário</option>
-                @foreach ($horariosTreino as $hora)
-                <option value="{{ $hora->id_hora }}"
-                    data-modalidade="{{ $hora->hora_modalidade }}"
-                    data-dia="{{ $hora->hora_semana }}"
-                    data-inicio="{{ $hora->hora_inicio }}"
-                    data-fim="{{ $hora->hora_fim }}"
-                    {{ $grade->horario_treino_id_hora == $hora->id_hora ? 'selected' : '' }}>
-                    {{ $hora->hora_semana }} | {{ $hora->hora_inicio }} - {{ $hora->hora_fim }}
-                </option>
-                @endforeach
-            </select>
-
-        </div>
-
-        <!-- DIA / INICIO / FIM -->
+        <!-- HORÁRIO + DIA -->
         <div class="flex gap-6 mb-4">
             <div class="flex-1">
-                <label class="text-sm font-medium text-gray-600">Dia</label>
-                <input id="gradeDia" name="grade_dia_semana" readonly
-                    class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100"
-                    value="{{ $grade->grade_dia_semana }}">
+                <label class="text-sm font-medium text-gray-600">Horário Treino</label>
+                <select id="horarioTreinoSelect" name="horario_treino_id_hora" required
+                    class="w-full border rounded-lg px-4 py-2 mt-1">
+                    <option value="">Selecione o horário</option>
+                    @foreach ($horariosTreino as $hora)
+                    <option value="{{ $hora->id_hora }}"
+                        data-modalidade="{{ $hora->hora_modalidade }}"
+                        data-dia="{{ $hora->hora_semana }}"
+                        data-inicio="{{ $hora->hora_inicio }}"
+                        data-fim="{{ $hora->hora_fim }}"
+                        {{ $grade->horario_treino_id_hora == $hora->id_hora ? 'selected' : '' }}>
+                        {{ $hora->hora_modalidade }} |
+                        {{ $hora->hora_semana }} |
+                        {{ substr($hora->hora_inicio,0,5) }} - {{ substr($hora->hora_fim,0,5) }}
+                    </option>
+                    @endforeach
+                </select>
             </div>
 
             <div class="flex-1">
+                <label class="text-sm font-medium text-gray-600">Dia da Semana</label>
+
+                <!-- VISUAL -->
+                <input id="gradeDiaTexto" type="text" readonly
+                    class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100">
+
+                <!-- SALVO -->
+                <input type="hidden" id="gradeDiaNumero" name="grade_dia_semana"
+                    value="{{ $grade->grade_dia_semana }}">
+            </div>
+        </div>
+
+
+        <!-- INICIO / FIM -->
+        <div class="flex gap-6 mb-4">
+            <div class="flex-1">
                 <label class="text-sm font-medium text-gray-600">Início</label>
-                <input id="gradeInicio" name="grade_inicio" readonly
-                    class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100"
-                    value="{{ $grade->grade_inicio }}">
+                <input id="gradeInicio" type="time" name="grade_inicio" readonly required
+                    class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100">
             </div>
 
             <div class="flex-1">
                 <label class="text-sm font-medium text-gray-600">Fim</label>
-                <input id="gradeFim" name="grade_fim" readonly
-                    class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100"
-                    value="{{ $grade->grade_fim }}">
+                <input id="gradeFim" type="time" name="grade_fim" readonly required
+                    class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100">
             </div>
         </div>
+
 
         <!-- TURMA -->
         <div class="mb-4">
@@ -132,21 +140,21 @@
 <script>
     const modalidade = document.getElementById('modalidadeSelect');
     const horario = document.getElementById('horarioTreinoSelect');
-    const dia = document.getElementById('gradeDia');
+
+    const diaTexto = document.getElementById('gradeDiaTexto');
+    const diaNumero = document.getElementById('gradeDiaNumero');
     const inicio = document.getElementById('gradeInicio');
     const fim = document.getElementById('gradeFim');
 
-    window.addEventListener('load', () => {
-        filtrarHorarios();
-
-        const opt = horario.options[horario.selectedIndex];
-        if (!opt || !opt.value) return;
-
-        dia.value = opt.dataset.dia;
-        inicio.value = opt.dataset.inicio;
-        fim.value = opt.dataset.fim;
-    });
-
+    const mapaDias = {
+        1: 'Domingo',
+        2: 'Segunda-feira',
+        3: 'Terça-feira',
+        4: 'Quarta-feira',
+        5: 'Quinta-feira',
+        6: 'Sexta-feira',
+        7: 'Sábado'
+    };
 
     function filtrarHorarios() {
         [...horario.options].forEach(o => {
@@ -155,9 +163,33 @@
         });
     }
 
+    function preencherCampos(opt) {
+        if (!opt || !opt.value) return;
+
+        const diasArray = opt.dataset.dia.split(',').map(d => d.trim());
+
+        diaNumero.value = diasArray.join(',');
+
+        diaTexto.value = diasArray
+            .map(d => mapaDias[d])
+            .filter(Boolean)
+            .join(', ');
+
+        inicio.value = opt.dataset.inicio;
+        fim.value = opt.dataset.fim;
+    }
+
+    window.addEventListener('load', () => {
+        filtrarHorarios();
+
+        const opt = horario.options[horario.selectedIndex];
+        preencherCampos(opt);
+    });
+
     modalidade.addEventListener('change', () => {
         horario.value = '';
-        dia.value = '';
+        diaTexto.value = '';
+        diaNumero.value = '';
         inicio.value = '';
         fim.value = '';
         filtrarHorarios();
@@ -165,11 +197,7 @@
 
     horario.addEventListener('change', () => {
         const opt = horario.options[horario.selectedIndex];
-        if (!opt || !opt.value) return;
-
-        dia.value = opt.dataset.dia;
-        inicio.value = opt.dataset.inicio;
-        fim.value = opt.dataset.fim;
+        preencherCampos(opt);
     });
 </script>
 

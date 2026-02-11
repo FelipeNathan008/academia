@@ -3,20 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Responsavel;
-use App\Models\Aluno;
 use Illuminate\Http\Request;
 
 class ResponsavelController extends Controller
 {
-    public function index($id)
+    // LISTAR RESPONSÁVEIS
+    public function index()
     {
-        $id_aluno = $id;
-        $aluno = Aluno::findOrFail($id_aluno);
-        $responsaveis = Responsavel::where('aluno_id_aluno', $id_aluno)->get();
-
-        return view('view_responsavel.index', compact('id_aluno', 'aluno', 'responsaveis'));
+        $responsaveis = Responsavel::all();
+        return view('view_responsavel.index', compact('responsaveis'));
     }
 
+    // CADASTRAR RESPONSÁVEL
     public function store(Request $request)
     {
         $request->merge([
@@ -26,7 +24,6 @@ class ResponsavelController extends Controller
         ]);
 
         $request->validate([
-            'aluno_id_aluno' => 'required|exists:aluno,id_aluno',
             'resp_nome' => 'required|string|max:120',
             'resp_parentesco' => 'required|string|max:60',
             'resp_cpf' => 'required|string|size:11',
@@ -40,28 +37,21 @@ class ResponsavelController extends Controller
             'resp_cidade' => 'required|string|max:150',
         ]);
 
-        $responsavel = Responsavel::create($request->all());
+        Responsavel::create($request->all());
 
         return redirect()
-            ->route('responsaveis.index', $request->aluno_id_aluno)
+            ->route('responsaveis')
             ->with('success', 'Responsável cadastrado com sucesso!');
     }
 
-    public function show($id)
-    {
-        $responsavel = Responsavel::with('aluno')->findOrFail($id);
-
-        return response()->json(['data' => $responsavel]);
-    }
-
+    // EDITAR RESPONSÁVEL
     public function edit($id)
     {
         $responsavel = Responsavel::findOrFail($id);
-        $aluno = Aluno::findOrFail($responsavel->aluno_id_aluno);
-
-        return view('view_responsavel.edit', compact('responsavel', 'aluno'));
+        return view('view_responsavel.edit', compact('responsavel'));
     }
 
+    // ATUALIZAR RESPONSÁVEL
     public function update(Request $request, $id)
     {
         $responsavel = Responsavel::findOrFail($id);
@@ -85,31 +75,22 @@ class ResponsavelController extends Controller
             'resp_cidade' => 'required|string|max:150',
         ]);
 
-        $responsavel->update($request->only([
-            'resp_nome',
-            'resp_parentesco',
-            'resp_cpf',
-            'resp_cep',
-            'resp_logradouro',
-            'resp_numero',
-            'resp_complemento',
-            'resp_bairro',
-            'resp_cidade',
-        ]));
+        $responsavel->update($request->all());
 
         return redirect()
-            ->route('responsaveis.index', $responsavel->aluno_id_aluno)
+            ->route('responsaveis')
             ->with('success', 'Responsável atualizado com sucesso!');
     }
 
+    // EXCLUIR RESPONSÁVEL
     public function destroy($id)
     {
         $responsavel = Responsavel::findOrFail($id);
-        $alunoId = $responsavel->aluno_id_aluno;
+        $responsavel->alunos()->delete();
         $responsavel->delete();
 
         return redirect()
-            ->route('responsaveis.index', $alunoId)
-            ->with('success', 'Responsável removido com sucesso.');
+            ->route('responsaveis')
+            ->with('success', 'Responsável e alunos removidos!');
     }
 }

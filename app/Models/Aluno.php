@@ -10,16 +10,19 @@ class Aluno extends Model
     protected $primaryKey = 'id_aluno';
 
     protected $fillable = [
+        'responsavel_id_responsavel',
         'aluno_nome',
         'aluno_nascimento',
         'aluno_desc',
-        'aluno_foto'
+        'aluno_foto',
+        'aluno_bolsista'
     ];
 
-    public function responsaveis()
+    public function responsavel()
     {
-        return $this->hasMany(Responsavel::class, 'aluno_id_aluno', 'id_aluno');
+        return $this->belongsTo(Responsavel::class, 'responsavel_id_responsavel', 'id_responsavel');
     }
+
 
     public function matriculas()
     {

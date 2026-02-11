@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('detalhes_professor', function (Blueprint $table) {
-            $table->date('det_data')->after('det_modalidade');
+        Schema::table('matricula', function (Blueprint $table) {
+            $table->string('matri_plano', 40)->after('matri_data');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('detalhes_professor', function (Blueprint $table) {
-            $table->dropColumn('det_data');
+        Schema::table('matricula', function (Blueprint $table) {
+            $table->dropColumn('matri_plano');
         });
     }
 };

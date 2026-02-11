@@ -89,7 +89,8 @@
         @php
         $menu = [
         'Dashboard' => 'dashboard',
-        'Alunos/Responsáveis' => 'alunos', // Sempre leva para alunos
+        'Alunos/Responsáveis' => 'responsaveis',
+        'Matrícula' => 'matricula.index',
         'Professores' => 'professores',
         'Grade de Horários' => 'grade_horarios',
         'Administração' => [
@@ -147,9 +148,19 @@
         // Ativa Alunos/Responsáveis se estiver em qualquer rota de alunos ou responsáveis
         if ($label === 'Alunos/Responsáveis') {
         $isActive = in_array(Route::currentRouteName(), [
-        'alunos', 'alunos.edit',
-        'responsaveis.index', 'responsaveis.edit',
-        'detalhes-aluno.index', 'detalhes-aluno.edit'
+        'alunos',
+        'alunos.edit',
+        'responsaveis',
+        'responsaveis.edit',
+        'detalhes-aluno.index',
+        'detalhes-aluno.edit'
+        ]);
+        } elseif ($label === 'Matrícula') {
+        $isActive = in_array(Route::currentRouteName(), [
+        'matricula.index',
+        'matricula.show',
+        'matricula.edit',
+        'matricula'
         ]);
         } elseif ($label === 'Professores') {
         $isActive = in_array(Route::currentRouteName(), [

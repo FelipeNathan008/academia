@@ -17,6 +17,6 @@ class DetalhesMensalidade extends Model
 
     public function mensalidade()
     {
-        return $this->belongsTo(Mensalidade::class, 'mensalidade_id_mensalidade', 'id_mensalidade');
+        return $this->belongsTo(Mensalidade::class,'mensalidade_id_mensalidade','id_mensalidade');
     }
 }

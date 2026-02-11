@@ -179,13 +179,40 @@
         use Carbon\Carbon;
 
         $inicioSemana = Carbon::now()->startOfWeek(Carbon::SUNDAY);
-        $dias = [];
-        $mapaDiasTopo = [0=>'Domingo',1=>'Segunda-feira',2=>'Terça-feira',3=>'Quarta-feira',4=>'Quinta-feira',5=>'Sexta-feira',6=>'Sábado'];
-        for ($i=0; $i<7; $i++) { $dias[]=$inicioSemana->copy()->addDays($i); }
 
-            $mapaClasses = ['Jiu-Jitsu'=>'modalidade-jiu-jitsu','Judô'=>'modalidade-judo','NO GI'=>'modalidade-NO-GI','Karate'=>'modalidade-karate'];
-            $mapaDiasBanco = ['Sunday'=>'Domingo','Monday'=>'Segunda-feira','Tuesday'=>'Terça-feira','Wednesday'=>'Quarta-feira','Thursday'=>'Quinta-feira','Friday'=>'Sexta-feira','Saturday'=>'Sábado'];
+        // dias com número (1–7)
+        $diasSemana = [
+        1 => 'Domingo',
+        2 => 'Segunda-feira',
+        3 => 'Terça-feira',
+        4 => 'Quarta-feira',
+        5 => 'Quinta-feira',
+        6 => 'Sexta-feira',
+        7 => 'Sábado',
+        ];
+
+        // gera dias da semana com número correto
+        $dias = [];
+        for ($i = 1; $i <= 7; $i++) {
+            $dias[]=[ 'num'=> $i,
+            'nome' => $diasSemana[$i],
+            ];
+            }
+
+            $mapaClasses = [
+            'Jiu-Jitsu' => 'modalidade-jiu-jitsu',
+            'Judô' => 'modalidade-judo',
+            'NO GI' => 'modalidade-NO-GI',
+            'Karate' => 'modalidade-karate',
+            ];
+
+            $mapaTurmas = [
+            'criancas' => 'Crianças',
+            'adultos' => 'Adultos',
+            'mulheres' => 'Mulheres',
+            ];
             @endphp
+
 
             <table class="w-full border border-gray-300 text-sm text-center border-collapse">
                 <thead class="bg-gray-100">
@@ -193,33 +220,35 @@
                         <th class="border p-2 w-24">Hora</th>
                         @foreach ($dias as $dia)
                         <th class="border p-2">
-                            {{ $mapaDiasTopo[$dia->dayOfWeek] }}<br>
-                            <span class="text-xs text-gray-500">{{ $dia->format('d/m') }}</span>
+                            {{ $dia['nome'] }}
                         </th>
                         @endforeach
                     </tr>
                 </thead>
 
-                <tbody>
-                    @for ($h=7; $h<=22; $h++)
-                        <tr>
-                        <td class="border p-2 font-medium text-gray-600 bg-gray-50">{{ sprintf('%02d:00',$h) }}</td>
 
+                <tbody>
+                    @for ($h = 7; $h <= 22; $h++)
+                        <tr>
+                        <!-- COLUNA HORA -->
+                        <td class="border p-2 font-medium text-gray-600 bg-gray-50">
+                            {{ sprintf('%02d:00', $h) }}
+                        </td>
+
+                        <!-- COLUNAS DIAS -->
                         @foreach ($dias as $dia)
                         @php
-                        $nomeDia = $mapaDiasBanco[$dia->englishDayOfWeek];
-                        $evento = $grades->first(fn($g) => $g->grade_dia_semana===$nomeDia && intval(substr($g->grade_inicio,0,2))===$h);
-                        $classe = $evento ? ($mapaClasses[$evento->grade_modalidade] ?? 'modalidade-jiu-jitsu') : '';
+                        $eventos = $grades->filter(function ($g) use ($dia, $h) {
+                        $dias = explode(',', $g->grade_dia_semana);
+
+                        return in_array($dia['num'], array_map('intval', $dias))
+                        && intval(substr($g->grade_inicio, 0, 2)) === $h;
+                        });
+
                         @endphp
 
                         <td class="border h-16 align-top p-1">
-                            @php
-                            // Pegando todos os eventos para esse dia e hora
-                            $eventos = $grades->filter(fn($g) => $g->grade_dia_semana === $nomeDia
-                            && intval(substr($g->grade_inicio, 0, 2)) === $h);
-                            @endphp
-
-                            @foreach($eventos as $evento)
+                            @foreach ($eventos as $evento)
                             @php
                             $classe = $mapaClasses[$evento->grade_modalidade] ?? 'modalidade-jiu-jitsu';
                             @endphp
@@ -227,39 +256,51 @@
                             <div class="evento {{ $classe }}"
                                 data-modalidade="{{ $evento->grade_modalidade }}"
                                 data-professor="{{ $evento->professor->prof_nome ?? '' }}">
-                                <!-- Mostrar horário e modalidade -->
+
                                 <span class="text-[10px] font-semibold">
-                                    {{ substr($evento->grade_inicio, 0, 5) }} - {{ substr($evento->grade_fim, 0, 5) }} | {{ $evento->grade_modalidade }}
+                                    {{ substr($evento->grade_inicio, 0, 5) }} -
+                                    {{ substr($evento->grade_fim, 0, 5) }} |
+                                    {{ $evento->grade_modalidade }}
                                 </span>
 
                                 <div class="popover">
                                     <p><strong>Modalidade:</strong> {{ $evento->grade_modalidade }}</p>
-                                    <p><strong>Turma:</strong> {{ $evento->grade_turma }}</p>
-                                    <p><strong>Início:</strong> {{ $evento->grade_inicio }}</p>
-                                    <p><strong>Fim:</strong> {{ $evento->grade_fim }}</p>
+                                    <p>
+                                        <strong>Turma:</strong>
+                                        {{ $mapaTurmas[$evento->grade_turma] ?? ucfirst($evento->grade_turma) }}
+                                    </p>
+                                    <p>
+                                        <strong>Início:</strong>
+                                        {{ \Carbon\Carbon::parse($evento->grade_inicio)->format('H:i') }}
+                                    </p>
+                                    <p>
+                                        <strong>Fim:</strong>
+                                        {{ \Carbon\Carbon::parse($evento->grade_fim)->format('H:i') }}
+                                    </p>
+
                                     <p><strong>Descrição:</strong> {{ $evento->grade_desc ?? 'Sem descrição' }}</p>
 
                                     <div class="flex justify-end gap-2 mt-2">
-                                        <a href="{{ route('grade_horarios.edit', $evento->id_grade) }}" class="btn btn-edit">Editar</a>
+                                        <a href="{{ route('grade_horarios.edit', $evento->id_grade) }}"
+                                            class="btn btn-edit">Editar</a>
 
-                                        <form action="{{ route('grade_horarios.destroy', $evento->id_grade) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este evento?');">
+                                        <form action="{{ route('grade_horarios.destroy', $evento->id_grade) }}"
+                                            method="POST"
+                                            onsubmit="return confirm('Tem certeza que deseja excluir este evento?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-delete">Excluir</button>
                                         </form>
-
                                     </div>
                                 </div>
                             </div>
                             @endforeach
                         </td>
-
                         @endforeach
                         </tr>
                         @endfor
                 </tbody>
             </table>
-
     </div>
     <script>
         const eventos = document.querySelectorAll('.evento');

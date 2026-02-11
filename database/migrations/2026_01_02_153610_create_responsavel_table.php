@@ -13,18 +13,19 @@ return new class extends Migration
     {
         Schema::create('responsavel', function (Blueprint $table) {
             $table->id('id_responsavel');
-            $table->unsignedBigInteger('aluno_id_aluno');
             $table->string('resp_nome', 120);
             $table->string('resp_parentesco', 60);
             $table->string('resp_cpf', 11);
+            $table->string('resp_telefone', 20);
+            $table->string('resp_email', 150);
+            $table->string('resp_cep', 8);
             $table->string('resp_logradouro', 150);
             $table->string('resp_bairro', 150);
             $table->string('resp_cidade', 150);
+            $table->string('resp_numero', 10);
+            $table->string('resp_complemento', 150)->nullable();
             $table->timestamps();
 
-            $table->foreign('aluno_id_aluno')
-                ->references('id_aluno')
-                ->on('aluno');
         });
     }
 

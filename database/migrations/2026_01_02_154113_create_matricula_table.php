@@ -14,12 +14,15 @@ return new class extends Migration
         Schema::create('matricula', function (Blueprint $table) {
             $table->id('id_matricula');
             $table->unsignedBigInteger('aluno_id_aluno');
-            $table->string('matri_desc', 150);
+            $table->text('matri_desc');
+            $table->string('matri_status', 50);
+            $table->date('matri_data');
             $table->timestamps();
 
             $table->foreign('aluno_id_aluno')
                 ->references('id_aluno')
-                ->on('aluno');
+                ->on('aluno')
+                ->onDelete('cascade');
         });
     }
 

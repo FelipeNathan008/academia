@@ -14,16 +14,26 @@ return new class extends Migration
         Schema::create('grade_horario', function (Blueprint $table) {
             $table->id('id_grade');
             $table->unsignedBigInteger('professor_id_professor');
-            $table->integer('grade_modalidade');
+            $table->unsignedBigInteger('horario_treino_id_hora')->unique();
+            $table->string('grade_modalidade', 100);
             $table->string('grade_dia_semana', 80);
             $table->time('grade_inicio');
             $table->time('grade_fim');
-            $table->string('grade_desc', 150);
+            $table->string('grade_turma', 60);
+            $table->text('grade_desc');
             $table->timestamps();
 
             $table->foreign('professor_id_professor')
                 ->references('id_professor')
-                ->on('professor');
+                ->on('professor')
+                ->onDelete('cascade');
+
+
+            $table->foreign('horario_treino_id_hora')
+                ->references('id_hora')
+                ->on('horario_treino')
+                ->onDelete('cascade')
+                ->onUpdate('no action');
         });
     }
 

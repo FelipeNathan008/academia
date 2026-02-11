@@ -14,15 +14,14 @@ return new class extends Migration
         Schema::create('mensalidade', function (Blueprint $table) {
             $table->id('id_mensalidade');
             $table->unsignedBigInteger('aluno_id_aluno');
-            $table->string('mensa_periodo_vigente', 60);
-            $table->date('mensa_data_venc');
+            $table->string('mensa_dia_venc', 2);
             $table->decimal('mensa_valor', 10, 2);
-            $table->string('mensa_status', 60);
             $table->timestamps();
 
             $table->foreign('aluno_id_aluno')
                 ->references('id_aluno')
-                ->on('aluno');
+                ->on('aluno')
+                ->onDelete('cascade');
         });
     }
 

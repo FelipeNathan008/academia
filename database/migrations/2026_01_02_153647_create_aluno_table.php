@@ -13,11 +13,17 @@ return new class extends Migration
     {
         Schema::create('aluno', function (Blueprint $table) {
             $table->id('id_aluno');
+            $table->unsignedBigInteger('responsavel_id_responsavel');
             $table->string('aluno_nome', 120);
             $table->date('aluno_nascimento');
-            $table->string('aluno_desc', 120);
+            $table->text('aluno_desc');
             $table->string('aluno_foto', 255);
             $table->timestamps();
+
+            $table->foreign('responsavel_id_responsavel')
+                ->references('id_responsavel')
+                ->on('responsavel')
+                ->onDelete('cascade');
         });
     }
 

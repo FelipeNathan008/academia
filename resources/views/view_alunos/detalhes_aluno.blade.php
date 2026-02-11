@@ -6,18 +6,41 @@
 
 <!-- BREADCRUMB -->
 <nav class="mb-6 text-sm text-gray-500">
-    <ol class="flex items-center gap-2">
+    <ol class="flex items-center gap-2 flex-wrap">
         <li>
-            <a href="{{ route('alunos') }}" class="hover:text-[#8E251F] transition">
+            <a href="{{ route('responsaveis') }}"
+               class="hover:text-[#8E251F] transition">
+                Responsáveis
+            </a>
+        </li>
+        <li>/</li>
+        <li>
+            <a href="{{ route('alunos', $responsavel->id_responsavel) }}"
+               class="hover:text-[#8E251F] transition">
+                {{ $responsavel->resp_nome }}
+            </a>
+        </li>
+        <li>/</li>
+        <li>
+            <a href="{{ route('alunos', $responsavel->id_responsavel) }}"
+               class="hover:text-[#8E251F] transition">
                 Alunos
             </a>
         </li>
         <li>/</li>
-        <li class="text-gray-400">{{ $aluno->aluno_nome }}</li>
+        <li>
+            <span class="text-gray-400">
+                {{ $aluno->aluno_nome }}
+            </span>
+        </li>
         <li>/</li>
-        <li class="font-semibold text-gray-700">Graduações</li>
+        <li class="font-semibold text-gray-700">
+            Graduações
+        </li>
+
     </ol>
 </nav>
+
 
 @if ($errors->any())
 <div class="bg-red-100 text-red-700 p-3 rounded mb-3">
@@ -32,7 +55,7 @@
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div class="flex items-center gap-4">
-        <a href="{{ route('alunos') }}" class="flex items-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
+        <a href="{{ route('alunos', $aluno->responsavel_id_responsavel)}}" class="flex items-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
             ← Voltar
         </a>
 

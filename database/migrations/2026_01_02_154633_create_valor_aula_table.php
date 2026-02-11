@@ -11,15 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('valor_aula', function (Blueprint $table) {
-            $table->id('id_valor_aula');
+        Schema::create('preco_modalidade', function (Blueprint $table) {
+            $table->id('id_preco_modalidade');
             $table->unsignedBigInteger('modalidade_id');
-            $table->decimal('valor_aula', 10, 2);
+            $table->decimal('preco_modalidade', 10, 2);
             $table->timestamps();
 
             $table->foreign('modalidade_id')
                 ->references('id_modalidade')
-                ->on('modalidade');
+                ->on('modalidade')
+                ->onDelete('cascade');
         });
     }
 
@@ -28,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('valor_aula');
+        Schema::dropIfExists('preco_modalidade');
     }
 };

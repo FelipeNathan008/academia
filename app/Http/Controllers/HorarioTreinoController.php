@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class HorarioTreinoController extends Controller
 {
     public function index()
-    {    
+    {
         $horarios = HorarioTreino::with('gradeHorario')->get();
         $modalidades = Modalidade::all();
 
@@ -22,15 +22,26 @@ class HorarioTreinoController extends Controller
         $request->validate([
             'hora_inicio'     => 'required',
             'hora_fim'        => 'required',
-            'hora_semana'     => 'required|string|max:80',
+            'hora_semana'     => 'required|array|min:1',
             'hora_modalidade' => 'required|string|max:100',
         ]);
 
-        HorarioTreino::create($request->all());
+        $dias = collect($request->hora_semana)
+            ->map(fn($d) => (int) $d)
+            ->sort()
+            ->implode(',');
+
+        HorarioTreino::create([
+            'hora_semana'     => $dias,
+            'hora_inicio'     => $request->hora_inicio,
+            'hora_fim'        => $request->hora_fim,
+            'hora_modalidade' => $request->hora_modalidade,
+        ]);
 
         return redirect()->route('horario_treino')
             ->with('success', 'Horário cadastrado com sucesso!');
     }
+
 
     public function show($id)
     {
@@ -54,17 +65,29 @@ class HorarioTreinoController extends Controller
         $horario = HorarioTreino::findOrFail($id);
 
         $request->validate([
-            'hora_inicio'     => 'sometimes|required',
-            'hora_fim'        => 'sometimes|required',
-            'hora_semana'     => 'sometimes|string|max:80',
-            'hora_modalidade' => 'sometimes|string|max:100',
+            'hora_inicio'     => 'required',
+            'hora_fim'        => 'required',
+            'hora_semana'     => 'required|array|min:1',
+            'hora_modalidade' => 'required|string|max:100',
         ]);
 
-        $horario->update($request->all());
+        // transforma array [1,2,3] em "1,2,3"
+        $dias = collect($request->hora_semana)
+            ->map(fn($d) => (int) $d)
+            ->sort()
+            ->implode(',');
+
+        $horario->update([
+            'hora_semana'     => $dias,
+            'hora_inicio'     => $request->hora_inicio,
+            'hora_fim'        => $request->hora_fim,
+            'hora_modalidade' => $request->hora_modalidade,
+        ]);
 
         return redirect()->route('horario_treino')
             ->with('success', 'Horário atualizado com sucesso!');
     }
+
 
     public function destroy($id)
     {

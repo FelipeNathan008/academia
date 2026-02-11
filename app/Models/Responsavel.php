@@ -24,8 +24,8 @@ class Responsavel extends Model
         'resp_cidade'
     ];
 
-    public function aluno()
+    public function alunos()
     {
-        return $this->belongsTo(Aluno::class, 'aluno_id_aluno', 'id_aluno');
+        return $this->hasMany(Aluno::class, 'responsavel_id_responsavel', 'id_responsavel');
     }
 }

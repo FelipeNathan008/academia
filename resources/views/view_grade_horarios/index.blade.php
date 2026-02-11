@@ -37,7 +37,7 @@
                 <div class="flex-1">
                     <label class="text-sm font-medium text-gray-600">Professor</label>
                     <select id="professorSelect" name="professor_id_professor" required
-                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                        class="w-full border rounded-lg px-4 py-2 mt-1">
                         <option value="">Selecione o professor</option>
                         @foreach ($professores as $prof)
                         <option value="{{ $prof->id_professor }}">{{ $prof->prof_nome }}</option>
@@ -47,7 +47,7 @@
 
                 <div class="flex-1">
                     <label class="text-sm font-medium text-gray-600">Modalidade</label>
-                    <select id="modalidadeSelect" disabled
+                    <select id="modalidadeSelect" name="grade_modalidade" disabled required
                         class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100">
                         <option value="">Selecione a modalidade</option>
                         @foreach ($horariosTreino->unique('hora_modalidade') as $h)
@@ -61,7 +61,7 @@
             <div class="flex gap-6 mb-4">
                 <div class="flex-1">
                     <label class="text-sm font-medium text-gray-600">Horário Treino</label>
-                    <select id="horarioTreinoSelect" name="horario_treino_id_hora" required disabled
+                    <select id="horarioTreinoSelect" name="horario_treino_id_hora" disabled required
                         class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100">
                         <option value="">Selecione o horário</option>
                         @foreach ($horariosTreino as $hora)
@@ -70,7 +70,9 @@
                             data-dia="{{ $hora->hora_semana }}"
                             data-inicio="{{ $hora->hora_inicio }}"
                             data-fim="{{ $hora->hora_fim }}">
-                            {{ $hora->hora_semana }} | {{ $hora->hora_inicio }} - {{ $hora->hora_fim }}
+                            {{ $hora->hora_modalidade }} |
+                            {{ $hora->hora_semana }} |
+                            {{ substr($hora->hora_inicio,0,5) }} - {{ substr($hora->hora_fim,0,5) }}
                         </option>
                         @endforeach
                     </select>
@@ -78,8 +80,9 @@
 
                 <div class="flex-1">
                     <label class="text-sm font-medium text-gray-600">Dia da Semana</label>
-                    <input id="gradeDia" type="text" name="grade_dia_semana" readonly required
+                    <input id="gradeDiaTexto" type="text" readonly
                         class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100">
+                    <input type="hidden" id="gradeDiaNumero" name="grade_dia_semana">
                 </div>
             </div>
 
@@ -110,7 +113,6 @@
                 </select>
             </div>
 
-
             <!-- DESCRIÇÃO -->
             <div class="mb-6">
                 <label class="text-sm font-medium text-gray-600">Descrição</label>
@@ -126,53 +128,10 @@
                     Salvar
                 </button>
             </div>
+
         </div>
     </form>
 </div>
-
-<!--  <div class="bg-white rounded-2xl shadow-md p-6">
-    <h3 class="text-xl font-bold mb-6 text-gray-700">Grade horarios</h3>
-
-    <table class="w-full text-left border-collapse">
-        <thead>
-            <tr class="border-b border-gray-300 text-gray-600 text-sm">
-                <th class="py-3 px-4">professor id</th>
-                <th class="py-3 px-4">horario id</th>
-                <th class="py-3 px-4">modalidade</th>
-                <th class="py-3 px-4">dia semna</th>
-                <th class="py-3 px-4">inicio</th>
-                <th class="py-3 px-4">fim</th>
-                <th class="py-3 px-4">turma</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @forelse ($grades as $grade)
-            <tr class="border-b hover:bg-gray-50 transition">
-                <td class="py-3 px-4">{{ $grade->professor_id_professor }}</td>
-                <td class="py-3 px-4">{{ $grade->horario_treino_id_hora }}</td>
-                <td class="py-3 px-4">{{ $grade->grade_modalidade }}</td>
-                <td class="py-3 px-4">{{ $grade->grade_dia_semana }}</td>
-                <td class="py-3 px-4">{{ $grade->grade_inicio }}</td>
-                <td class="py-3 px-4">{{ $grade->grade_fim }}</td>
-
-                <td class="py-3 px-4">{{ $grade->grade_turma }}</td>
-                <td class="py-3 px-4 flex gap-2">
-
-                </td>
-            </tr>
-
-            @empty
-            <tr>
-                <td colspan="3" class="text-center text-gray-500 py-6">
-                    Nenhuma graduação cadastrada
-                </td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-</div> -->
 
 @include('view_grade_horarios.agenda_semanal')
 
@@ -182,21 +141,34 @@
     const modalidade = document.getElementById('modalidadeSelect');
     const horario = document.getElementById('horarioTreinoSelect');
 
-    const dia = document.getElementById('gradeDia');
+    const diaTexto = document.getElementById('gradeDiaTexto');
+    const diaNumero = document.getElementById('gradeDiaNumero');
     const inicio = document.getElementById('gradeInicio');
     const fim = document.getElementById('gradeFim');
 
+    const mapaDias = {
+        1: 'Domingo',
+        2: 'Segunda-feira',
+        3: 'Terça-feira',
+        4: 'Quarta-feira',
+        5: 'Quinta-feira',
+        6: 'Sexta-feira',
+        7: 'Sábado'
+    };
+
     function toggleCadastro() {
-        document.getElementById('cadastroForm').classList.toggle('hidden');
-        document.getElementById('formCadastro').reset();
+        cadastroForm.classList.toggle('hidden');
+        formCadastro.reset();
+        resetCampos();
     }
 
     function fecharCadastro() {
-        document.getElementById('cadastroForm').classList.add('hidden');
+        cadastroForm.classList.add('hidden');
     }
 
     function resetCampos() {
-        dia.value = '';
+        diaTexto.value = '';
+        diaNumero.value = '';
         inicio.value = '';
         fim.value = '';
     }
@@ -218,11 +190,22 @@
 
     horario.addEventListener('change', () => {
         const opt = horario.options[horario.selectedIndex];
-        if (!opt.value) return;
-        dia.value = opt.dataset.dia;
+        if (!opt.value) {
+            resetCampos();
+            return;
+        }
+
+        const diasArray = opt.dataset.dia.split(',').map(d => d.trim());
+
+        diaNumero.value = diasArray.join(',');
+
+        diaTexto.value = diasArray
+            .map(d => mapaDias[d])
+            .filter(Boolean)
+            .join(', ');
+
         inicio.value = opt.dataset.inicio;
         fim.value = opt.dataset.fim;
     });
 </script>
-
 @endsection

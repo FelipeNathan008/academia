@@ -24,6 +24,6 @@ class Mensalidade extends Model
 
     public function detalhes()
     {
-        return $this->hasMany(DetalhesMensalidade::class, 'mensalidade_id_mensalidade', 'id_mensalidade');
+        return $this->hasMany(DetalhesMensalidade::class,'mensalidade_id_mensalidade','id_mensalidade');
     }
 }

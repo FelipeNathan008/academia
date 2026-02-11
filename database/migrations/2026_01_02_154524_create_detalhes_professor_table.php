@@ -17,11 +17,15 @@ return new class extends Migration
             $table->string('det_gradu_nome_cor', 80);
             $table->integer('det_grau');
             $table->string('det_modalidade', 100);
+            $table->date('det_data');
+            $table->string('det_certificado', 255)->nullable();
+
             $table->timestamps();
 
             $table->foreign('professor_id_professor')
                 ->references('id_professor')
-                ->on('professor');
+                ->on('professor')
+                ->onDelete('cascade');
         });
     }
 

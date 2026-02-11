@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id('id_professor');
             $table->string('prof_nome', 120);
             $table->date('prof_nascimento');
-            $table->string('prof_desc', 150);
+            $table->string('prof_telefone', 20);
+            $table->text('prof_desc');
             $table->string('prof_foto', 255);
             $table->timestamps();
         });

@@ -2,43 +2,95 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Aluno;
+use App\Models\GradeHorario;
 use App\Models\Matricula;
+use App\Models\Professor;
+use App\Models\Responsavel;
 use Illuminate\Http\Request;
 
 class MatriculaController extends Controller
 {
-    public function index()
+    public function index($id)
     {
-        $matriculas = Matricula::with(['aluno', 'detalhes'])->get();
+        $aluno = Aluno::findOrFail($id);
 
-        return response()->json([
-            'data' => $matriculas
-        ]);
+        $matriculas = Matricula::with(['professor', 'grade'])
+            ->where('aluno_id_aluno', $id)
+            ->get();
+
+        $professores = Professor::whereIn(
+            'id_professor',
+            GradeHorario::pluck('professor_id_professor')
+        )
+            ->orderBy('prof_nome')
+            ->get();
+
+        return view('view_matricula.index', compact('aluno', 'matriculas', 'professores'));
     }
 
-    public function store(Request $request)
+    public function indexSidebar()
+    {
+        $alunos = Aluno::with('responsavel')
+            ->orderBy('aluno_nome')
+            ->get();
+
+        return view('view_matricula.index_sidebar', compact('alunos'));
+    }
+
+
+    public function getTurmasPorProfessor($professorId)
+    {
+        $turmas = GradeHorario::where('professor_id_professor', $professorId)
+            ->orderBy('grade_turma')
+            ->get([
+                'id_grade',
+                'grade_turma',
+                'grade_dia_semana',
+                'grade_inicio',
+                'grade_fim',
+                'grade_modalidade'
+            ]);
+
+        return response()->json($turmas);
+    }
+
+
+    public function store(Request $request, $alunoId)
     {
         $request->validate([
-            'aluno_id_aluno' => 'required|exists:aluno,id_aluno',
-            'matri_desc' => 'required|string',
+            'matri_data'     => 'required|date',
+            'matri_desc'     => 'nullable|string|max:150',
+            'matri_plano'    => 'required|string|max:40',
+            'professor_id'   => 'required|exists:professor,id_professor',
+            'matri_turma'    => 'required|exists:grade_horario,id_grade',
         ]);
 
-        $matricula = Matricula::create($request->all());
+        Matricula::create([
+            'aluno_id_aluno'  => $alunoId,
+            'matri_status'    => 'Ativa',
+            'matri_data'      => $request->matri_data,
+            'matri_plano'     => $request->matri_plano,
+            'matri_professor' => $request->professor_id,
+            'matri_turma'     => $request->matri_turma,
+            'matri_desc'      => $request->matri_desc,
+        ]);
 
-        return response()->json([
-            'message' => 'Matrícula criada com sucesso',
-            'data' => $matricula
-        ], 201);
+        return redirect()
+            ->route('matricula', $alunoId)
+            ->with('success', 'Matrícula realizada com sucesso!');
     }
+
 
     public function show($id)
     {
-        $matricula = Matricula::with(['aluno', 'detalhes'])->findOrFail($id);
+        $matricula = Matricula::with(['aluno', 'professor', 'grade'])
+            ->findOrFail($id);
 
-        return response()->json([
-            'data' => $matricula
-        ]);
+        return view('view_matricula.show', compact('matricula'));
     }
+
+
 
     public function update(Request $request, $id)
     {
@@ -60,10 +112,14 @@ class MatriculaController extends Controller
     public function destroy($id)
     {
         $matricula = Matricula::findOrFail($id);
-        $matricula->delete();
+        $alunoId = $matricula->aluno_id_aluno;
 
-        return response()->json([
-            'message' => 'Matrícula removida com sucesso'
-        ], 204);
+        $matricula->update([
+            'matri_status' => 'Encerrada'
+        ]);
+
+        return redirect()
+            ->route('matricula', $alunoId)
+            ->with('success', 'Matrícula encerrada com sucesso!');
     }
 }

@@ -205,8 +205,8 @@
                                 class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                                 Editar
                             </a>
-                            
-                            <form action="{{ route('detalhes.destroy', $det->id_det_professor) }}" method="POST" onsubmit="return confirm('Deseja remover esta graduação?');">
+
+                            <form action="{{ route('detalhes-professor.destroy', $det->id_det_professor) }}" method="POST" onsubmit="return confirm('Deseja remover esta graduação?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Excluir</button>

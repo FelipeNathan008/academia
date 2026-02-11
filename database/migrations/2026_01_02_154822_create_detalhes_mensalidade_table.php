@@ -16,11 +16,13 @@ return new class extends Migration
             $table->unsignedBigInteger('mensalidade_id_mensalidade');
             $table->string('det_mensa_forma_pagamento', 60);
             $table->string('det_mensa_per_vig_pago', 60);
+            $table->date('det_mensa_data_venc');
             $table->timestamps();
 
             $table->foreign('mensalidade_id_mensalidade')
                 ->references('id_mensalidade')
-                ->on('mensalidade');
+                ->on('mensalidade')
+                ->onDelete('cascade');
         });
     }
 

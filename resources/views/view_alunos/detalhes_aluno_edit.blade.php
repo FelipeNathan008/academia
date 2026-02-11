@@ -6,7 +6,7 @@
 
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
-        <li><a href="{{ route('alunos.index') }}" class="hover:text-[#8E251F] transition">Alunos</a></li>
+        <li><a href="{{ route('alunos', $aluno->responsavel_id_responsavel) }}" class="hover:text-[#8E251F] transition">Alunos</a></li>
         <li>/</li>
         <li class="text-gray-400">{{ $aluno->aluno_nome }}</li>
         <li>/</li>

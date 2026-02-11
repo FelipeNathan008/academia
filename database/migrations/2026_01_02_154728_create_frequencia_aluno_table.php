@@ -19,7 +19,8 @@ return new class extends Migration
 
             $table->foreign('grade_horario_id_grade')
                 ->references('id_grade')
-                ->on('grade_horario');
+                ->on('grade_horario')
+                ->onDelete('cascade');
         });
     }
 

@@ -6,9 +6,7 @@
 
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
-    <div>
-        <h2 class="text-3xl font-extrabold text-gray-800">Horários de Treino</h2>
-    </div>
+    <h2 class="text-3xl font-extrabold text-gray-800">Horários de Treino</h2>
 
     <button onclick="toggleCadastro()"
         class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow-md hover:bg-[#732920] hover:shadow-lg transition-all">
@@ -16,37 +14,52 @@
     </button>
 </div>
 
-<!-- FORMULÁRIO DE CADASTRO -->
+<!-- FORMULÁRIO -->
 <div id="cadastroForm" class="hidden mb-10">
-    <form id="formCadastro" action="{{ route('horario_treino.store') }}" method="POST">
+    <form action="{{ route('horario_treino.store') }}" method="POST">
         @csrf
 
         <div class="bg-white rounded-2xl shadow-md p-8">
             <h3 class="text-xl font-bold mb-6 text-gray-700">Cadastrar Horário de Treino</h3>
 
+            @php
+            $diasSemana = [
+            1 => 'Domingo',
+            2 => 'Segunda-feira',
+            3 => 'Terça-feira',
+            4 => 'Quarta-feira',
+            5 => 'Quinta-feira',
+            6 => 'Sexta-feira',
+            7 => 'Sábado',
+            ];
+            @endphp
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                <!-- Dia da Semana -->
+                <!-- Dias -->
                 <div>
-                    <label class="text-sm font-medium text-gray-600">Dia da Semana</label>
-                    <select name="hora_semana" required
-                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
-                        <option value="">Selecione</option>
-                        <option value="Segunda-feira">Segunda-feira</option>
-                        <option value="Terça-feira">Terça-feira</option>
-                        <option value="Quarta-feira">Quarta-feira</option>
-                        <option value="Quinta-feira">Quinta-feira</option>
-                        <option value="Sexta-feira">Sexta-feira</option>
-                        <option value="Sábado">Sábado</option>
-                        <option value="Domingo">Domingo</option>
-                    </select>
+                    <label class="text-sm font-medium text-gray-600 mb-2 block">
+                        Dias da Semana
+                    </label>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        @foreach ($diasSemana as $num => $nome)
+                        <label class="flex items-center gap-2 text-sm text-gray-700">
+                            <input type="checkbox"
+                                name="hora_semana[]"
+                                value="{{ $num }}"
+                                class="rounded border-gray-300 text-[#8E251F] focus:ring-[#8E251F]">
+                            {{ $nome }}
+                        </label>
+                        @endforeach
+                    </div>
                 </div>
 
                 <!-- Modalidade -->
                 <div>
                     <label class="text-sm font-medium text-gray-600">Modalidade</label>
                     <select name="hora_modalidade" required
-                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                         <option value="">Selecione</option>
                         @foreach ($modalidades as $modalidade)
                         <option value="{{ $modalidade->mod_nome }}">
@@ -59,19 +72,15 @@
                 <!-- Hora Início -->
                 <div>
                     <label class="text-sm font-medium text-gray-600">Hora Início</label>
-                    <input type="time"
-                        name="hora_inicio"
-                        required
-                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+                    <input type="time" name="hora_inicio" required
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                 </div>
 
                 <!-- Hora Fim -->
                 <div>
                     <label class="text-sm font-medium text-gray-600">Hora Fim</label>
-                    <input type="time"
-                        name="hora_fim"
-                        required
-                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+                    <input type="time" name="hora_fim" required
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                 </div>
             </div>
 
@@ -91,17 +100,13 @@
     </form>
 </div>
 
-<!-- FILTRO -->
+<!-- FILTROS -->
 <div class="flex flex-wrap gap-6 items-end justify-center max-w-6xl mx-auto mb-10">
 
     <!-- Modalidade -->
     <div class="flex flex-col w-[220px]">
-        <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
-            Modalidade
-        </label>
-        <select id="filtroModalidade"
-            class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                   focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+        <label class="text-xs font-semibold text-gray-500 mb-1 uppercase">Modalidade</label>
+        <select id="filtroModalidade" class="border rounded-xl px-4 py-3 text-sm">
             <option value="">Todas</option>
             @foreach ($modalidades as $modalidade)
             <option value="{{ $modalidade->mod_nome }}">
@@ -111,43 +116,27 @@
         </select>
     </div>
 
-    <!-- Dia da semana -->
+    <!-- Dia -->
     <div class="flex flex-col w-[220px]">
-        <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
-            Dia
-        </label>
-        <select id="filtroDia"
-            class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                   focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+        <label class="text-xs font-semibold text-gray-500 mb-1 uppercase">Dia</label>
+        <select id="filtroDia" class="border rounded-xl px-4 py-3 text-sm">
             <option value="">Todos</option>
-            <option>Segunda-feira</option>
-            <option>Terça-feira</option>
-            <option>Quarta-feira</option>
-            <option>Quinta-feira</option>
-            <option>Sexta-feira</option>
-            <option>Sábado</option>
-            <option>Domingo</option>
+            @foreach ($diasSemana as $num => $nome)
+            <option value="{{ $num }}">{{ $nome }}</option>
+            @endforeach
         </select>
     </div>
 
-    <!-- Horário -->
+    <!-- Hora -->
     <div class="flex flex-col w-[180px]">
-        <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
-            Horário
-        </label>
-        <input type="time" id="filtroHora"
-            class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                   focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+        <label class="text-xs font-semibold text-gray-500 mb-1 uppercase">Horário</label>
+        <input type="time" id="filtroHora" class="border rounded-xl px-4 py-3 text-sm">
     </div>
 
     <!-- Status -->
     <div class="flex flex-col w-[180px]">
-        <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
-            Status
-        </label>
-        <select id="filtroStatus"
-            class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                   focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+        <label class="text-xs font-semibold text-gray-500 mb-1 uppercase">Status</label>
+        <select id="filtroStatus" class="border rounded-xl px-4 py-3 text-sm">
             <option value="">Todos</option>
             <option value="Vago">Vago</option>
             <option value="Ocupado">Ocupado</option>
@@ -161,47 +150,36 @@
                transition shadow-md">
         Limpar filtros
     </button>
-
 </div>
-
-
 
 <!-- LISTAGEM -->
 <div class="bg-white rounded-2xl shadow-md p-6">
-    <h3 class="text-xl font-bold mb-6 text-gray-700">Lista de Horários de Treino</h3>
+    <h3 class="text-xl font-bold mb-6 text-gray-700">Lista de Horários</h3>
 
-    <table class="w-full text-left border-collapse">
+    <table class="w-full text-left">
         <thead>
-            <tr class="border-b border-gray-300 text-gray-600 text-sm">
+            <tr class="border-b text-sm text-gray-600">
                 <th class="py-3 px-4">Dia</th>
                 <th class="py-3 px-4">Início</th>
                 <th class="py-3 px-4">Fim</th>
                 <th class="py-3 px-4">Modalidade</th>
-                <th class="py-3 px-4">Horário vago</th>
+                <th class="py-3 px-4">Status</th>
                 <th class="py-3 px-4">Ações</th>
             </tr>
         </thead>
 
         <tbody>
             @forelse ($horarios as $horario)
-            <tr class="border-b hover:bg-gray-50 transition"
+            <tr class="border-b hover:bg-gray-50"
                 data-modalidade="{{ $horario->hora_modalidade }}"
                 data-dia="{{ $horario->hora_semana }}"
                 data-hora="{{ \Carbon\Carbon::parse($horario->hora_inicio)->format('H:i') }}"
                 data-status="{{ $horario->gradeHorario->isEmpty() ? 'Vago' : 'Ocupado' }}">
 
-                <td class="py-3 px-4">{{ $horario->hora_semana }}</td>
-
-                <td class="py-3 px-4">
-                    {{ \Carbon\Carbon::parse($horario->hora_inicio)->format('H:i') }}
-                </td>
-
-                <td class="py-3 px-4">
-                    {{ \Carbon\Carbon::parse($horario->hora_fim)->format('H:i') }}
-                </td>
-
+                <td class="py-3 px-4">{{ $horario->diasSemanaTexto() }}</td>
+                <td class="py-3 px-4">{{ \Carbon\Carbon::parse($horario->hora_inicio)->format('H:i') }}</td>
+                <td class="py-3 px-4">{{ \Carbon\Carbon::parse($horario->hora_fim)->format('H:i') }}</td>
                 <td class="py-3 px-4">{{ $horario->hora_modalidade }}</td>
-
                 <td class="py-3 px-4">
                     @if ($horario->gradeHorario->isEmpty())
                     <span style="display: inline-flex;align-items: center;padding: 4px 12px;font-size: 0.875rem;
@@ -216,7 +194,6 @@
 
                     @endif
                 </td>
-
 
                 <td class="py-3 px-4 flex gap-2">
                     <a href="{{ route('horario_treino.edit', $horario->id_hora) }}"
@@ -240,13 +217,12 @@
             </tr>
             @empty
             <tr>
-                <td colspan="5" class="text-center text-gray-500 py-6">
+                <td colspan="6" class="text-center py-6 text-gray-500">
                     Nenhum horário cadastrado
                 </td>
             </tr>
             @endforelse
         </tbody>
-
     </table>
 </div>
 
@@ -262,40 +238,26 @@
 
     function aplicarFiltros() {
         linhas.forEach(linha => {
-            const modalidade = linha.dataset.modalidade;
-            const dia = linha.dataset.dia;
-            const hora = linha.dataset.hora;
-            const status = linha.dataset.status;
+            const dias = linha.dataset.dia.split(',');
 
-            const matchModalidade = !filtros.modalidade.value || filtros.modalidade.value === modalidade;
-            const matchDia = !filtros.dia.value || filtros.dia.value === dia;
-            const matchHora = !filtros.hora.value || filtros.hora.value === hora;
-            const matchStatus = !filtros.status.value || filtros.status.value === status;
+            const ok =
+                (!filtros.modalidade.value || filtros.modalidade.value === linha.dataset.modalidade) &&
+                (!filtros.dia.value || dias.includes(filtros.dia.value)) &&
+                (!filtros.hora.value || filtros.hora.value === linha.dataset.hora) &&
+                (!filtros.status.value || filtros.status.value === linha.dataset.status);
 
-            linha.style.display = (matchModalidade && matchDia && matchHora && matchStatus) ?
-                '' :
-                'none';
+            linha.style.display = ok ? '' : 'none';
         });
     }
 
-    Object.values(filtros).forEach(filtro => {
-        filtro.addEventListener('change', aplicarFiltros);
-    });
-
-    document.getElementById('limparFiltros').addEventListener('click', () => {
-        Object.values(filtros).forEach(filtro => filtro.value = '');
+    Object.values(filtros).forEach(f => f.addEventListener('change', aplicarFiltros));
+    document.getElementById('limparFiltros').onclick = () => {
+        Object.values(filtros).forEach(f => f.value = '');
         aplicarFiltros();
-    });
-
-
+    };
 
     function toggleCadastro() {
-        const form = document.getElementById('cadastroForm');
-        form.classList.toggle('hidden');
-        form.scrollIntoView({
-            behavior: 'smooth'
-        });
-        document.getElementById('formCadastro').reset();
+        document.getElementById('cadastroForm').classList.toggle('hidden');
     }
 
     function fecharCadastro() {

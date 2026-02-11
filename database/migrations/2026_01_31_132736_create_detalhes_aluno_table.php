@@ -14,13 +14,15 @@ return new class extends Migration {
             $table->integer('det_grau');
             $table->string('det_modalidade', 100);
             $table->date('det_data');
+            $table->string('det_certificado', 255)->nullable();
+
             $table->timestamps();
 
             $table->foreign('aluno_id_aluno')
-                  ->references('id_aluno')
-                  ->on('aluno')
-                  ->onDelete('no action')
-                  ->onUpdate('no action');
+                ->references('id_aluno')
+                ->on('aluno')
+                ->onDelete('cascade')
+                ->onUpdate('no action');
         });
     }
 
