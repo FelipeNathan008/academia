@@ -128,9 +128,9 @@
         <div class="mt-10 pt-6 border-t">
             <p class="text-xs uppercase text-gray-400 mb-2">Status</p>
 
-            @if ($matricula->matri_status === 'Ativa')
+            @if ($matricula->matri_status === 'Matriculado')
             <span class="px-4 py-2 text-sm rounded-full bg-green-100 text-green-700 font-medium">
-                Matrícula Ativa
+                Matriculado
             </span>
             @else
             <span class="px-4 py-2 text-sm rounded-full bg-red-100 text-red-700 font-medium">

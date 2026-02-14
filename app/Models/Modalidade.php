@@ -16,6 +16,6 @@ class Modalidade extends Model
 
     public function valores()
     {
-        return $this->hasMany(ValorAula::class, 'modalidade_id', 'id_modalidade');
+        return $this->hasMany(PrecoModalidade::class, 'modalidade_id', 'id_modalidade');
     }
 }

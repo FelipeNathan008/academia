@@ -87,18 +87,26 @@
     <!-- Menu -->
     <nav id="menu" class="px-4 space-y-1 overflow-hidden transition-opacity duration-300 ease-in-out">
         @php
+        $user = auth()->user();
+
         $menu = [
         'Dashboard' => 'dashboard',
         'Alunos/Responsáveis' => 'responsaveis',
         'Matrícula' => 'matricula.index',
-        'Professores' => 'professores',
-        'Grade de Horários' => 'grade_horarios',
-        'Administração' => [
+        ];
+
+        // Só adiciona se for admin
+        if ($user->role === 'admin') {
+        $menu['Professores'] = 'professores';
+        $menu['Grade de Horários'] = 'grade_horarios';
+
+        $menu['Administração'] = [
         'Graduações' => 'graduacoes',
         'Modalidades' => 'modalidades',
         'Horarios de Treino' => 'horario_treino',
-        ],
+        'Preço das Aulas' => 'preco-aula',
         ];
+        }
         @endphp
 
         @foreach ($menu as $label => $route)

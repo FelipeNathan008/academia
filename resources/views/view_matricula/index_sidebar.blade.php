@@ -1,6 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Matrículas')
+@section('title', 'Matrículas e Financeiro')
 
 @section('content')
 
@@ -8,7 +8,7 @@
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
 
     <h2 class="text-3xl font-extrabold text-gray-800">
-        Selecionar Aluno para Matrícula
+        Selecionar Aluno para Matrícula / Financeiro
     </h2>
 
 </div>
@@ -102,7 +102,11 @@
                         Ver Aluno
                     </a>
                     @endif
-
+                    <a href="{{ route('mensalidade', $aluno->id_aluno) }}"
+                        style="background-color: #15803d; color: white;"
+                        class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center">
+                        Financeiro
+                    </a>
                     <!-- Ver Matrícula -->
                     <a href="{{ route('matricula', $aluno->id_aluno) }}"
                         style="background-color: #275cce; color: white;"

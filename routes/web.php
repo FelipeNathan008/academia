@@ -9,19 +9,58 @@ use App\Http\Controllers\{
     DetalhesAlunoController,
     ProfessorController,
     DetalhesProfessorController,
-    FinanceiroController,
     GraduacaoController,
     ModalidadeController,
     HorarioTreinoController,
-    GradeHorarioController
+    GradeHorarioController,
+    MensalidadeController,
+    PrecoModalidadeController
 };
 
 Route::get('/', fn() => redirect()->route('dashboard'));
-
 Route::get('/dashboard', fn() => view('dashboard'))
     ->middleware('auth')
     ->name('dashboard');
+// ROTAS PARA ADMIN
+Route::middleware(['auth', 'admin'])->group(function () {
 
+
+
+    //professores
+    Route::get('/professores', [ProfessorController::class, 'index'])->name('professores');
+    Route::post('/professores', [ProfessorController::class, 'store'])->name('professores.store');
+    Route::get('/professores/{id}/edit', [ProfessorController::class, 'edit'])->name('professores.edit');
+    Route::put('/professores/{id}', [ProfessorController::class, 'update'])->name('professores.update');
+
+
+
+    // ADMINISTRAÇÃO
+    Route::get('/graduacoes', [GraduacaoController::class, 'index'])->name('graduacoes');
+    Route::post('/graduacoes', [GraduacaoController::class, 'store'])->name('graduacoes.store');
+    Route::get('/graduacoes/{id}/edit', [GraduacaoController::class, 'edit'])->name('graduacoes.edit');
+    Route::put('/graduacoes/{id}', [GraduacaoController::class, 'update'])->name('graduacoes.update');
+
+    Route::get('/preco-aula', [PrecoModalidadeController::class, 'index'])->name('preco-aula');
+    Route::post('/preco-aula', [PrecoModalidadeController::class, 'store'])->name('preco-aula.store');
+    Route::get('/preco-aula/{id}/edit', [PrecoModalidadeController::class, 'edit'])->name('preco-aula.edit');
+    Route::put('/preco-aula/{id}', [PrecoModalidadeController::class, 'update'])->name('preco-aula.update');
+    Route::delete('/preco-aula/{id}', [PrecoModalidadeController::class, 'destroy'])->name('preco-aula.destroy');
+
+
+    Route::get('/modalidades', [ModalidadeController::class, 'index'])->name('modalidades');
+    Route::post('/modalidades', [ModalidadeController::class, 'store'])->name('modalidades.store');
+    Route::get('/modalidades/{id}/edit', [ModalidadeController::class, 'edit'])->name('modalidades.edit');
+    Route::put('/modalidades/{id}', [ModalidadeController::class, 'update'])->name('modalidades.update');
+
+    Route::get('/horario-treino', [HorarioTreinoController::class, 'index'])->name('horario_treino');
+    Route::post('/horario-treino', [HorarioTreinoController::class, 'store'])->name('horario_treino.store');
+    Route::get('/horario-treino/{id}/edit', [HorarioTreinoController::class, 'edit'])->name('horario_treino.edit');
+    Route::put('/horario-treino/{id}', [HorarioTreinoController::class, 'update'])->name('horario_treino.update');
+    Route::delete('/horario-treino/{id}', [HorarioTreinoController::class, 'destroy'])->name('horario_treino.destroy');
+});
+
+
+// ROTAS PARA USERS
 Route::middleware('auth')->group(function () {
 
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -55,9 +94,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/matricula/{id}', [MatriculaController::class, 'show'])->name('matricula.show');
     Route::delete('/matricula/{id}', [MatriculaController::class, 'destroy'])->name('matricula.destroy');
 
-    // Financeiro
-    Route::get('/financeiro/{id}', [FinanceiroController::class, 'index'])->name('financeiro.index');
-
+    Route::get('/alunos/{id}/mensalidade', [MensalidadeController::class, 'index'])->name('mensalidade');
+    Route::put('/mensalidade/baixar/{id}', [MensalidadeController::class, 'darBaixa'])->name('mensalidade.darBaixa');
+    Route::put('/mensalidade/desfazer/{id}', [MensalidadeController::class, 'desfazerBaixa'])->name('mensalidade.desfazerBaixa');
+    Route::put('/mensalidade/editar-forma', [MensalidadeController::class, 'editarForma'])->name('mensalidade.editarForma');
 
     // Detalhes do aluno (Graduações)
     Route::get('/alunos/{id}/detalhes', [DetalhesAlunoController::class, 'index'])->name('detalhes-aluno.index');
@@ -67,11 +107,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/detalhes-aluno/{id}', [DetalhesAlunoController::class, 'destroy'])->name('detalhes-aluno.destroy');
 
 
-    //professores
-    Route::get('/professores', [ProfessorController::class, 'index'])->name('professores');
-    Route::post('/professores', [ProfessorController::class, 'store'])->name('professores.store');
-    Route::get('/professores/{id}/edit', [ProfessorController::class, 'edit'])->name('professores.edit');
-    Route::put('/professores/{id}', [ProfessorController::class, 'update'])->name('professores.update');
 
     //detalhes do professor
     Route::get('/professores/{id}/detalhes', [DetalhesProfessorController::class, 'index'])->name('detalhes-professor.index');
@@ -81,21 +116,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/detalhes-professor/{id}', [DetalhesProfessorController::class, 'destroy'])->name('detalhes-professor.destroy');
 
 
-    Route::get('/graduacoes', [GraduacaoController::class, 'index'])->name('graduacoes');
-    Route::post('/graduacoes', [GraduacaoController::class, 'store'])->name('graduacoes.store');
-    Route::get('/graduacoes/{id}/edit', [GraduacaoController::class, 'edit'])->name('graduacoes.edit');
-    Route::put('/graduacoes/{id}', [GraduacaoController::class, 'update'])->name('graduacoes.update');
 
-    Route::get('/modalidades', [ModalidadeController::class, 'index'])->name('modalidades');
-    Route::post('/modalidades', [ModalidadeController::class, 'store'])->name('modalidades.store');
-    Route::get('/modalidades/{id}/edit', [ModalidadeController::class, 'edit'])->name('modalidades.edit');
-    Route::put('/modalidades/{id}', [ModalidadeController::class, 'update'])->name('modalidades.update');
-
-    Route::get('/horario-treino', [HorarioTreinoController::class, 'index'])->name('horario_treino');
-    Route::post('/horario-treino', [HorarioTreinoController::class, 'store'])->name('horario_treino.store');
-    Route::get('/horario-treino/{id}/edit', [HorarioTreinoController::class, 'edit'])->name('horario_treino.edit');
-    Route::put('/horario-treino/{id}', [HorarioTreinoController::class, 'update'])->name('horario_treino.update');
-    Route::delete('/horario-treino/{id}', [HorarioTreinoController::class, 'destroy'])->name('horario_treino.destroy');
 
     Route::get('/grade_horarios', [GradeHorarioController::class, 'index'])->name('grade_horarios');
     Route::post('/grade_horarios', [GradeHorarioController::class, 'store'])->name('grade_horarios.store');

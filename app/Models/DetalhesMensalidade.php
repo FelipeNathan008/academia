@@ -12,7 +12,11 @@ class DetalhesMensalidade extends Model
     protected $fillable = [
         'mensalidade_id_mensalidade',
         'det_mensa_forma_pagamento',
-        'det_mensa_per_vig_pago'
+        'det_mensa_mes_vigente',
+        'det_mensa_data_venc',
+        'det_mensa_data_pagamento',
+        'det_mensa_valor',
+        'det_mensa_status'
     ];
 
     public function mensalidade()

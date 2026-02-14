@@ -9,12 +9,13 @@ class Mensalidade extends Model
     protected $table = 'mensalidade';
     protected $primaryKey = 'id_mensalidade';
 
+    public $timestamps = true;
+
     protected $fillable = [
         'aluno_id_aluno',
-        'mensa_periodo_vigente',
-        'mensa_data_venc',
-        'mensa_valor',
-        'mensa_status'
+        'matricula_id_matricula',
+        'mensa_dia_venc',
+        'mensa_valor'
     ];
 
     public function aluno()
@@ -26,4 +27,9 @@ class Mensalidade extends Model
     {
         return $this->hasMany(DetalhesMensalidade::class,'mensalidade_id_mensalidade','id_mensalidade');
     }
+    public function matricula()
+    {
+        return $this->belongsTo(Matricula::class,'matricula_id_matricula','id_matricula');
+    }
+
 }

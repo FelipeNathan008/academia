@@ -16,7 +16,7 @@
         <li>/</li>
         <li class="text-gray-400">{{ $aluno->aluno_nome }}</li>
         <li>/</li>
-        <li class="font-semibold text-gray-700">Matrículas</li>
+        <li class="font-semibold text-gray-700">Matrícula</li>
     </ol>
 </nav>
 
@@ -216,9 +216,9 @@
 
                 <!-- Status -->
                 <td class="py-3 px-4">
-                    @if ($matricula->matri_status === 'Ativa')
+                    @if ($matricula->matri_status === 'Matriculado')
                     <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">
-                        Ativa
+                        Matriculado
                     </span>
                     @else
                     <span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-700">
@@ -236,13 +236,18 @@
                         Detalhes
                     </a>
 
-                    <a href="{{ route('financeiro.index', $matricula->id_matricula) }}"
+                    <a href="{{ route('mensalidade', [
+                            'id' => $aluno->id_aluno,
+                            'matricula' => $matricula->id_matricula
+                        ]) }}"
                         style="background-color: #15803d; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center">
                         Financeiro
                     </a>
 
-                    @if ($matricula->matri_status === 'Ativa')
+
+
+                    @if ($matricula->matri_status === 'Matriculado')
                     <form action="{{ route('matricula.destroy', $matricula->id_matricula) }}"
                         method="POST"
                         onsubmit="return confirm('Deseja encerrar esta matrícula?');">

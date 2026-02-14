@@ -211,13 +211,17 @@
                         Graduações
                     </a>
 
-
                     <a href="{{ route('matricula', $aluno->id_aluno) }}"
                         style="background-color: #275cce; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                         Matrícula
                     </a>
 
+                    <a href="{{ route('mensalidade', $aluno->id_aluno) }}"
+                        style="background-color: #15803d; color: white;"
+                        class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center">
+                        Financeiro
+                    </a>
 
                     <a href="{{ route('alunos.edit', $aluno->id_aluno) }}"
                         style="background-color: #8E251F; color: white;"
