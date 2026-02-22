@@ -89,26 +89,29 @@
         @php
         $user = auth()->user();
 
+        if ($user->role === 'admin') {
         $menu = [
         'Dashboard' => 'dashboard',
         'Alunos/Responsáveis' => 'responsaveis',
         'Matrícula' => 'matricula.index',
-        ];
-
-        // Só adiciona se for admin
-        if ($user->role === 'admin') {
-        $menu['Professores'] = 'professores';
-        $menu['Grade de Horários'] = 'grade_horarios';
-
-        $menu['Administração'] = [
+        'Professores' => 'professores',
+        'Grade de Horários' => 'grade_horarios',
+        'Administração' => [
         'Graduações' => 'graduacoes',
         'Modalidades' => 'modalidades',
         'Horarios de Treino' => 'horario_treino',
         'Preço das Aulas' => 'preco-aula',
+        ],
+        ];
+        } else { // user normal
+        $menu = [
+        'Painel' => 'painel',
+        'Alunos/Responsáveis' => 'responsaveis',
+        'Matrícula' => 'matricula.index',
+        'Frequência do Aluno' => 'grade_horarios',
         ];
         }
         @endphp
-
         @foreach ($menu as $label => $route)
 
         @if(is_array($route))
@@ -161,7 +164,8 @@
         'responsaveis',
         'responsaveis.edit',
         'detalhes-aluno.index',
-        'detalhes-aluno.edit'
+        'detalhes-aluno.edit',
+        'mensalidade'
         ]);
         } elseif ($label === 'Matrícula') {
         $isActive = in_array(Route::currentRouteName(), [
@@ -169,6 +173,11 @@
         'matricula.show',
         'matricula.edit',
         'matricula'
+        ]);
+        }elseif ($label === 'Dashboard') {
+        $isActive = in_array(Route::currentRouteName(), [
+        'dashboard',
+        'dashboard.mensalidadesAtrasadas',
         ]);
         } elseif ($label === 'Professores') {
         $isActive = in_array(Route::currentRouteName(), [

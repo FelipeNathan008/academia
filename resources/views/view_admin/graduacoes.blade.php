@@ -56,6 +56,62 @@
         </form>
     </div>
 
+    <!-- FILTROS -->
+    <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+
+        <div class="flex justify-center">
+            <div class="flex flex-wrap gap-6 items-end justify-center">
+
+                <!-- Nome / Cor -->
+                <div class="flex flex-col w-[250px]">
+                    <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                        Nome / Cor
+                    </label>
+                    <select id="filtroNome"
+                        class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+                        <option value="">Todas</option>
+                        @foreach($graduacoes->pluck('gradu_nome_cor')->unique() as $nome)
+                        <option value="{{ strtolower($nome) }}">
+                            {{ $nome }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Grau -->
+                <div class="flex flex-col w-[150px]">
+                    <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                        Grau
+                    </label>
+                    <select id="filtroGrau"
+                        class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+                        <option value="">Todos</option>
+                        @foreach($graduacoes->pluck('gradu_grau')->unique() as $grau)
+                        <option value="{{ $grau }}">
+                            {{ $grau }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Limpar -->
+                <button id="limparFiltros"
+                    class="h-[48px] px-6 rounded-xl bg-gray-300
+                       text-gray-800 font-semibold hover:bg-gray-400
+                       transition shadow-md">
+                    Limpar filtros
+                </button>
+
+            </div>
+        </div>
+
+    </div>
+
+
+
+
     <!-- LISTAGEM -->
     <div class="bg-white rounded-2xl shadow-md p-6">
         <h3 class="text-xl font-bold mb-6 text-gray-700">Lista de Graduações</h3>
@@ -71,7 +127,9 @@
 
             <tbody>
                 @forelse ($graduacoes as $graduacao)
-                <tr class="border-b hover:bg-gray-50 transition">
+                <tr class="border-b hover:bg-gray-50 transition linha-graduacao"
+                    data-nome="{{ strtolower($graduacao->gradu_nome_cor) }}"
+                    data-grau="{{ $graduacao->gradu_grau }}">
                     <td class="py-3 px-4">
                         <span
                             class="bolinha-faixa"
@@ -131,14 +189,13 @@
     <script>
         document.querySelectorAll('.bolinha-faixa').forEach(bolinha => {
             const faixa = bolinha.dataset.faixa;
-
             let cor = 'transparent';
 
-            if (faixa.includes('branca')) cor = '#ffffff';
-            else if (faixa.includes('cinza e branca')) cor = '#808080';
+            if (faixa.includes('cinza')) cor = '#808080';
             else if (faixa.includes('amarela')) cor = '#facc15';
             else if (faixa.includes('laranja')) cor = '#f97316';
             else if (faixa.includes('verde')) cor = '#22c55e';
+            else if (faixa.includes('branca')) cor = '#ffffff';
             else if (faixa.includes('azul')) cor = '#2563eb';
             else if (faixa.includes('roxa')) cor = '#7c3aed';
             else if (faixa.includes('marrom')) cor = '#78350f';
@@ -146,6 +203,48 @@
 
             bolinha.style.backgroundColor = cor;
         });
+
+        // FILTRO
+        const filtroNome = document.getElementById('filtroNome');
+        const filtroGrau = document.getElementById('filtroGrau');
+        const limparBtn = document.getElementById('limparFiltros');
+        const linhas = document.querySelectorAll('.linha-graduacao');
+
+        function aplicarFiltro() {
+
+            const nome = filtroNome.value;
+            const grau = filtroGrau.value;
+
+            linhas.forEach(linha => {
+
+                const nomeLinha = linha.dataset.nome || '';
+                const grauLinha = linha.dataset.grau || '';
+
+                let mostrar = true;
+
+                if (nome && nomeLinha !== nome) {
+                    mostrar = false;
+                }
+
+                if (grau && grauLinha !== grau) {
+                    mostrar = false;
+                }
+
+                linha.style.display = mostrar ? '' : 'none';
+            });
+        }
+
+        if (filtroNome && filtroGrau) {
+            filtroNome.addEventListener('change', aplicarFiltro);
+            filtroGrau.addEventListener('change', aplicarFiltro);
+
+            limparBtn.addEventListener('click', function() {
+                filtroNome.value = '';
+                filtroGrau.value = '';
+                aplicarFiltro();
+            });
+        }
+
 
         function toggleCadastro() {
             const form = document.getElementById('cadastroForm');

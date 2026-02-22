@@ -9,19 +9,9 @@ class GraduacaoController extends Controller
 {
     public function index()
     {
-        $graduacoes = Graduacao::orderByRaw("
-            CASE
-                WHEN LOWER(gradu_nome_cor) LIKE '%cinza e branca%' THEN 1
-                WHEN LOWER(gradu_nome_cor) LIKE '%branca%' THEN 2
-                WHEN LOWER(gradu_nome_cor) LIKE '%amarela%' THEN 3
-                WHEN LOWER(gradu_nome_cor) LIKE '%laranja%' THEN 4
-                WHEN LOWER(gradu_nome_cor) LIKE '%verde%' THEN 5
-                WHEN LOWER(gradu_nome_cor) LIKE '%azul%' THEN 6
-                WHEN LOWER(gradu_nome_cor) LIKE '%roxa%' THEN 7
-                WHEN LOWER(gradu_nome_cor) LIKE '%marrom%' THEN 8
-                WHEN LOWER(gradu_nome_cor) LIKE '%preta%' THEN 9
-                ELSE 99
-            END")->orderBy('gradu_grau')->get();
+        $graduacoes = Graduacao::ordenarPorFaixa()
+            ->orderBy('gradu_grau')
+            ->get();
 
         return view('view_admin.graduacoes', compact('graduacoes'));
     }

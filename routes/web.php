@@ -5,6 +5,7 @@ use App\Http\Controllers\{
     ProfileController,
     ResponsavelController,
     AlunoController,
+    DashboardController,
     MatriculaController,
     DetalhesAlunoController,
     ProfessorController,
@@ -16,15 +17,23 @@ use App\Http\Controllers\{
     MensalidadeController,
     PrecoModalidadeController
 };
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+
+Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+
+Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
 Route::get('/', fn() => redirect()->route('dashboard'));
-Route::get('/dashboard', fn() => view('dashboard'))
-    ->middleware('auth')
-    ->name('dashboard');
-// ROTAS PARA ADMIN
+
+//ROTA PARA ADMIN
 Route::middleware(['auth', 'admin'])->group(function () {
 
+    Route::get('/dashboard', fn() => view('dashboard'))
+        ->middleware('auth')
+        ->name('dashboard');
 
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
 
     //professores
     Route::get('/professores', [ProfessorController::class, 'index'])->name('professores');
@@ -32,7 +41,18 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/professores/{id}/edit', [ProfessorController::class, 'edit'])->name('professores.edit');
     Route::put('/professores/{id}', [ProfessorController::class, 'update'])->name('professores.update');
 
+    //detalhes do professor
+    Route::get('/professores/{id}/detalhes', [DetalhesProfessorController::class, 'index'])->name('detalhes-professor.index');
+    Route::post('/professores/{id}/detalhes', [DetalhesProfessorController::class, 'store'])->name('detalhes-professor.store');
+    Route::get('/detalhes-professor/{id}/edit', [DetalhesProfessorController::class, 'edit'])->name('detalhes-professor.edit');
+    Route::put('/detalhes-professor/{id}', [DetalhesProfessorController::class, 'update'])->name('detalhes-professor.update');
+    Route::delete('/detalhes-professor/{id}', [DetalhesProfessorController::class, 'destroy'])->name('detalhes-professor.destroy');
 
+    // Dashboard Botões
+    Route::get('/dashboard/mensalidades-atrasadas', [DashboardController::class, 'mensalidadesAtrasadas'])
+    ->name('dashboard.mensalidadesAtrasadas');
+    Route::get('/dashboard/graduacoes', [DashboardController::class, 'graduacoes'])
+    ->name('dashboard.graduacoes');
 
     // ADMINISTRAÇÃO
     Route::get('/graduacoes', [GraduacaoController::class, 'index'])->name('graduacoes');
@@ -45,7 +65,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/preco-aula/{id}/edit', [PrecoModalidadeController::class, 'edit'])->name('preco-aula.edit');
     Route::put('/preco-aula/{id}', [PrecoModalidadeController::class, 'update'])->name('preco-aula.update');
     Route::delete('/preco-aula/{id}', [PrecoModalidadeController::class, 'destroy'])->name('preco-aula.destroy');
-
 
     Route::get('/modalidades', [ModalidadeController::class, 'index'])->name('modalidades');
     Route::post('/modalidades', [ModalidadeController::class, 'store'])->name('modalidades.store');
@@ -63,10 +82,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
 // ROTAS PARA USERS
 Route::middleware('auth')->group(function () {
 
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/painel', fn() => view('painel'))
+        ->middleware('auth')
+        ->name('painel');
 
     // responsaveis
     Route::get('/responsaveis', [ResponsavelController::class, 'index'])->name('responsaveis');
@@ -80,14 +98,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/responsaveis/{id}/alunos', [AlunoController::class, 'store'])->name('alunos.store');
     Route::get('/alunos/{id}/editar', [AlunoController::class, 'edit'])->name('alunos.edit');
     Route::put('/alunos/{id}', [AlunoController::class, 'update'])->name('alunos.update');
-
     Route::delete('/alunos/{id}', [AlunoController::class, 'destroy'])->name('alunos.destroy');
 
 
     // matrícula
     Route::get('/professor/{id}/turmas', [MatriculaController::class, 'getTurmasPorProfessor']);
     Route::get('/matriculas', [MatriculaController::class, 'indexSidebar'])->name('matricula.index');
-
     Route::get('/alunos/{id}/matricula', [MatriculaController::class, 'index'])->name('matricula');
     Route::get('/alunos/{id}/matricula/create', [MatriculaController::class, 'create'])->name('matricula.create');
     Route::post('/alunos/{id}/matricula', [MatriculaController::class, 'store'])->name('matricula.store');
@@ -105,17 +121,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/detalhes-aluno/{id}/edit', [DetalhesAlunoController::class, 'edit'])->name('detalhes-aluno.edit');
     Route::put('/detalhes-aluno/{id}', [DetalhesAlunoController::class, 'update'])->name('detalhes-aluno.update');
     Route::delete('/detalhes-aluno/{id}', [DetalhesAlunoController::class, 'destroy'])->name('detalhes-aluno.destroy');
-
-
-
-    //detalhes do professor
-    Route::get('/professores/{id}/detalhes', [DetalhesProfessorController::class, 'index'])->name('detalhes-professor.index');
-    Route::post('/professores/{id}/detalhes', [DetalhesProfessorController::class, 'store'])->name('detalhes-professor.store');
-    Route::get('/detalhes-professor/{id}/edit', [DetalhesProfessorController::class, 'edit'])->name('detalhes-professor.edit');
-    Route::put('/detalhes-professor/{id}', [DetalhesProfessorController::class, 'update'])->name('detalhes-professor.update');
-    Route::delete('/detalhes-professor/{id}', [DetalhesProfessorController::class, 'destroy'])->name('detalhes-professor.destroy');
-
-
 
 
     Route::get('/grade_horarios', [GradeHorarioController::class, 'index'])->name('grade_horarios');

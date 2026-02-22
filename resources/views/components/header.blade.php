@@ -19,7 +19,7 @@
         </h1>
         @else
         <h1 class="p-6 text-xl font-bold text-white">
-            Olá, {{ auth()->user()->name }}
+            Olá, {{ auth()->user()->name }} (User)
         </h1>
         @endif
         @endauth

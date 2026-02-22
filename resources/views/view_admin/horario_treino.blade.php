@@ -101,56 +101,80 @@
 </div>
 
 <!-- FILTROS -->
-<div class="flex flex-wrap gap-6 items-end justify-center max-w-6xl mx-auto mb-10">
+<div class="bg-white rounded-2xl shadow-md p-6 mb-8">
 
-    <!-- Modalidade -->
-    <div class="flex flex-col w-[220px]">
-        <label class="text-xs font-semibold text-gray-500 mb-1 uppercase">Modalidade</label>
-        <select id="filtroModalidade" class="border rounded-xl px-4 py-3 text-sm">
-            <option value="">Todas</option>
-            @foreach ($modalidades as $modalidade)
-            <option value="{{ $modalidade->mod_nome }}">
-                {{ $modalidade->mod_nome }}
-            </option>
-            @endforeach
-        </select>
+    <div class="flex justify-center">
+        <div class="flex flex-wrap gap-6 items-end justify-center">
+
+            <!-- Modalidade -->
+            <div class="flex flex-col w-[250px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Modalidade
+                </label>
+                <select id="filtroModalidade"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+                    <option value="">Todas</option>
+                    @foreach ($modalidades as $modalidade)
+                    <option value="{{ $modalidade->mod_nome }}">
+                        {{ $modalidade->mod_nome }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Dia -->
+            <div class="flex flex-col w-[200px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Dia
+                </label>
+                <select id="filtroDia"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+                    <option value="">Todos</option>
+                    @foreach ($diasSemana as $num => $nome)
+                    <option value="{{ $num }}">{{ $nome }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Horário -->
+            <div class="flex flex-col w-[180px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Horário
+                </label>
+                <input type="time" id="filtroHora"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+            </div>
+
+            <!-- Status -->
+            <div class="flex flex-col w-[180px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Status
+                </label>
+                <select id="filtroStatus"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+                    <option value="">Todos</option>
+                    <option value="Vago">Vago</option>
+                    <option value="Ocupado">Ocupado</option>
+                </select>
+            </div>
+
+            <!-- Limpar -->
+            <button id="limparFiltros"
+                class="h-[48px] px-6 rounded-xl bg-gray-300
+                       text-gray-800 font-semibold hover:bg-gray-400
+                       transition shadow-md">
+                Limpar filtros
+            </button>
+
+        </div>
     </div>
 
-    <!-- Dia -->
-    <div class="flex flex-col w-[220px]">
-        <label class="text-xs font-semibold text-gray-500 mb-1 uppercase">Dia</label>
-        <select id="filtroDia" class="border rounded-xl px-4 py-3 text-sm">
-            <option value="">Todos</option>
-            @foreach ($diasSemana as $num => $nome)
-            <option value="{{ $num }}">{{ $nome }}</option>
-            @endforeach
-        </select>
-    </div>
-
-    <!-- Hora -->
-    <div class="flex flex-col w-[180px]">
-        <label class="text-xs font-semibold text-gray-500 mb-1 uppercase">Horário</label>
-        <input type="time" id="filtroHora" class="border rounded-xl px-4 py-3 text-sm">
-    </div>
-
-    <!-- Status -->
-    <div class="flex flex-col w-[180px]">
-        <label class="text-xs font-semibold text-gray-500 mb-1 uppercase">Status</label>
-        <select id="filtroStatus" class="border rounded-xl px-4 py-3 text-sm">
-            <option value="">Todos</option>
-            <option value="Vago">Vago</option>
-            <option value="Ocupado">Ocupado</option>
-        </select>
-    </div>
-
-    <!-- Limpar -->
-    <button id="limparFiltros"
-        class="h-[48px] px-8 rounded-xl bg-gradient-to-r from-gray-300 to-gray-400
-               text-gray-800 font-semibold hover:from-gray-400 hover:to-gray-500
-               transition shadow-md">
-        Limpar filtros
-    </button>
 </div>
+
 
 <!-- LISTAGEM -->
 <div class="bg-white rounded-2xl shadow-md p-6">

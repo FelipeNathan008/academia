@@ -14,9 +14,12 @@ class DetalhesProfessorController extends Controller
     {
         $professor = Professor::findOrFail($id);
         $modalidades = Modalidade::all();
-        $graduacoes = DetalhesProfessor::where('professor_id_professor', $id)->get();
-        $graduacoesTotais = Graduacao::all();
-
+        $graduacoes = DetalhesProfessor::where('professor_id_professor', $id)->ordenarPorFaixa()
+            ->orderBy('det_grau')
+            ->get();;
+        $graduacoesTotais = Graduacao::ordenarPorFaixa()
+            ->orderBy('gradu_grau')
+            ->get();
         return view('view_professores.detalhes_professor', compact(
             'professor',
             'graduacoes',

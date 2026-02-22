@@ -17,24 +17,15 @@ class DetalhesAlunoController extends Controller
         $modalidades = Modalidade::all();
 
         $graduacoes = DetalhesAluno::where('aluno_id_aluno', $id)
-            ->orderByRaw("
-            CASE
-                WHEN LOWER(det_gradu_nome_cor) LIKE '%cinza e branca%' THEN 1
-                WHEN LOWER(det_gradu_nome_cor) LIKE '%branca%' THEN 2
-                WHEN LOWER(det_gradu_nome_cor) LIKE '%amarela%' THEN 3
-                WHEN LOWER(det_gradu_nome_cor) LIKE '%laranja%' THEN 4
-                WHEN LOWER(det_gradu_nome_cor) LIKE '%verde%' THEN 5
-                WHEN LOWER(det_gradu_nome_cor) LIKE '%azul%' THEN 6
-                WHEN LOWER(det_gradu_nome_cor) LIKE '%roxa%' THEN 7
-                WHEN LOWER(det_gradu_nome_cor) LIKE '%marrom%' THEN 8
-                WHEN LOWER(det_gradu_nome_cor) LIKE '%preta%' THEN 9
-                ELSE 99
-            END
-        ")
+            ->ordenarPorFaixa()
             ->orderBy('det_grau')
             ->get();
 
-        $graduacoesTotais = Graduacao::all();
+
+        $graduacoesTotais = Graduacao::ordenarPorFaixa()
+            ->orderBy('gradu_grau')
+            ->get();
+
         $responsavel = $aluno->responsavel;
 
         return view('view_alunos.detalhes_aluno', compact(

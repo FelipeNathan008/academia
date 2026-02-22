@@ -9,21 +9,21 @@
     <ol class="flex items-center gap-2 flex-wrap">
         <li>
             <a href="{{ route('responsaveis') }}"
-               class="hover:text-[#8E251F] transition">
+                class="hover:text-[#8E251F] transition">
                 Responsáveis
             </a>
         </li>
         <li>/</li>
         <li>
             <a href="{{ route('alunos', $responsavel->id_responsavel) }}"
-               class="hover:text-[#8E251F] transition">
+                class="hover:text-[#8E251F] transition">
                 {{ $responsavel->resp_nome }}
             </a>
         </li>
         <li>/</li>
         <li>
             <a href="{{ route('alunos', $responsavel->id_responsavel) }}"
-               class="hover:text-[#8E251F] transition">
+                class="hover:text-[#8E251F] transition">
                 Alunos
             </a>
         </li>
@@ -148,36 +148,104 @@
     </form>
 </div>
 
+
+<!-- FILTROS -->
+<div class="bg-white rounded-2xl shadow-md p-6 overflow-x-auto mb-8">
+
+    <div class="flex justify-center">
+        <div class="flex flex-wrap gap-6 items-end justify-center">
+
+            <!-- Graduação -->
+            <div class="flex flex-col w-[250px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Graduação
+                </label>
+                <select id="filtroGraduacao"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+                    <option value="">Todas</option>
+                    @foreach($graduacoesTotais->pluck('gradu_nome_cor')->unique() as $cor)
+                    <option value="{{ strtolower($cor) }}">
+                        {{ $cor }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Modalidade -->
+            <div class="flex flex-col w-[250px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Modalidade
+                </label>
+                <select id="filtroModalidade"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+                    <option value="">Todas</option>
+                    @foreach($modalidades as $modalidade)
+                    <option value="{{ strtolower($modalidade->mod_nome) }}">
+                        {{ $modalidade->mod_nome }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Limpar -->
+            <button id="limparFiltrosGraduacao"
+                class="h-[48px] px-6 rounded-xl bg-gray-300
+                       text-gray-800 font-semibold hover:bg-gray-400
+                       transition shadow-md">
+                Limpar filtros
+            </button>
+
+        </div>
+    </div>
+
+</div>
+
+
 <!-- LISTAGEM EM TABELA -->
 <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
     <h3 class="text-xl font-bold mb-6 text-gray-700">Graduações Cadastradas</h3>
 
     @php
-    $lista = $graduacoes->sort(function ($a, $b) {
     $ordem = [
-    'preta' => 1,
-    'marrom' => 2,
-    'roxa' => 3,
-    'azul' => 4,
-    'verde' => 5,
-    'laranja'=> 6,
-    'amarela'=> 7,
-    'branca' => 8,
+    'cinza e branca' => 1,
+    'cinza' => 2,
+    'cinza e preta' => 3,
+
+    'amarela e branca' => 4,
+    'amarela' => 5,
+    'amarela e preta' => 6,
+
+    'laranja e branca' => 7,
+    'laranja' => 8,
+    'laranja e preta' => 9,
+
+    'verde e branca' => 10,
+    'verde' => 11,
+    'verde e preta' => 12,
+
+    'branca' => 13,
+    'azul' => 14,
+    'roxa' => 15,
+    'marrom' => 16,
+    'preta' => 17,
     ];
+
+    $lista = $graduacoes->sort(function ($a, $b) use ($ordem) {
 
     $faixaA = strtolower($a->det_gradu_nome_cor);
     $faixaB = strtolower($b->det_gradu_nome_cor);
 
-    $ordA = 99; $ordB = 99;
-    foreach ($ordem as $nome => $valor) {
-    if (str_contains($faixaA, $nome)) $ordA = $valor;
-    if (str_contains($faixaB, $nome)) $ordB = $valor;
-    }
+    $ordA = $ordem[$faixaA] ?? 99;
+    $ordB = $ordem[$faixaB] ?? 99;
 
     $grauA = intval($a->det_grau);
     $grauB = intval($b->det_grau);
 
-    return $ordA === $ordB ? $grauB <=> $grauA : $ordA <=> $ordB;
+    return $ordA === $ordB
+    ? $grauB <=> $grauA // grau maior primeiro
+        : $ordB <=> $ordA; // faixa invertida
             });
             @endphp
 
@@ -194,7 +262,9 @@
 
                 <tbody>
                     @forelse ($lista as $det)
-                    <tr class="border-b hover:bg-gray-50 transition">
+                    <tr class="border-b hover:bg-gray-50 transition linha-graduacao"
+                        data-graduacao="{{ strtolower($det->det_gradu_nome_cor) }}"
+                        data-modalidade="{{ strtolower($det->det_modalidade) }}">
                         <td class="py-3 px-4">
                             <span class="bolinha-faixa" data-faixa="{{ strtolower($det->det_gradu_nome_cor) }}" style="display:inline-block; width:16px; height:16px; border-radius:50%; margin-right:8px; vertical-align:middle; border:2px solid #000; background-color:transparent;"></span>
                             {{ $det->det_gradu_nome_cor }}
@@ -245,6 +315,48 @@
     function fecharCadastro() {
         document.getElementById('cadastroForm').classList.add('hidden');
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const filtroGraduacao = document.getElementById('filtroGraduacao');
+        const filtroModalidade = document.getElementById('filtroModalidade');
+        const limparBtn = document.getElementById('limparFiltrosGraduacao');
+        const linhas = document.querySelectorAll('.linha-graduacao');
+
+        function aplicarFiltro() {
+
+            const graduacao = filtroGraduacao.value;
+            const modalidade = filtroModalidade.value;
+
+            linhas.forEach(linha => {
+
+                const graduacaoLinha = linha.dataset.graduacao || '';
+                const modalidadeLinha = linha.dataset.modalidade || '';
+
+                let mostrar = true;
+
+                if (graduacao && graduacaoLinha !== graduacao) {
+                    mostrar = false;
+                }
+
+                if (modalidade && modalidadeLinha !== modalidade) {
+                    mostrar = false;
+                }
+
+                linha.style.display = mostrar ? '' : 'none';
+            });
+        }
+
+        filtroGraduacao.addEventListener('change', aplicarFiltro);
+        filtroModalidade.addEventListener('change', aplicarFiltro);
+
+        limparBtn.addEventListener('click', function() {
+            filtroGraduacao.value = '';
+            filtroModalidade.value = '';
+            aplicarFiltro();
+        });
+
+    });
 
     function preencherGraus(select) {
         const grauSelect = select.closest('form').querySelector('.grau-input');

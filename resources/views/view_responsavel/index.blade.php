@@ -21,9 +21,10 @@
 </div>
 
 
+
 <!-- FORMULÁRIO -->
 <div id="cadastroForm" class="hidden mb-10">
-    <form action="{{ route('responsaveis.store') }}" method="POST" >
+    <form action="{{ route('responsaveis.store') }}" method="POST">
         @csrf
 
         <div class="bg-white rounded-2xl shadow-md p-8">
@@ -145,6 +146,32 @@
     </form>
 </div>
 
+
+<!-- FILTRO -->
+<div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+    <div class="flex flex-wrap gap-6 items-end justify-center max-w-6xl mx-auto">
+
+        <div class="flex flex-col w-[400px]">
+            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                Buscar Responsável
+            </label>
+            <input type="text" id="filtroNomeResponsavel"
+                placeholder="Digite o nome..."
+                class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                       focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+        </div>
+
+        <button id="limparFiltroResponsavel"
+            class="h-[48px] px-8 rounded-xl bg-gradient-to-r from-gray-300 to-gray-400
+                   text-gray-800 font-semibold hover:from-gray-400 hover:to-gray-500
+                   transition shadow-md">
+            Limpar filtro
+        </button>
+
+    </div>
+</div>
+
+
 <!-- LISTAGEM -->
 <div class="bg-white rounded-2xl shadow-md p-6">
     <h3 class="text-xl font-bold mb-6 text-gray-700">
@@ -163,12 +190,21 @@
         </thead>
         <tbody>
             @forelse ($responsaveis as $resp)
-            <tr class="border-b hover:bg-gray-50 transition">
-                <td class="py-3 px-4">{{ $resp->resp_nome }}</td>
-                <td class="py-3 px-4">{{ $resp->resp_parentesco }}</td>
+            <tr class="border-b hover:bg-gray-50 transition linha-responsavel"
+                data-nome="{{ strtolower($resp->resp_nome) }}">
+
+                <td class="py-3 px-4 ">
+                    {{ $resp->resp_nome }}
+                </td>
+
+                <td class="py-3 px-4">
+                    {{ $resp->resp_parentesco }}
+                </td>
+
                 <td class="py-3 px-4">
                     {{ preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $resp->resp_telefone) }}
                 </td>
+
                 <td class="py-3 px-4">
                     {{ $resp->resp_logradouro }}
                     @if($resp->resp_numero), {{ $resp->resp_numero }}@endif
@@ -176,18 +212,18 @@
                     , {{ $resp->resp_bairro }}
                     @if($resp->resp_cidade) - {{ $resp->resp_cidade }}@endif
                 </td>
+
                 <td class="py-3 px-4">
                     <div class="flex gap-2">
-                        
+
                         <a href="{{ route('alunos', $resp->id_responsavel) }}"
                             style="background-color: #174ab9; color: white;"
-                            class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
+                            class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center"> 
                             Alunos
                         </a>
 
                         <a href="{{ route('responsaveis.edit', $resp->id_responsavel) }}"
-                            style="background-color: #8E251F; color: white;"
-                            class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
+                            class="px-4 py-2 rounded-lg shadow text-white bg-[#8E251F] hover:bg-[#732920] transition">
                             Editar
                         </a>
 
@@ -198,13 +234,14 @@
                             @method('DELETE')
 
                             <button type="submit"
-                                style="background-color: #c02600; color: white;"
-                                class="px-4 py-2 rounded-lg shadow hover:bg-[#D65A3E] transition duration-200">
+                                class="px-4 py-2 rounded-lg shadow text-white bg-red-600 hover:bg-red-700 transition">
                                 Excluir
                             </button>
                         </form>
+
                     </div>
                 </td>
+
             </tr>
             @empty
             <tr>
@@ -214,6 +251,7 @@
             </tr>
             @endforelse
         </tbody>
+
     </table>
 </div>
 
@@ -286,6 +324,37 @@
             })
             .catch(() => alert('Erro ao buscar o CEP'));
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const filtroNome = document.getElementById('filtroNomeResponsavel');
+        const limparBtn = document.getElementById('limparFiltroResponsavel');
+        const linhas = document.querySelectorAll('.linha-responsavel');
+
+        function aplicarFiltro() {
+            const nome = filtroNome.value.toLowerCase();
+
+            linhas.forEach(linha => {
+                const nomeResponsavel = linha.dataset.nome || '';
+
+                let mostrar = true;
+
+                if (nome && !nomeResponsavel.includes(nome)) {
+                    mostrar = false;
+                }
+
+                linha.style.display = mostrar ? '' : 'none';
+            });
+        }
+
+        filtroNome.addEventListener('input', aplicarFiltro);
+
+        limparBtn.addEventListener('click', function() {
+            filtroNome.value = '';
+            aplicarFiltro();
+        });
+
+    });
 </script>
 
 @endsection

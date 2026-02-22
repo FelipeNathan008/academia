@@ -236,6 +236,7 @@
                         Detalhes
                     </a>
 
+                    @if(strtolower($aluno->aluno_bolsista) !== 'sim')
                     <a href="{{ route('mensalidade', [
                             'id' => $aluno->id_aluno,
                             'matricula' => $matricula->id_matricula
@@ -244,7 +245,7 @@
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center">
                         Financeiro
                     </a>
-
+                    @endif
 
 
                     @if ($matricula->matri_status === 'Matriculado')

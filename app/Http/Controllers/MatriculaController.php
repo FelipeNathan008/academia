@@ -36,7 +36,7 @@ class MatriculaController extends Controller
 
     public function indexSidebar()
     {
-        $alunos = Aluno::with('responsavel')
+        $alunos = Aluno::with('responsavel','matriculas')
             ->orderBy('aluno_nome')
             ->get();
 
@@ -81,6 +81,18 @@ class MatriculaController extends Controller
             'matri_turma'     => $request->matri_turma,
             'matri_desc'      => $request->matri_desc,
         ]);
+
+        // Buscar aluno
+        $aluno = Aluno::findOrFail($alunoId);
+
+        // Se for bolsista, não cria financeiro
+        if (strtolower($aluno->aluno_bolsista) === 'sim') {
+
+            return redirect()
+                ->route('matricula', $alunoId)
+                ->with('success', 'Matrícula realizada com sucesso! (Aluno bolsista - sem geração de financeiro)');
+        }
+
 
         // Definir dia de vencimento (baseado na data da matrícula)
         $dataMatricula = Carbon::parse($request->matri_data);

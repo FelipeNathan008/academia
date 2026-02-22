@@ -142,6 +142,7 @@
                 <th class="py-3 px-4">Nascimento</th>
                 <th class="py-3 px-4">Idade</th>
                 <th class="py-3 px-4">Foto</th>
+                <th class="py-3 px-4">Bolsista</th>
                 <th class="py-3 px-4">Ações</th>
             </tr>
         </thead>
@@ -201,6 +202,31 @@
                     @endif
                 </td>
 
+                <!-- BOLSISTA -->
+                <td class="py-3 px-4">
+                    @if(strtolower($aluno->aluno_bolsista) === 'sim')
+                    <span style="
+                        padding:4px 10px;
+                        font-size:0.75rem;
+                        font-weight:600;
+                        border-radius:9999px;
+                        color:#166534;
+                        background-color:#bbf7d0;">
+                        Sim
+                    </span>
+                    @else
+                    <span style="
+                        padding:4px 10px;
+                        font-size:0.75rem;
+                        font-weight:600;
+                        border-radius:9999px;
+                        color:#7f1d1d;
+                        background-color:#fecaca;">
+                        Não
+                    </span>
+                    @endif
+                </td>
+
 
                 <!-- AÇÕES -->
                 <td class="py-3 px-4 flex gap-2">
@@ -217,11 +243,14 @@
                         Matrícula
                     </a>
 
+                    @if(strtolower($aluno->aluno_bolsista) !== 'sim')
                     <a href="{{ route('mensalidade', $aluno->id_aluno) }}"
                         style="background-color: #15803d; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center">
                         Financeiro
                     </a>
+                    @endif
+
 
                     <a href="{{ route('alunos.edit', $aluno->id_aluno) }}"
                         style="background-color: #8E251F; color: white;"
