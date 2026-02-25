@@ -11,7 +11,8 @@ class Graduacao extends Model
 
     protected $fillable = [
         'gradu_nome_cor',
-        'gradu_grau'
+        'gradu_grau',
+        'gradu_meta'
     ];
 
     public function scopeOrdenarPorFaixa($query)

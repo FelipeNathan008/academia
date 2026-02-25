@@ -29,4 +29,8 @@ class GradeHorario extends Model
     {
         return $this->belongsTo(HorarioTreino::class, 'horario_treino_id_hora', 'id_hora');
     }
+    public function matriculas()
+    {
+        return $this->hasMany(Matricula::class, 'grade_id_grade', 'id_grade');
+    }
 }

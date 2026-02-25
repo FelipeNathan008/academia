@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\GradeHorario;
-use App\Models\Professor;
 
 class Matricula extends Model
 {
@@ -13,12 +12,11 @@ class Matricula extends Model
 
     protected $fillable = [
         'aluno_id_aluno',
+        'grade_id_grade',
         'matri_desc',
         'matri_status',
         'matri_data',
-        'matri_plano',
-        'matri_turma',
-        'matri_professor'
+        'matri_plano'
     ];
 
     public function aluno()
@@ -26,13 +24,16 @@ class Matricula extends Model
         return $this->belongsTo(Aluno::class, 'aluno_id_aluno', 'id_aluno');
     }
 
-    public function professor()
-    {
-        return $this->belongsTo(Professor::class,'matri_professor','id_professor');
-    }
-
     public function grade()
     {
-        return $this->belongsTo(GradeHorario::class,'matri_turma','id_grade');
+        return $this->belongsTo(GradeHorario::class, 'grade_id_grade', 'id_grade');
+    }
+    public function frequencias()
+    {
+        return $this->hasMany(
+            FrequenciaAluno::class,
+            'matricula_id_matricula',
+            'id_matricula' // chave primária da matrícula
+        );
     }
 }

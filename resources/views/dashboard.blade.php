@@ -87,29 +87,44 @@
     Alunos por Graduação
 </h2>
 
-<form method="GET" action="{{ route('dashboard') }}" class="mb-6 flex gap-4">
+<form method="GET" action="{{ route('dashboard') }}" class="mb-6 flex gap-6 items-end">
 
-    <select name="modalidade"
-        onchange="this.form.submit()"
-        class="border rounded-lg px-4 py-2">
+    <!-- Modalidade -->
+    <div class="flex flex-col">
+        <label for="modalidade" class="mb-1 text-sm font-semibold text-gray-700">
+            Selecione Modalidade
+        </label>
 
-        <option value="">Selecione</option>
+        <select name="modalidade"
+            id="modalidade"
+            onchange="this.form.submit()"
+            class="border rounded-lg px-4 py-2">
 
-        @foreach ($modalidades as $modalidade)
-        <option value="{{ $modalidade }}"
-            {{ ($modalidadeSelecionada ?? '') == $modalidade ? 'selected' : '' }}>
-            {{ $modalidade }}
-        </option>
-        @endforeach
+            <option value="">Selecione</option>
 
-    </select>
+            @foreach ($modalidades as $modalidade)
+            <option value="{{ $modalidade }}"
+                {{ ($modalidadeSelecionada ?? '') == $modalidade ? 'selected' : '' }}>
+                {{ $modalidade }}
+            </option>
+            @endforeach
 
-    <select id="tipoGraduacao"
-        class="border rounded-lg px-4 py-2">
-        <option value="">Selecione</option>
-        <option value="adultos">Adultos</option>
-        <option value="kids">Kids</option>
-    </select>
+        </select>
+    </div>
+
+    <!-- Turma -->
+    <div class="flex flex-col">
+        <label for="tipoGraduacao" class="mb-1 text-sm font-semibold text-gray-700">
+            Selecione Turma
+        </label>
+
+        <select id="tipoGraduacao"
+            class="border rounded-lg px-4 py-2">
+            <option value="">Selecione</option>
+            <option value="adultos">Adultos</option>
+            <option value="kids">Kids</option>
+        </select>
+    </div>
 
 </form>
 
@@ -200,125 +215,185 @@
 <div id="graduacoesKids">
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-bottom:40px;">
 
-        <x-graduacao-card
-            titulo="Cinza e Branca"
-            subtitulo="Graduação Inicial"
-            :valor="$graduacaoCinzaBranca"
-            borderColor="#9ca3af"
-            bgColor="bg-gray-50"
-            textColor="text-gray-600"
-            valueColor="text-gray-700"
-            circleStyle="border:2px solid #000;background:linear-gradient(to right,#9ca3af 50%,#ffffff 50%);" />
+        <a href="{{ route('dashboard.graduacoes', array_filter([
+            'modalidade' => request()->query('modalidade') ?? null,
+            'faixa' => 'cinza e branca'
+        ])) }}">
+            <x-graduacao-card
+                titulo="Cinza e Branca"
+                subtitulo="Graduação Inicial"
+                :valor="$graduacaoCinzaBranca"
+                borderColor="#9ca3af"
+                bgColor="bg-gray-50"
+                textColor="text-gray-600"
+                valueColor="text-gray-700"
+                circleStyle="border:2px solid #000;background:linear-gradient(to right,#9ca3af 50%,#ffffff 50%);" />
+        </a>
 
-        <x-graduacao-card
-            titulo="Cinza"
-            subtitulo="Graduação"
-            :valor="$graduacaoCinza"
-            borderColor="#6b7280"
-            bgColor="bg-gray-100"
-            textColor="text-gray-700"
-            valueColor="text-gray-800"
-            circleStyle="background-color:#6b7280;" />
+        <a href="{{ route('dashboard.graduacoes', array_filter([
+            'modalidade' => request()->query('modalidade') ?? null,
+            'faixa' => 'cinza'
+        ])) }}">
+            <x-graduacao-card
+                titulo="Cinza"
+                subtitulo="Graduação"
+                :valor="$graduacaoCinza"
+                borderColor="#6b7280"
+                bgColor="bg-gray-100"
+                textColor="text-gray-700"
+                valueColor="text-gray-800"
+                circleStyle="background-color:#6b7280;" />
+        </a>
 
-        <x-graduacao-card
-            titulo="Cinza e Preta"
-            subtitulo="Evolução"
-            :valor="$graduacaoCinzaPreta"
-            borderColor="#4b5563"
-            bgColor="bg-gray-50"
-            textColor="text-gray-800"
-            valueColor="text-gray-900"
-            circleStyle="background:linear-gradient(to right,#6b7280 50%,#000000 50%);" />
+        <a href="{{ route('dashboard.graduacoes', array_filter([
+            'modalidade' => request()->query('modalidade') ?? null,
+            'faixa' => 'cinza e preta'
+        ])) }}">
+            <x-graduacao-card
+                titulo="Cinza e Preta"
+                subtitulo="Evolução"
+                :valor="$graduacaoCinzaPreta"
+                borderColor="#4b5563"
+                bgColor="bg-gray-50"
+                textColor="text-gray-800"
+                valueColor="text-gray-900"
+                circleStyle="background:linear-gradient(to right,#6b7280 50%,#000000 50%);" />
+        </a>
 
-        <x-graduacao-card
-            titulo="Amarela e Branca"
-            subtitulo="Intermediário"
-            :valor="$graduacaoAmarelaBranca"
-            borderColor="#facc15"
-            bgColor="bg-yellow-50"
-            textColor="text-yellow-700"
-            valueColor="text-yellow-700"
-            circleStyle="border:2px solid #000;background:linear-gradient(to right,#facc15 50%,#ffffff 50%);" />
+        <a href="{{ route('dashboard.graduacoes', array_filter([
+            'modalidade' => request()->query('modalidade') ?? null,
+            'faixa' => 'amarela e branca'
+        ])) }}">
+            <x-graduacao-card
+                titulo="Amarela e Branca"
+                subtitulo="Intermediário"
+                :valor="$graduacaoAmarelaBranca"
+                borderColor="#facc15"
+                bgColor="bg-yellow-50"
+                textColor="text-yellow-700"
+                valueColor="text-yellow-700"
+                circleStyle="border:2px solid #000;background:linear-gradient(to right,#facc15 50%,#ffffff 50%);" />
+        </a>
 
-        <x-graduacao-card
-            titulo="Amarela"
-            subtitulo="Intermediário"
-            :valor="$graduacaoAmarela"
-            borderColor="#eab308"
-            bgColor="bg-yellow-100"
-            textColor="text-yellow-800"
-            valueColor="text-yellow-800"
-            circleStyle="background-color:#eab308;" />
+        <a href="{{ route('dashboard.graduacoes', array_filter([
+            'modalidade' => request()->query('modalidade') ?? null,
+            'faixa' => 'amarela'
+        ])) }}">
+            <x-graduacao-card
+                titulo="Amarela"
+                subtitulo="Intermediário"
+                :valor="$graduacaoAmarela"
+                borderColor="#eab308"
+                bgColor="bg-yellow-100"
+                textColor="text-yellow-800"
+                valueColor="text-yellow-800"
+                circleStyle="background-color:#eab308;" />
+        </a>
 
-        <x-graduacao-card
-            titulo="Amarela e Preta"
-            subtitulo="Evolução"
-            :valor="$graduacaoAmarelaPreta"
-            borderColor="#ca8a04"
-            bgColor="bg-yellow-200"
-            textColor="text-yellow-900"
-            valueColor="text-yellow-900"
-            circleStyle="background:linear-gradient(to right,#facc15 50%,#000000 50%);" />
+        <a href="{{ route('dashboard.graduacoes', array_filter([
+            'modalidade' => request()->query('modalidade') ?? null,
+            'faixa' => 'amarela e preta'
+        ])) }}">
+            <x-graduacao-card
+                titulo="Amarela e Preta"
+                subtitulo="Evolução"
+                :valor="$graduacaoAmarelaPreta"
+                borderColor="#ca8a04"
+                bgColor="bg-yellow-200"
+                textColor="text-yellow-900"
+                valueColor="text-yellow-900"
+                circleStyle="background:linear-gradient(to right,#facc15 50%,#000000 50%);" />
+        </a>
 
-        <x-graduacao-card
-            titulo="Laranja e Branca"
-            subtitulo="Intermediário"
-            :valor="$graduacaoLaranjaBranca"
-            borderColor="#fb923c"
-            bgColor="bg-orange-50"
-            textColor="text-orange-700"
-            valueColor="text-orange-700"
-            circleStyle="border:2px solid #000;background:linear-gradient(to right,#f97316 50%,#ffffff 50%);" />
+        <a href="{{ route('dashboard.graduacoes', array_filter([
+            'modalidade' => request()->query('modalidade') ?? null,
+            'faixa' => 'laranja e branca'
+        ])) }}">
+            <x-graduacao-card
+                titulo="Laranja e Branca"
+                subtitulo="Intermediário"
+                :valor="$graduacaoLaranjaBranca"
+                borderColor="#fb923c"
+                bgColor="bg-orange-50"
+                textColor="text-orange-700"
+                valueColor="text-orange-700"
+                circleStyle="border:2px solid #000;background:linear-gradient(to right,#f97316 50%,#ffffff 50%);" />
+        </a>
 
-        <x-graduacao-card
-            titulo="Laranja"
-            subtitulo="Intermediário"
-            :valor="$graduacaoLaranja"
-            borderColor="#f97316"
-            bgColor="bg-orange-100"
-            textColor="text-orange-800"
-            valueColor="text-orange-800"
-            circleStyle="background-color:#f97316;" />
+        <a href="{{ route('dashboard.graduacoes', array_filter([
+            'modalidade' => request()->query('modalidade') ?? null,
+            'faixa' => 'laranja'
+        ])) }}">
+            <x-graduacao-card
+                titulo="Laranja"
+                subtitulo="Intermediário"
+                :valor="$graduacaoLaranja"
+                borderColor="#f97316"
+                bgColor="bg-orange-100"
+                textColor="text-orange-800"
+                valueColor="text-orange-800"
+                circleStyle="background-color:#f97316;" />
+        </a>
 
-        <x-graduacao-card
-            titulo="Laranja e Preta"
-            subtitulo="Evolução"
-            :valor="$graduacaoLaranjaPreta"
-            borderColor="#ea580c"
-            bgColor="bg-orange-200"
-            textColor="text-orange-900"
-            valueColor="text-orange-900"
-            circleStyle="background:linear-gradient(to right,#f97316 50%,#000000 50%);" />
+        <a href="{{ route('dashboard.graduacoes', array_filter([
+            'modalidade' => request()->query('modalidade') ?? null,
+            'faixa' => 'laranja e preta'
+        ])) }}">
+            <x-graduacao-card
+                titulo="Laranja e Preta"
+                subtitulo="Evolução"
+                :valor="$graduacaoLaranjaPreta"
+                borderColor="#ea580c"
+                bgColor="bg-orange-200"
+                textColor="text-orange-900"
+                valueColor="text-orange-900"
+                circleStyle="background:linear-gradient(to right,#f97316 50%,#000000 50%);" />
+        </a>
 
-        <x-graduacao-card
-            titulo="Verde e Branca"
-            subtitulo="Intermediário"
-            :valor="$graduacaoVerdeBranca"
-            borderColor="#4ade80"
-            bgColor="bg-green-50"
-            textColor="text-green-700"
-            valueColor="text-green-700"
-            circleStyle="border:2px solid #000;background:linear-gradient(to right,#22c55e 50%,#ffffff 50%);" />
+        <a href="{{ route('dashboard.graduacoes', array_filter([
+            'modalidade' => request()->query('modalidade') ?? null,
+            'faixa' => 'verde e branca'
+        ])) }}">
+            <x-graduacao-card
+                titulo="Verde e Branca"
+                subtitulo="Intermediário"
+                :valor="$graduacaoVerdeBranca"
+                borderColor="#4ade80"
+                bgColor="bg-green-50"
+                textColor="text-green-700"
+                valueColor="text-green-700"
+                circleStyle="border:2px solid #000;background:linear-gradient(to right,#22c55e 50%,#ffffff 50%);" />
+        </a>
 
-        <x-graduacao-card
-            titulo="Verde"
-            subtitulo="Intermediário"
-            :valor="$graduacaoVerde"
-            borderColor="#22c55e"
-            bgColor="bg-green-100"
-            textColor="text-green-800"
-            valueColor="text-green-800"
-            circleStyle="background-color:#22c55e;" />
+        <a href="{{ route('dashboard.graduacoes', array_filter([
+            'modalidade' => request()->query('modalidade') ?? null,
+            'faixa' => 'verde'
+        ])) }}">
+            <x-graduacao-card
+                titulo="Verde"
+                subtitulo="Intermediário"
+                :valor="$graduacaoVerde"
+                borderColor="#22c55e"
+                bgColor="bg-green-100"
+                textColor="text-green-800"
+                valueColor="text-green-800"
+                circleStyle="background-color:#22c55e;" />
+        </a>
 
-        <x-graduacao-card
-            titulo="Verde e Preta"
-            subtitulo="Evolução"
-            :valor="$graduacaoVerdePreta"
-            borderColor="#15803d"
-            bgColor="bg-green-200"
-            textColor="text-green-900"
-            valueColor="text-green-900"
-            circleStyle="background:linear-gradient(to right,#22c55e 50%,#000000 50%);" />
+        <a href="{{ route('dashboard.graduacoes', array_filter([
+            'modalidade' => request()->query('modalidade') ?? null,
+            'faixa' => 'verde e preta'
+        ])) }}">
+            <x-graduacao-card
+                titulo="Verde e Preta"
+                subtitulo="Evolução"
+                :valor="$graduacaoVerdePreta"
+                borderColor="#15803d"
+                bgColor="bg-green-200"
+                textColor="text-green-900"
+                valueColor="text-green-900"
+                circleStyle="background:linear-gradient(to right,#22c55e 50%,#000000 50%);" />
+        </a>
 
     </div>
 </div>
@@ -345,20 +420,32 @@
     const blocoKids = document.getElementById('graduacoesKids');
     const blocoAdultos = document.getElementById('graduacoesAdultos');
 
+    const selectModalidade = document.querySelector('select[name="modalidade"]');
+
     function atualizarVisualizacao() {
-        if (selectTipo.value === 'adultos') {
+
+        const modalidadeSelecionada = selectModalidade.value;
+        const tipoSelecionado = selectTipo.value;
+
+        if (!modalidadeSelecionada || !tipoSelecionado) {
+            blocoAdultos.style.display = 'none';
+            blocoKids.style.display = 'none';
+            return;
+        }
+
+        if (tipoSelecionado === 'adultos') {
             blocoAdultos.style.display = 'grid';
             blocoKids.style.display = 'none';
-        } else {
+        } else if (tipoSelecionado === 'kids') {
             blocoAdultos.style.display = 'none';
             blocoKids.style.display = 'grid';
         }
     }
 
     selectTipo.addEventListener('change', atualizarVisualizacao);
+    selectModalidade.addEventListener('change', atualizarVisualizacao);
 
-    // inicializa
-    atualizarVisualizacao();
+    document.addEventListener("DOMContentLoaded", atualizarVisualizacao);
 
 
     document.addEventListener("DOMContentLoaded", function() {

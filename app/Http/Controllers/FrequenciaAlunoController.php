@@ -3,70 +3,90 @@
 namespace App\Http\Controllers;
 
 use App\Models\FrequenciaAluno;
+use App\Models\GradeHorario;
 use Illuminate\Http\Request;
 
 class FrequenciaAlunoController extends Controller
 {
-    public function index()
-    {
-        $frequencias = FrequenciaAluno::with('grade')->get();
 
-        return response()->json([
-            'data' => $frequencias
-        ]);
+    public function listagemGrades()
+    {
+        $grades = GradeHorario::with('matriculas')->get();
+
+        return view('view_frequencia_aluno.listagem', compact('grades'));
+    }
+
+    public function listagemDias($gradeId)
+    {
+        $grade = GradeHorario::with('matriculas.aluno')
+            ->findOrFail($gradeId);
+
+        $dias = FrequenciaAluno::with('matricula.aluno')
+            ->where('grade_horario_id_grade', $gradeId)
+            ->orderBy('freq_data_aula', 'desc')
+            ->get()
+            ->groupBy('freq_data_aula');
+
+        return view('view_frequencia_aluno.dias', compact('dias', 'grade'));
+    }
+
+    public function visualizar($id)
+    {
+        $grade = GradeHorario::with([
+            'matriculas.aluno',
+            'matriculas.frequencias'
+        ])->findOrFail($id);
+
+        return view('view_frequencia_aluno.visualizar', compact('grade'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'grade_horario_id_grade' => 'required|exists:grade_horario,id_grade',
-            'freq_alunos'            => 'required|string|max:60',
+            'grade_id' => 'required|exists:grade_horario,id_grade',
+            'data_aula' => 'required|date',
+            'presenca' => 'required|array'
         ]);
 
-        $frequencia = FrequenciaAluno::create([
-            'grade_horario_id_grade' => $request->grade_horario_id_grade,
-            'freq_alunos'            => $request->freq_alunos,
-        ]);
+        foreach ($request->presenca as $matriculaId => $status) {
 
-        return response()->json([
-            'message' => 'Frequência registrada com sucesso',
-            'data' => $frequencia
-        ], 201);
+            FrequenciaAluno::create([
+                'grade_horario_id_grade' => $request->grade_id,
+                'matricula_id_matricula' => $matriculaId,
+                'freq_presenca' => $status,
+                'freq_data_aula' => $request->data_aula,
+                'freq_observacao' => $request->observacao[$matriculaId] ?? null
+            ]);
+        }
+
+        return redirect()->route('frequencia.dias', $request->grade_id)
+            ->with('success', 'Frequência salva com sucesso!');
     }
 
-    public function show($id)
+    public function edit($id)
     {
-        $frequencia = FrequenciaAluno::with('grade')->findOrFail($id);
+        $frequencia = FrequenciaAluno::with('matricula.aluno')
+            ->findOrFail($id);
 
-        return response()->json([
-            'data' => $frequencia
-        ]);
+        return view('view_frequencia_aluno.edit', compact('frequencia'));
     }
 
     public function update(Request $request, $id)
     {
-        $frequencia = FrequenciaAluno::findOrFail($id);
-
         $request->validate([
-            'grade_horario_id_grade' => 'sometimes|exists:grade_horario,id_grade',
-            'freq_alunos'            => 'sometimes|string|max:60',
+            'freq_presenca' => 'required',
+            'freq_observacao' => 'nullable|string'
         ]);
 
-        $frequencia->update($request->all());
-
-        return response()->json([
-            'message' => 'Frequência atualizada com sucesso',
-            'data' => $frequencia
-        ]);
-    }
-
-    public function destroy($id)
-    {
         $frequencia = FrequenciaAluno::findOrFail($id);
-        $frequencia->delete();
 
-        return response()->json([
-            'message' => 'Frequência removida com sucesso'
-        ], 204);
+        $frequencia->update([
+            'freq_presenca' => $request->freq_presenca,
+            'freq_observacao' => $request->freq_observacao
+        ]);
+
+        return redirect()
+            ->route('frequencia.dias', $frequencia->grade_horario_id_grade)
+            ->with('success', 'Frequência atualizada!');
     }
 }

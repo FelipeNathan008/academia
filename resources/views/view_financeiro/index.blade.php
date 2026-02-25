@@ -94,11 +94,11 @@
                 </td>
 
                 <td class="py-3 px-4">
-                    {{ $mensalidade->matricula->professor->prof_nome ?? '-' }}
+                    {{ $mensalidade->matricula->grade->professor->prof_nome ?? '-' }}
                 </td>
 
                 <td class="py-3 px-4">
-                    @if($mensalidade->matricula)
+                    @if($mensalidade->matricula && $mensalidade->matricula->grade)
                     {{ ucfirst($mensalidade->matricula->grade->grade_turma) }}
                     <span class="text-xs text-gray-500 block">
                         {{ \Carbon\Carbon::parse($mensalidade->matricula->grade->grade_inicio)->format('H:i') }}

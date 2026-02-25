@@ -107,7 +107,7 @@
                 </td>
 
                 <td class="py-3 px-4">
-                    {{ ucfirst($graduacao->det_gradu_nome_cor) }}
+                    {{ str_replace('_', ' e ', ucfirst($graduacao->det_gradu_nome_cor)) }}
                 </td>
 
                 <td class="py-3 px-4">

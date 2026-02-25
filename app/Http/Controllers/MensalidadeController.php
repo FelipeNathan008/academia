@@ -20,8 +20,10 @@ class MensalidadeController extends Controller
                 'det_mensa_status' => 'Atrasado'
             ]);
 
-        $query = Mensalidade::with(['matricula.professor', 'matricula.grade', 'detalhes'])
-            ->where('aluno_id_aluno', $id_aluno);
+        $query = Mensalidade::with([
+            'matricula.grade.professor',
+            'detalhes'
+        ]);
 
         if ($request->has('matricula')) {
             $query->where('matricula_id_matricula', $request->matricula);

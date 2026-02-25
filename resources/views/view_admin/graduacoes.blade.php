@@ -39,6 +39,18 @@
                             class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none"
                             placeholder="Ex: 1">
                     </div>
+
+                    <!-- Meta de Aulas -->
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">
+                            Meta (Quantidade de Aulas)
+                        </label>
+                        <input type="number"
+                            name="gradu_meta"
+                            required
+                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none"
+                            placeholder="Ex: 30">
+                    </div>
                 </div>
 
                 <!-- AÇÕES -->
@@ -121,6 +133,7 @@
                 <tr class="border-b border-gray-300 text-gray-600 text-sm">
                     <th class="py-3 px-4">Nome / Cor</th>
                     <th class="py-3 px-4">Grau</th>
+                    <th class="py-3 px-4">Meta</th>
                     <th class="py-3 px-4">Ações</th>
                 </tr>
             </thead>
@@ -149,8 +162,12 @@
                         {{ $graduacao->gradu_nome_cor }}
                     </td>
 
-
                     <td class="py-3 px-4">{{ $graduacao->gradu_grau }}</td>
+
+                    <td class="py-3 px-4">
+                        {{ $graduacao->gradu_meta ?? '-' }}
+                    </td>
+
                     <td class="py-3 px-4 flex gap-2">
                         <!-- Editar -->
                         <a href="{{ route('graduacoes.edit', $graduacao->id_graduacao) }}"

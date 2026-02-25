@@ -71,7 +71,7 @@
     </div>
 </div>
 
-<!-- FORMULÁRIO (ESCONDIDO) -->
+<!-- FORMULÁRIO -->
 <div id="cadastroForm" class="hidden mb-10">
     <form action="{{ route('matricula.store', $aluno->id_aluno) }}" method="POST">
         @csrf
@@ -102,41 +102,43 @@
                         class="w-full border rounded-lg px-4 py-2 mt-1">
                 </div>
 
+
+                <!-- MODALIDADE -->
                 <div>
-                    <label class="text-sm font-medium text-gray-600">Professor</label>
-                    <select name="professor_id" id="professor"
-                        class="w-full border rounded-lg px-4 py-2 mt-1" required>
-
-                        <option value="">Selecione o professor</option>
-
-                        @foreach ($professores as $prof)
-                        <option value="{{ $prof->id_professor }}">
-                            {{ $prof->prof_nome }}
+                    <label class="text-sm font-medium text-gray-600">Modalidade</label>
+                    <select id="modalidadeSelect"
+                        class="w-full border rounded-lg px-4 py-2 mt-1">
+                        <option value="">Selecione a modalidade</option>
+                        @foreach ($grades->pluck('grade_modalidade')->unique() as $modalidade)
+                        <option value="{{ $modalidade }}">
+                            {{ $modalidade }}
                         </option>
                         @endforeach
                     </select>
                 </div>
 
+                <!-- TURMA -->
                 <div>
                     <label class="text-sm font-medium text-gray-600">Turma</label>
-                    <select name="matri_turma" id="turma"
-                        class="w-full border rounded-lg px-4 py-2 mt-1" required>
-                        <option value="">Selecione um professor primeiro</option>
+                    <select id="turmaSelect"
+                        class="w-full border rounded-lg px-4 py-2 mt-1" disabled>
+                        <option value="">Selecione a turma</option>
                     </select>
                 </div>
 
+                <!-- GRADE FINAL (ESSA ENVIA PRO STORE) -->
                 <div>
-                    <label class="text-sm font-medium text-gray-600">Dias da Turma</label>
-                    <input type="text" id="dias_turma"
-                        class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100"
-                        readonly>
+                    <label class="text-sm font-medium text-gray-600">Horário</label>
+                    <select name="grade_id_grade" id="gradeSelect" required
+                        class="w-full border rounded-lg px-4 py-2 mt-1" disabled>
+                        <option value="">Selecione o horário</option>
+                    </select>
                 </div>
 
 
                 <div class="md:col-span-3">
                     <label class="text-sm font-medium text-gray-600">Observações</label>
-                    <textarea name="matri_desc" rows="3"
-                        placeholder="Ex: Matrícula anual, bolsa parcial, condições especiais..."
+                    <textarea name="matri_desc" rows="3" placeholder="Ex.: Matrícula anual realizada sem bolsa"
                         class="w-full border rounded-lg px-4 py-2 mt-1"></textarea>
                 </div>
 
@@ -180,21 +182,17 @@
             @forelse ($matriculas as $matricula)
             <tr class="border-b hover:bg-gray-50 transition">
 
-                <!-- Plano -->
                 <td class="py-3 px-4">
                     {{ $matricula->matri_plano }}
                 </td>
 
-                <!-- Professor -->
                 <td class="py-3 px-4">
-                    {{ $matricula->professor->prof_nome ?? '-' }}
+                    {{ $matricula->grade->professor->prof_nome ?? '-' }}
                 </td>
 
-                <!-- Turma -->
                 <td class="py-3 px-4">
                     @if($matricula->grade)
                     {{ ucfirst($matricula->grade->grade_turma) }}
-
                     <span class="text-xs text-gray-500 block">
                         {{ \Carbon\Carbon::parse($matricula->grade->grade_inicio)->format('H:i') }}
                         às
@@ -205,16 +203,10 @@
                     @endif
                 </td>
 
-                <!-- MODALIDADE (NOVA) -->
                 <td class="py-3 px-4">
-                    @if($matricula->grade && $matricula->grade->grade_modalidade)
-                    {{ ucfirst($matricula->grade->grade_modalidade) }}
-                    @else
-                    -
-                    @endif
+                    {{ $matricula->grade->grade_modalidade ?? '-' }}
                 </td>
 
-                <!-- Status -->
                 <td class="py-3 px-4">
                     @if ($matricula->matri_status === 'Matriculado')
                     <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">
@@ -227,12 +219,11 @@
                     @endif
                 </td>
 
-                <!-- Ações -->
                 <td class="py-3 px-4 flex gap-2">
 
                     <a href="{{ route('matricula.show', $matricula->id_matricula) }}"
-                        style="background-color: #275cce; color: white;"
-                        class="px-4 py-2 rounded-lg shadow hover:bg-[#1d4ed8] transition duration-200 text-center">
+                        style="background-color: #174ab9; color: white;"
+                        class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
                         Detalhes
                     </a>
 
@@ -242,11 +233,9 @@
                             'matricula' => $matricula->id_matricula
                         ]) }}"
                         style="background-color: #15803d; color: white;"
-                        class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center">
-                        Financeiro
+                        class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center"> Financeiro
                     </a>
                     @endif
-
 
                     @if ($matricula->matri_status === 'Matriculado')
                     <form action="{{ route('matricula.destroy', $matricula->id_matricula) }}"
@@ -255,8 +244,7 @@
                         @csrf
                         @method('DELETE')
                         <button type="submit"
-                            style="background-color: #c02600; color: white;"
-                            class="px-4 py-2 rounded-lg shadow hover:bg-[#991b1b] transition duration-200">
+                            class="px-4 py-2 rounded-lg shadow text-white bg-red-600 hover:bg-red-700 transition">
                             Encerrar
                         </button>
                     </form>
@@ -264,9 +252,7 @@
 
                 </td>
 
-
             </tr>
-
             @empty
             <tr>
                 <td colspan="6" class="text-center py-6 text-gray-500">
@@ -278,6 +264,9 @@
     </table>
 </div>
 
+<div id="gradesData"
+    data-grades='@json($grades)'>
+</div>
 
 <script>
     function toggleCadastro() {
@@ -291,106 +280,81 @@
         document.getElementById('cadastroForm').classList.add('hidden');
     }
 
-    const professorSelect = document.getElementById('professor');
-    const turmaSelect = document.getElementById('turma');
-    const diasInput = document.getElementById('dias_turma');
+    const gradesElement = document.getElementById('gradesData');
+    const grades = JSON.parse(gradesElement.dataset.grades);
 
-    // Quando troca o professor
-    professorSelect.addEventListener('change', function() {
+    const modalidadeSelect = document.getElementById('modalidadeSelect');
+    const turmaSelect = document.getElementById('turmaSelect');
+    const gradeSelect = document.getElementById('gradeSelect');
 
-        const professorId = this.value;
+    // FILTRO MODALIDADE
+    modalidadeSelect.addEventListener('change', function() {
 
-        turmaSelect.innerHTML = '<option>Carregando...</option>';
-        diasInput.value = '';
+        turmaSelect.innerHTML = '<option value="">Selecione a turma</option>';
+        gradeSelect.innerHTML = '<option value="">Selecione o horário</option>';
+        gradeSelect.disabled = true;
 
-        if (!professorId) {
-            turmaSelect.innerHTML =
-                '<option value="">Selecione um professor primeiro</option>';
+        if (!this.value) {
+            turmaSelect.disabled = true;
             return;
         }
 
-        fetch(`/professor/${professorId}/turmas`)
-            .then(res => res.json())
-            .then(data => {
+        const turmasFiltradas = [...new Set(
+            grades
+            .filter(g => g.grade_modalidade === this.value)
+            .map(g => g.grade_turma)
+        )];
 
-                turmaSelect.innerHTML = '';
+        turmasFiltradas.forEach(turma => {
 
-                if (data.length === 0) {
-                    turmaSelect.innerHTML =
-                        '<option value="">Nenhuma turma disponível</option>';
-                    return;
-                }
+            let textoExibicao = turma;
 
-                turmaSelect.innerHTML =
-                    '<option value="">Selecione a turma</option>';
+            if (turma.toLowerCase() === 'criancas') {
+                textoExibicao = 'Crianças';
+            }
+            if (turma.toLowerCase() === 'adultos') {
+                textoExibicao = 'Adultos';
+            }
+            if (turma.toLowerCase() === 'mulheres') {
+                textoExibicao = 'Mulheres';
+            }
 
-                data.forEach(grade => {
+            turmaSelect.innerHTML += `
+                <option value="${turma}">
+                    ${textoExibicao}
+                </option>
+            `;
+        });
 
-                    const option = document.createElement('option');
-                    option.value = grade.id_grade;
-
-                    const nomesTurmas = {
-                        criancas: 'Crianças',
-                        adultos: 'Adultos',
-                        mulheres: 'Mulheres'
-                    };
-
-                    const nomeFormatado =
-                        nomesTurmas[grade.grade_turma] ??
-                        grade.grade_turma.charAt(0).toUpperCase() +
-                        grade.grade_turma.slice(1);
-
-                    const diasSemana = {
-                        1: 'Domingo',
-                        2: 'Segunda-feira',
-                        3: 'Terça-feira',
-                        4: 'Quarta-feira',
-                        5: 'Quinta-feira',
-                        6: 'Sexta-feira',
-                        7: 'Sábado'
-                    };
-
-                    let diasFormatados = '';
-
-                    if (grade.grade_dia_semana) {
-                        const diasArray =
-                            grade.grade_dia_semana.toString().split(',');
-
-                        const diasTraduzidos = diasArray.map(dia => {
-                            return diasSemana[dia.trim()] ?? dia;
-                        });
-
-                        diasFormatados =
-                            diasTraduzidos.join(', ');
-                    }
-
-                    const horaInicio = grade.grade_inicio.slice(0, 5);
-                    const horaFim = grade.grade_fim.slice(0, 5);
-
-                    const modalidade = grade.grade_modalidade ?
-                        ` • ${grade.grade_modalidade}` :
-                        '';
-
-                    option.textContent =
-                        `${nomeFormatado}${modalidade} (${horaInicio} às ${horaFim})`;
-                    option.setAttribute('data-dias', diasFormatados);
-
-                    turmaSelect.appendChild(option);
-                });
-            })
-            .catch(() => {
-                turmaSelect.innerHTML =
-                    '<option value="">Erro ao carregar turmas</option>';
-            });
+        turmaSelect.disabled = false;
     });
 
-    // Quando troca a turma
+    // FILTRO TURMA
     turmaSelect.addEventListener('change', function() {
 
-        const selectedOption = this.options[this.selectedIndex];
-        const dias = selectedOption.getAttribute('data-dias');
+        gradeSelect.innerHTML = '<option value="">Selecione o horário</option>';
 
-        diasInput.value = dias ?? '';
+        if (!this.value) {
+            gradeSelect.disabled = true;
+            return;
+        }
+
+        const resultado = grades.filter(g =>
+            g.grade_modalidade === modalidadeSelect.value &&
+            g.grade_turma === this.value
+        );
+
+        resultado.forEach(grade => {
+
+            gradeSelect.innerHTML += `
+                <option value="${grade.id_grade}">
+                    Prof. ${grade.professor ? grade.professor.prof_nome : '-'}
+                    (${grade.grade_inicio.substring(0,5)} às ${grade.grade_fim.substring(0,5)})
+                </option>
+            `;
+        });
+
+        gradeSelect.disabled = false;
     });
 </script>
 @endsection

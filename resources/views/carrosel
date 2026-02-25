@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Academia & Jiu-Jitsu</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #111;
+    color: white;
+}
+
+.container {
+    width: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    display: flex;
+    scroll-behavior: smooth;
+}
+
+.slide {
+    min-width: 100%;
+    height: 100vh;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.slide:nth-child(1) { background: linear-gradient(135deg, #1e3c72, #2a5298); }
+.slide:nth-child(2) { background: linear-gradient(135deg, #000000, #434343); }
+.slide:nth-child(3) { background: linear-gradient(135deg, #134e5e, #71b280); }
+.slide:nth-child(4) { background: linear-gradient(135deg, #42275a, #734b6d); }
+.slide:nth-child(5) { background: linear-gradient(135deg, #0f2027, #2c5364); }
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 1.3rem;
+    max-width: 600px;
+}
+
+.login-btn {
+    margin-top: 30px;
+    padding: 12px 30px;
+    font-size: 1rem;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.login-btn:hover {
+    background: #ffd700;
+}
+
+.indicators {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    background: #777;
+    border-radius: 50%;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="slide">
+        <h1>💪 Transforme seu Corpo</h1>
+        <p>Disciplina na academia constrói força. Constância constrói resultados.</p>
+        <button class="login-btn">Login</button>
+    </div>
+
+    <div class="slide">
+        <h1>🥋 Jiu-Jitsu é Mentalidade</h1>
+        <p>No tatame você aprende que desistir nunca é uma opção.</p>
+        <button class="login-btn">Login</button>
+    </div>
+
+    <div class="slide">
+        <h1>🔥 Supere Seus Limites</h1>
+        <p>A dor é temporária. A conquista é eterna.</p>
+        <button class="login-btn">Login</button>
+    </div>
+
+    <div class="slide">
+        <h1>🏆 Evolua Todo Dia</h1>
+        <p>Faixa não define quem você é. Sua dedicação define.</p>
+        <button class="login-btn">Login</button>
+    </div>
+
+    <div class="slide">
+        <h1>🚀 Seja Sua Melhor Versão</h1>
+        <p>Treine como um atleta. Pense como um campeão.</p>
+        <button class="login-btn">Login</button>
+    </div>
+
+</div>
+
+</body>
+</html>

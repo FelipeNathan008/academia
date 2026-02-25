@@ -39,7 +39,7 @@
             <div>
                 <p class="text-xs uppercase text-gray-400">Professor</p>
                 <p class="text-lg font-semibold text-gray-800">
-                    {{ $matricula->professor->prof_nome ?? '-' }}
+                    {{ $matricula->grade->professor->prof_nome ?? '-' }}
                 </p>
             </div>
 

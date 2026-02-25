@@ -11,12 +11,19 @@ class FrequenciaAluno extends Model
 
     protected $fillable = [
         'grade_horario_id_grade',
-        'freq_alunos'
+        'matricula_id_matricula',
+        'freq_presenca',
+        'freq_data_aula',
+        'freq_observacao'
     ];
 
     public function grade()
     {
         return $this->belongsTo(GradeHorario::class, 'grade_horario_id_grade', 'id_grade');
     }
-}
 
+    public function matricula()
+    {
+        return $this->belongsTo(Matricula::class, 'matricula_id_matricula', 'id_matricula');
+    }
+}

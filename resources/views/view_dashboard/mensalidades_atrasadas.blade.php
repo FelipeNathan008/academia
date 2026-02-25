@@ -88,7 +88,7 @@
                     {{ $mensalidade->matricula->matri_plano ?? '-' }}
                 </td>
                 <td class="py-3 px-4">
-                    {{ $mensalidade->matricula->professor->prof_nome ?? '-' }}
+                    {{ $mensalidade->matricula->grade->professor->prof_nome ?? '-' }}
                 </td>
 
 
@@ -125,8 +125,8 @@
                         class="btn-ver px-4 py-2 rounded-lg shadow text-white"
                         style="background-color: #174ab9;"> Ver Detalhes
                     </button>
-                    <a href="{{ route('mensalidade', $mensalidade->aluno->id_aluno) }}"
-                        style="background-color: #15803d; color: white;"
+                    <a href="{{ route('mensalidade', $mensalidade->matricula->aluno->id_aluno) }}"
+                     style="background-color: #15803d; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center">
                         Financeiro
                     </a>
@@ -287,7 +287,7 @@
 
             @empty
             <tr>
-                <td colspan="5" class="text-center py-6 text-gray-500">
+                <td colspan="9" class="text-center py-6 text-gray-500">
                     Nenhuma mensalidade em atraso 🎉
                 </td>
             </tr>

@@ -21,6 +21,7 @@ class GraduacaoController extends Controller
         $request->validate([
             'gradu_nome_cor' => 'required|string|max:80',
             'gradu_grau'     => 'required|integer',
+            'gradu_meta'     => 'required|string|max:50',
         ]);
 
         $graduacao = Graduacao::create($request->all());
@@ -52,6 +53,7 @@ class GraduacaoController extends Controller
         $request->validate([
             'gradu_nome_cor' => 'sometimes|string|max:80',
             'gradu_grau'     => 'sometimes|integer',
+            'gradu_meta'     => 'required|string|max:50',
         ]);
 
         $graduacao->update($request->all());

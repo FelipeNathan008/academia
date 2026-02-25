@@ -10,6 +10,7 @@ use App\Http\Controllers\{
     DetalhesAlunoController,
     ProfessorController,
     DetalhesProfessorController,
+    FrequenciaAlunoController,
     GraduacaoController,
     ModalidadeController,
     HorarioTreinoController,
@@ -50,9 +51,17 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Dashboard Botões
     Route::get('/dashboard/mensalidades-atrasadas', [DashboardController::class, 'mensalidadesAtrasadas'])
-    ->name('dashboard.mensalidadesAtrasadas');
+        ->name('dashboard.mensalidadesAtrasadas');
     Route::get('/dashboard/graduacoes', [DashboardController::class, 'graduacoes'])
-    ->name('dashboard.graduacoes');
+        ->name('dashboard.graduacoes');
+
+    // FREQUENCIA ALUNO
+    Route::get('/frequencia', [FrequenciaAlunoController::class, 'listagemGrades'])->name('frequencia.listagem');
+    Route::get('/frequencia/{gradeId}/dias', [FrequenciaAlunoController::class, 'listagemDias'])->name('frequencia.dias');
+    Route::get('/frequencia/visualizar/{id}', [FrequenciaALunoController::class, 'visualizar'])->name('frequencia.visualizar');
+    Route::get('/frequencia/{id}/edit', [FrequenciaAlunoController::class, 'edit'])->name('frequencia.edit');
+    Route::put('/frequencia/{id}', [FrequenciaAlunoController::class, 'update'])->name('frequencia.update');
+    Route::post('/frequencia', [FrequenciaAlunoController::class, 'store'])->name('frequencia.store');
 
     // ADMINISTRAÇÃO
     Route::get('/graduacoes', [GraduacaoController::class, 'index'])->name('graduacoes');

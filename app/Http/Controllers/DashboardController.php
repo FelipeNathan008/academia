@@ -15,31 +15,21 @@ class DashboardController extends Controller
 {
     public function mensalidadesAtrasadas()
     {
-        // Garante atualização automática
         DetalhesMensalidade::where('det_mensa_status', 'Em aberto')
             ->whereDate('det_mensa_data_venc', '<', Carbon::today())
             ->update([
                 'det_mensa_status' => 'Atrasado'
             ]);
 
-        // Buscar mensalidades que tenham detalhes atrasados
         $mensalidades = Mensalidade::with([
             'matricula.aluno.responsavel',
-            'matricula.professor',
-            'matricula.grade',
+            'matricula.grade.professor',
             'detalhes',
         ])
             ->whereHas('detalhes', function ($query) {
                 $query->where('det_mensa_status', 'Atrasado');
             })
             ->get();
-
-
-        DetalhesMensalidade::where('det_mensa_status', 'Em aberto')
-            ->whereDate('det_mensa_data_venc', '<', Carbon::today())
-            ->update([
-                'det_mensa_status' => 'Atrasado'
-            ]);
 
         $mensalidadesAtrasadas = DetalhesMensalidade::where('det_mensa_status', 'Atrasado')
             ->count();

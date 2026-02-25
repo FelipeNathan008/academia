@@ -96,6 +96,7 @@
         'Matrícula' => 'matricula.index',
         'Professores' => 'professores',
         'Grade de Horários' => 'grade_horarios',
+        'Frequência dos Alunos' => 'frequencia.listagem',
         'Administração' => [
         'Graduações' => 'graduacoes',
         'Modalidades' => 'modalidades',
@@ -167,7 +168,14 @@
         'detalhes-aluno.edit',
         'mensalidade'
         ]);
-        } elseif ($label === 'Matrícula') {
+        } elseif ($label === 'Frequência dos Alunos') {
+        $isActive = in_array(Route::currentRouteName(), [
+        'frequencia.dias',
+        'frequencias.edit',
+        'frequencia.listagem',
+        'frequencia.visualizar'
+        ]);
+        }elseif ($label === 'Matrícula') {
         $isActive = in_array(Route::currentRouteName(), [
         'matricula.index',
         'matricula.show',
@@ -178,6 +186,7 @@
         $isActive = in_array(Route::currentRouteName(), [
         'dashboard',
         'dashboard.mensalidadesAtrasadas',
+        'dashboard.graduacoes'
         ]);
         } elseif ($label === 'Professores') {
         $isActive = in_array(Route::currentRouteName(), [
