@@ -31,6 +31,7 @@ class GradeHorario extends Model
     }
     public function matriculas()
     {
-        return $this->hasMany(Matricula::class, 'grade_id_grade', 'id_grade');
+        return $this->hasMany(Matricula::class, 'grade_id_grade', 'id_grade')
+            ->where('matri_status', 'Matriculado');
     }
 }

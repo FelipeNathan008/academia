@@ -18,7 +18,9 @@ class FrequenciaAlunoController extends Controller
 
     public function listagemDias($gradeId)
     {
-        $grade = GradeHorario::with('matriculas.aluno')
+        $grade = GradeHorario::with(['matriculas' => function ($query) {
+            $query->where('matri_status', 'Matriculado');
+        }, 'matriculas.aluno'])
             ->findOrFail($gradeId);
 
         $dias = FrequenciaAluno::with('matricula.aluno')
@@ -33,7 +35,7 @@ class FrequenciaAlunoController extends Controller
     public function visualizar($id)
     {
         $grade = GradeHorario::with([
-            'matriculas.aluno',
+            'matriculas.aluno.detalhes',
             'matriculas.frequencias'
         ])->findOrFail($id);
 

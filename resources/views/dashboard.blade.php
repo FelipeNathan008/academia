@@ -82,6 +82,44 @@
     </a>
 </div>
 
+<div style="
+    background: white;
+    padding: 14px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+">
+
+    <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
+        Evolução Matrículas por Mês
+    </h3>
+
+    <form method="GET" action="/dashboard" style="margin-bottom: 15px;">
+        <label style="font-size: 14px; font-weight: bold; display: block; margin-bottom: 5px;">
+            Selecione Ano
+        </label>
+
+        <select name="ano" onchange="this.form.submit()"
+            style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+
+            @foreach($anosDisponiveis as $ano)
+            <option value="{{ $ano }}" {{ $ano == $anoSelecionado ? 'selected' : '' }}>
+                {{ $ano }}
+            </option>
+            @endforeach
+        </select>
+    </form>
+
+    <!-- altura reduzida ~30% (500px -> 350px) -->
+    <div style="width: 100%; height: 350px;">
+        <canvas
+            id="graficoMatriculas"
+            data-labels='@json($graficoLabels)'
+            data-dados='@json($graficoDados)'
+            style="width: 100%; height: 100%;">
+        </canvas>
+    </div>
+
+</div>
 
 <h2 class="text-xl font-bold mb-4">
     Alunos por Graduação
@@ -397,8 +435,37 @@
 
     </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const canvas = document.getElementById('graficoMatriculas');
+
+        const labels = JSON.parse(canvas.dataset.labels);
+        const dados = JSON.parse(canvas.dataset.dados);
+
+        new Chart(canvas, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Matrículas por Mês',
+                    data: dados,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+    });
+
     document.querySelectorAll('.bolinha-faixa-dashboard').forEach(bolinha => {
         const faixa = bolinha.dataset.faixa;
         let cor = 'transparent';

@@ -126,6 +126,33 @@ class DashboardController extends Controller
 
     public function index(Request $request)
     {
+
+        $anoSelecionado = $request->get('ano', Carbon::now()->year);
+
+        // Buscar anos disponíveis (opcional para o select)
+        $anosDisponiveis = DB::table('matricula')
+            ->select(DB::raw("DISTINCT YEAR(matri_data) as ano"))
+            ->orderBy('ano', 'desc')
+            ->pluck('ano');
+
+        // Matrículas por mês filtrando pelo ano
+        $matriculasPorMes = DB::table('matricula')
+            ->select(
+                DB::raw("MONTH(matri_data) as mes"),
+                DB::raw("COUNT(*) as total")
+            )
+            ->whereYear('matri_data', $anoSelecionado)
+            ->groupBy('mes')
+            ->pluck('total', 'mes');
+
+        // Monta meses de Jan a Dez (com 0 quando não houver)
+        $labels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        $dados = [];
+
+        for ($m = 1; $m <= 12; $m++) {
+            $dados[] = $matriculasPorMes[$m] ?? 0;
+        }
+
         $totalMatriculas = DB::table('matricula')
             ->where('matri_status', 'matriculado')
             ->count();
@@ -212,6 +239,10 @@ class DashboardController extends Controller
             ->pluck('total', 'ordem_max');
 
         return view('dashboard', [
+            'graficoLabels' => $labels,
+            'graficoDados'  => $dados,
+            'anosDisponiveis' => $anosDisponiveis,
+            'anoSelecionado' => $anoSelecionado,
             'totalMatriculas' => $totalMatriculas,
             'matriculasAtivas' => $matriculasAtivas,
             'matriculasNaoAtivas' => $matriculasNaoAtivas,

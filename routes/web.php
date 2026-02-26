@@ -25,14 +25,10 @@ Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit')
 
 Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-Route::get('/', fn() => redirect()->route('dashboard'));
+Route::get('/', function () {return view('apresentacao');})->name('apresentacao');
 
 //ROTA PARA ADMIN
 Route::middleware(['auth', 'admin'])->group(function () {
-
-    Route::get('/dashboard', fn() => view('dashboard'))
-        ->middleware('auth')
-        ->name('dashboard');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
 

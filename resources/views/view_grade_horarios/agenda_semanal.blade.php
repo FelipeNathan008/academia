@@ -108,6 +108,15 @@
         background-color: #1565c0;
     }
 
+    .popover .btn-det {
+        background-color: #1565c0;
+        color: white;
+    }
+
+    .popover .btn-det:hover {
+        background-color: #0d47a1;
+    }
+
     .popover .btn-delete {
         background-color: #e53935;
         color: white;
@@ -281,6 +290,10 @@
                                     <p><strong>Descrição:</strong> {{ $evento->grade_desc ?? 'Sem descrição' }}</p>
 
                                     <div class="flex justify-end gap-2 mt-2">
+                                        <a href="{{ route('frequencia.dias', $evento->id_grade) }}"
+                                            class="btn btn-det">Detalhes</a>
+                                        </a>
+
                                         <a href="{{ route('grade_horarios.edit', $evento->id_grade) }}"
                                             class="btn btn-edit">Editar</a>
 

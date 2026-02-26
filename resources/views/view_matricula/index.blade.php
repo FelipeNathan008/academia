@@ -209,12 +209,12 @@
 
                 <td class="py-3 px-4">
                     @if ($matricula->matri_status === 'Matriculado')
-                    <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">
-                        Matriculado
+                    <span class="px-2 py-1 rounded-full text-xs font-semibold"
+                        style="background-color: #dcfce7; color: #166534;"> Matriculado
                     </span>
                     @else
-                    <span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-700">
-                        Encerrada
+                    <span class="px-2 py-1 rounded-full text-xs font-semibold"
+                        style="background-color: #fee2e2; color: #991b1b;"> Encerrada
                     </span>
                     @endif
                 </td>
