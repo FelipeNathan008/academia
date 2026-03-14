@@ -1,52 +1,180 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
-        @csrf
+<!DOCTYPE html>
+<html lang="pt-BR">
 
-        <!-- Name -->
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
-        </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Usuário</title>
 
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+        body {
+            min-height: 100vh;
+            background:
+                linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)),
+                url('/images/tela_inicial.jpg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
+        .container {
+            background: rgba(0, 0, 0, 0.85);
+            padding: 40px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+        }
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+        .form-group {
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+        }
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
+        label {
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #ddd;
+        }
 
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
+        input {
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            background: #f2f2f2;
+            transition: 0.2s;
+        }
 
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
-            </a>
+        input:focus {
+            background: white;
+            box-shadow: 0 0 0 2px #8E251F;
+        }
 
-            <x-primary-button class="ms-4">
-                {{ __('Register') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+        .btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            background: #8E251F;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        .btn:hover {
+            background: #732920;
+            transform: scale(1.03);
+        }
+
+        .link {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .link a {
+            color: #ccc;
+            text-decoration: none;
+        }
+
+        .link a:hover {
+            text-decoration: underline;
+        }
+
+        .erro {
+            color: #ff6b6b;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Criar Usuário Administrador</h1>
+
+        <form method="POST" action="{{ url('register/'.$empresa_id) }}">
+            @csrf
+
+            <div class="form-group">
+                <label>Nome *</label>
+                <input type="text" name="name" placeholder="Ex: João Silva" required>
+                @error('name')
+                <div class="erro">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label>Email *</label>
+                <input type="email" name="email" placeholder="Ex: joao@email.com" required>
+                @error('email')
+                <div class="erro">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label>Senha *</label>
+                <input type="password" name="password" placeholder="Digite uma senha segura" required>
+                @error('password')
+                <div class="erro">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label>Confirmar Senha *</label>
+                <input type="password" name="password_confirmation" placeholder="Repita a senha" required>
+            </div>
+
+            <!-- Novo campo select para Role -->
+            <div class="form-group">
+                <label>Função *</label>
+                <select name="role" required>
+                    <option value="">Selecione a função</option>
+                    <option value="admin">Administrador</option>
+                    <option value="user">Aluno</option>
+                    <option value="professor">Professor</option>
+                </select>
+                @error('role')
+                <div class="erro">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <button type="submit" class="btn">
+                Criar Conta
+            </button>
+
+            <div class="link">
+                <a href="{{ route('login') }}">Já possui conta?</a>
+            </div>
+
+        </form>
+
+    </div>
+
+</body>
+
+</html>

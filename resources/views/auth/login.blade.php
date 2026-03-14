@@ -18,7 +18,7 @@
         body {
             height: 100vh;
             background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)),
-                url('https://images.unsplash.com/photo-1605296867304-46d5465a13f1');
+                url('images/tela_inicial.jpg');
             background-size: cover;
             background-position: center;
             display: flex;
@@ -69,7 +69,7 @@
             padding: 12px;
             border: none;
             border-radius: 8px;
-            background-color: #b22222;
+            background-color: #8E251F;
             color: white;
             font-weight: bold;
             cursor: pointer;
@@ -78,7 +78,7 @@
         }
 
         .btn-login:hover {
-            background-color: #ff0000;
+            background-color: #732920;
             transform: scale(1.03);
         }
 
@@ -110,7 +110,15 @@
 <body>
 
     <div class="login-container">
+
+        <a href="{{ route('apresentacao') }}" class="btn-login">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="white" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H3.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L3.707 7.5H14.5A.5.5 0 0 1 15 8z" />
+            </svg>
+        </a>
+       
         <h2>Acesso ao Sistema</h2>
+
 
         <form method="POST" action="{{ route('login') }}">
             @csrf
@@ -136,7 +144,7 @@
                 <label for="remember">Lembrar de mim</label>
             </div>
 
-            <button type="submit" class="btn-login">Entrar</button>
+            <div><button type="submit" class="btn-login">Entrar</button></div>
 
             <div class="extra-links">
                 @if (Route::has('password.request'))

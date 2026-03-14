@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,8 +15,8 @@
 
         body {
             height: 100vh;
-            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
-                        url('https://images.unsplash.com/photo-1605296867304-46d5465a13f1');
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                url('images/tela_inicial.jpg');
             background-size: cover;
             background-position: center;
             display: flex;
@@ -31,7 +32,7 @@
             text-align: center;
             width: 90%;
             max-width: 600px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
 
         .container h1 {
@@ -53,7 +54,7 @@
             font-size: 16px;
             font-weight: bold;
             color: white;
-            background-color: #b22222;
+            background-color: #174ab9;
             border: none;
             border-radius: 8px;
             text-decoration: none;
@@ -62,7 +63,26 @@
         }
 
         .btn-login:hover {
-            background-color: #b22222;
+            background-color: #1340a0;
+            transform: scale(1.05);
+        }
+
+        .btn-cadastro {
+            display: inline-block;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #8E251F;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-cadastro:hover {
+            background-color: #732920;
             transform: scale(1.05);
         }
 
@@ -73,6 +93,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="container">
@@ -82,13 +103,20 @@
             Aqui você poderá acompanhar alunos, turmas, graduações e controlar
             informações importantes de forma prática e organizada.
         </p>
-        
-        <a href="{{ route('login') }}" class="btn-login"> Login</a>
 
+        <div>
+            <a href="{{ route('login') }}" class="btn-login">Login</a>
+        </div>
+
+        <div style="margin-top: 10px;">
+            <a href="{{ route('cadastro_empresa') }}" class="btn-cadastro">Cadastrar</a>
+
+        </div>
         <footer>
             © 2026 Academia Jiu-Jitsu - Todos os direitos reservados
         </footer>
     </div>
 
 </body>
+
 </html>

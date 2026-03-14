@@ -5,19 +5,28 @@ namespace App\Http\Controllers;
 use App\Models\Aluno;
 use App\Models\Responsavel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
+
 
 class AlunoController extends Controller
 {
-    // LISTAR ALUNOS DE UM RESPONSÁVEL
     public function index($responsavelId)
     {
-        $responsavel = Responsavel::with('alunos')->findOrFail($responsavelId);
+        try {
+            $id = Crypt::decrypt($responsavelId);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $responsavel = Responsavel::with('alunos')->findOrFail($id);
 
         return view('view_alunos.index', [
             'responsavel' => $responsavel,
             'alunos' => $responsavel->alunos
         ]);
     }
+
 
     // CADASTRAR ALUNO PARA UM RESPONSÁVEL
     public function store(Request $request, $responsavelId)

@@ -102,7 +102,11 @@
         'Modalidades' => 'modalidades',
         'Horarios de Treino' => 'horario_treino',
         'Preço das Aulas' => 'preco-aula',
+       
         ],
+       // 'Controle   ' => [
+      //  'Users' => 'users',
+      // ],
         ];
         } else { // user normal
         $menu = [

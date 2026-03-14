@@ -8,24 +8,35 @@ use App\Http\Controllers\{
     DashboardController,
     MatriculaController,
     DetalhesAlunoController,
+    DetalhesFilialController,
     ProfessorController,
     DetalhesProfessorController,
+    EmpresaController,
+    FilialController,
     FrequenciaAlunoController,
     GraduacaoController,
     ModalidadeController,
     HorarioTreinoController,
     GradeHorarioController,
     MensalidadeController,
-    PrecoModalidadeController
+    PrecoModalidadeController,
+    UsuariosController,
 };
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 
 Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-Route::get('/', function () {return view('apresentacao');})->name('apresentacao');
+Route::get('/', function () {
+    return view('apresentacao');
+})->name('apresentacao');
+
+Route::get('/cadastro-empresa', function () {
+    return view('cadastro_empresa');
+})->name('cadastro_empresa');
+
+Route::post('/empresa/store', [EmpresaController::class, 'store'])->name('empresa.store');
 
 //ROTA PARA ADMIN
 Route::middleware(['auth', 'admin'])->group(function () {
@@ -59,7 +70,20 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::put('/frequencia/{id}', [FrequenciaAlunoController::class, 'update'])->name('frequencia.update');
     Route::post('/frequencia', [FrequenciaAlunoController::class, 'store'])->name('frequencia.store');
 
+    // CONTROLE
+    Route::get('/filiais', [FilialController::class, 'index'])->name('filiais');
+    Route::get('/filiais/{id}/edit', [FilialController::class, 'edit'])->name('filiais.edit');
+    Route::post('/filiais', [FilialController::class, 'store'])->name('filiais.store');
+    Route::delete('/filiais/{id}', [FilialController::class, 'destroy'])->name('filiais.destroy');
+
+    Route::get('/filiais/{id}/detalhes', [DetalhesFilialController::class, 'index'])->name('detalhes-filial.index');
+    Route::get('/detalhes-filial/{id}/edit', [DetalhesFilialController::class, 'edit'])->name('detalhes-filial.edit');
+    Route::post('/filiais/{id}/detalhes', [DetalhesFilialController::class, 'store'])->name('detalhes-filial.store');
+    Route::put('/detalhes-filial/{id}', [DetalhesFilialController::class, 'update'])->name('detalhes-filial.update');
+    Route::delete('/detalhes-filial/{id}', [DetalhesFilialController::class, 'destroy'])->name('detalhes-filial.destroy');
+
     // ADMINISTRAÇÃO
+    //Route::get('/users', [UsuariosController::class, 'index'])->name('users');
     Route::get('/graduacoes', [GraduacaoController::class, 'index'])->name('graduacoes');
     Route::post('/graduacoes', [GraduacaoController::class, 'store'])->name('graduacoes.store');
     Route::get('/graduacoes/{id}/edit', [GraduacaoController::class, 'edit'])->name('graduacoes.edit');

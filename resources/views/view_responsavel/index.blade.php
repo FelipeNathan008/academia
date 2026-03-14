@@ -215,8 +215,8 @@
 
                 <td class="py-3 px-4">
                     <div class="flex gap-2">
-
-                        <a href="{{ route('alunos', $resp->id_responsavel) }}"
+            
+                        <a href="{{ route('alunos', Crypt::encrypt($resp->id_responsavel)) }}"
                             style="background-color: #174ab9; color: white;"
                             class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center"> 
                             Alunos
