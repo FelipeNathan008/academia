@@ -15,14 +15,14 @@
         </li>
         <li>/</li>
         <li>
-            <a href="{{ route('alunos', $aluno->responsavel->id_responsavel) }}"
+            <a href="{{ route('alunos', Crypt::encrypt($aluno->responsavel->id_responsavel)) }}"
                 class="hover:text-[#8E251F] transition">
                 {{ $aluno->responsavel->resp_nome }}
             </a>
         </li>
         <li>/</li>
         <li>
-            <a href="{{ route('alunos', $aluno->responsavel_id_responsavel) }}"
+            <a href="{{ route('alunos', Crypt::encrypt($aluno->responsavel_id_responsavel)) }}"
                 class="hover:text-[#8E251F] transition">
                 Alunos
             </a>
@@ -37,7 +37,7 @@
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div class="flex items-center gap-4">
-        <a href="{{ route('alunos', $aluno->responsavel_id_responsavel) }}"
+        <a href="{{ route('alunos', Crypt::encrypt($aluno->responsavel_id_responsavel)) }}"
             class="flex items-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
             ← Voltar
         </a>

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class Aluno extends Model
 {
@@ -15,7 +17,8 @@ class Aluno extends Model
         'aluno_nascimento',
         'aluno_desc',
         'aluno_foto',
-        'aluno_bolsista'
+        'aluno_bolsista',
+        'id_emp_id'
     ];
 
     public function responsavel()
@@ -23,6 +26,14 @@ class Aluno extends Model
         return $this->belongsTo(Responsavel::class, 'responsavel_id_responsavel', 'id_responsavel');
     }
 
+    protected static function booted()
+    {
+        static::addGlobalScope('empresa', function (Builder $builder) {
+            if (Auth::check()) {
+                $builder->where('id_emp_id', Auth::user()->id_emp_id);
+            }
+        });
+    }
 
     public function matriculas()
     {

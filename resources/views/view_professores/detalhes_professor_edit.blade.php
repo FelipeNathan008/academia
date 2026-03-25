@@ -88,7 +88,7 @@
         </div>
 
         <div class="flex justify-end gap-4 mt-8">
-            <a href="{{ route('detalhes-professor.index', $professor->id_professor) }}" class="px-5 py-2 border rounded-lg hover:bg-gray-100">Voltar</a>
+            <a href="{{ route('detalhes-professor.index', Crypt::encrypt($professor->id_professor)) }}" class="px-5 py-2 border rounded-lg hover:bg-gray-100">Voltar</a>
             <button type="submit" class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920]">Salvar Alterações</button>
         </div>
     </form>

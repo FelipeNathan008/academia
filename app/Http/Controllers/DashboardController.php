@@ -9,7 +9,9 @@ use App\Models\Mensalidade;
 use App\Models\DetalhesAluno;
 use App\Models\DetalhesMensalidade;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+
 
 class DashboardController extends Controller
 {
@@ -161,9 +163,13 @@ class DashboardController extends Controller
             $query->select('aluno_id_aluno')->from('matricula');
         })->count();
 
-        $matriculasNaoAtivas =  DB::table('aluno')->whereNotIn('id_aluno', function ($query) {
-            $query->select('aluno_id_aluno')->from('matricula');
-        })->count();
+        $user = Auth::user();
+
+        $matriculasNaoAtivas =  DB::table('aluno')
+            ->where('id_emp_id', $user->id_emp_id)
+            ->whereNotIn('id_aluno', function ($query) {
+                $query->select('aluno_id_aluno')->from('matricula');
+            })->count();
 
         $totalBolsista = DB::table('aluno')
             ->where('aluno_bolsista', 'sim')

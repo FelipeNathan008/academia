@@ -159,13 +159,13 @@
                 <td class="py-3 px-4 flex gap-2">
 
                     <!-- Botão Graduações -->
-                    <a href="{{ route('detalhes-professor.index', ['id' => $professor->id_professor]) }}"
+                    <a href="{{ route('detalhes-professor.index', Crypt::encrypt($professor->id_professor)) }}"
                         style="background-color: #174ab9; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
                         Graduações
                     </a>
 
-                    <a href="{{ route('professores.edit', $professor->id_professor) }}"
+                    <a href="{{ route('professores.edit', Crypt::encrypt($professor->id_professor)) }}"
                         style="background-color: #8E251F; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                         Editar

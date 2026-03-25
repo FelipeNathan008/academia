@@ -3,7 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 class Responsavel extends Model
 {
     protected $table = 'responsavel';
@@ -21,11 +22,20 @@ class Responsavel extends Model
         'resp_numero',
         'resp_complemento',
         'resp_bairro',
-        'resp_cidade'
+        'resp_cidade',
+        'id_emp_id'
     ];
 
     public function alunos()
     {
         return $this->hasMany(Aluno::class, 'responsavel_id_responsavel', 'id_responsavel');
+    }
+    protected static function booted()
+    {
+        static::addGlobalScope('empresa', function (Builder $builder) {
+            if (Auth::check()) {
+                $builder->where('id_emp_id', Auth::user()->id_emp_id);
+            }
+        });
     }
 }

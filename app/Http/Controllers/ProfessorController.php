@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Graduacao;
 use App\Models\DetalhesProfessor;
 use App\Models\Modalidade;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
+
 
 class ProfessorController extends Controller
 {
@@ -41,9 +45,13 @@ class ProfessorController extends Controller
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+
         $request->merge([
             'prof_telefone' => preg_replace('/\D/', '', $request->prof_telefone),
+            'id_emp_id' => $user->id_emp_id
         ]);
+
         $request->validate([
             'prof_nome' => 'required|string|max:120',
             'prof_nascimento' => 'required|date',
@@ -52,26 +60,34 @@ class ProfessorController extends Controller
             'prof_foto' => 'nullable|image|max:2048',
         ]);
 
-        $professor = new Professor();
-        $professor->prof_nome = $request->prof_nome;
-        $professor->prof_nascimento = $request->prof_nascimento;
-        $professor->prof_telefone = $request->prof_telefone;
-        $professor->prof_desc = $request->prof_desc;
+        $filename = null;
 
         if ($request->hasFile('prof_foto')) {
             $file = $request->file('prof_foto');
             $filename = time() . '_' . $file->getClientOriginalName();
             $file->move(public_path('images/professores'), $filename);
-            $professor->prof_foto = $filename;
         }
 
-        $professor->save();
+        Professor::create([
+            'prof_nome' => $request->prof_nome,
+            'prof_nascimento' => $request->prof_nascimento,
+            'prof_telefone' => $request->prof_telefone,
+            'prof_desc' => $request->prof_desc,
+            'prof_foto' => $filename,
+            'id_emp_id' => $user->id_emp_id
+        ]);
 
-        return redirect()->route('professores')->with('success', 'Professor cadastrado com sucesso!');
+        return redirect()
+            ->route('professores')
+            ->with('success', 'Professor cadastrado com sucesso!');
     }
-
     public function edit($id)
     {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
         $professor = Professor::findOrFail($id);
         return view('view_professores.edit', compact('professor'));
     }

@@ -222,7 +222,7 @@
                             Alunos
                         </a>
 
-                        <a href="{{ route('responsaveis.edit', $resp->id_responsavel) }}"
+                        <a href="{{ route('responsaveis.edit', Crypt::encrypt($resp->id_responsavel)) }}"
                             class="px-4 py-2 rounded-lg shadow text-white bg-[#8E251F] hover:bg-[#732920] transition">
                             Editar
                         </a>

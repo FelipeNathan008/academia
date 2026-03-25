@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\GradeHorario;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class Matricula extends Model
 {
@@ -16,12 +18,21 @@ class Matricula extends Model
         'matri_desc',
         'matri_status',
         'matri_data',
-        'matri_plano'
+        'matri_plano',
+        'id_emp_id'
     ];
 
     public function aluno()
     {
         return $this->belongsTo(Aluno::class, 'aluno_id_aluno', 'id_aluno');
+    }
+    protected static function booted()
+    {
+        static::addGlobalScope('empresa', function (Builder $builder) {
+            if (Auth::check()) {
+                $builder->where('id_emp_id', Auth::user()->id_emp_id);
+            }
+        });
     }
 
     public function grade()

@@ -48,4 +48,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class, 'id_emp_id');
+    }
+
+    public function filial()
+    {
+        return $this->belongsTo(Filial::class, 'id_filial_id');
+    }
 }

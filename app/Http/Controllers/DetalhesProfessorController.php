@@ -7,11 +7,18 @@ use App\Models\Graduacao;
 use App\Models\Modalidade;
 use App\Models\Professor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 class DetalhesProfessorController extends Controller
 {
     public function index($id)
     {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
         $professor = Professor::findOrFail($id);
         $modalidades = Modalidade::all();
         $graduacoes = DetalhesProfessor::where('professor_id_professor', $id)->ordenarPorFaixa()
@@ -66,6 +73,11 @@ class DetalhesProfessorController extends Controller
 
     public function edit($id)
     {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
         $detalhe = DetalhesProfessor::findOrFail($id);
         $professor = $detalhe->professor;
         $modalidades = Modalidade::all();
@@ -106,7 +118,7 @@ class DetalhesProfessorController extends Controller
         }
 
         $detalhe->update($dados);
-        return redirect()->route('detalhes-professor.index', $detalhe->professor_id_professor)
+        return redirect()->route('detalhes-professor.index', Crypt::encrypt($detalhe->professor_id_professor))
             ->with('success', 'Graduação do professor atualizada com sucesso!');
     }
 

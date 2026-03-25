@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Responsavel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 class ResponsavelController extends Controller
 {
@@ -17,10 +20,14 @@ class ResponsavelController extends Controller
     // CADASTRAR RESPONSÁVEL
     public function store(Request $request)
     {
+        $user = Auth::user();
+
         $request->merge([
             'resp_cpf' => preg_replace('/\D/', '', $request->resp_cpf),
             'resp_cep' => preg_replace('/\D/', '', $request->resp_cep),
             'resp_telefone' => preg_replace('/\D/', '', $request->resp_telefone),
+
+            'id_emp_id' => $user->id_emp_id
         ]);
 
         $request->validate([
@@ -45,8 +52,16 @@ class ResponsavelController extends Controller
     }
 
     // EDITAR RESPONSÁVEL
-    public function edit($id)
+    public function edit($idCriptografado)
     {
+        try {
+            $id = Crypt::decrypt($idCriptografado);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $responsavel = Responsavel::findOrFail($id);
+
         $responsavel = Responsavel::findOrFail($id);
         return view('view_responsavel.edit', compact('responsavel'));
     }

@@ -7,11 +7,20 @@ use App\Models\DetalhesMensalidade;
 use App\Models\Mensalidade;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Auth;
 
 class MensalidadeController extends Controller
 {
     public function index(Request $request, $id_aluno)
     {
+        try {
+            $id_aluno = Crypt::decrypt($id_aluno);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
         $aluno = Aluno::findOrFail($id_aluno);
 
         DetalhesMensalidade::where('det_mensa_status', 'Em aberto')
@@ -30,11 +39,13 @@ class MensalidadeController extends Controller
         }
 
         $mensalidades = $query
+            ->where('aluno_id_aluno', $id_aluno)
             ->orderBy('created_at', 'desc')
             ->get();
 
         return view('view_financeiro.index', compact('aluno', 'mensalidades'));
     }
+
     public function darBaixa($id)
     {
         $detalhe = DetalhesMensalidade::findOrFail($id);

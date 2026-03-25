@@ -16,7 +16,8 @@ class Filial extends Model
         'filial_nome_responsavel',
         'filial_email_responsavel',
         'filial_telefone_responsavel',
-        'filial_cpf'
+        'filial_cpf',
+        'filial_foto'
     ];
 
     public function empresa()

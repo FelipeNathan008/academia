@@ -267,7 +267,7 @@
                             </a>
                             @endif
 
-                            <a href="{{ route('detalhes-professor.edit', $det->id_det_professor) }}"
+                            <a href="{{ route('detalhes-professor.edit', Crypt::encrypt($det->id_det_professor)) }}"
                                 style="background-color: #8E251F; color: white;"
                                 class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                                 Editar

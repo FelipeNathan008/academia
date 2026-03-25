@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Filial;
 use App\Models\Empresa;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 class FilialController extends Controller
 {
@@ -12,7 +14,8 @@ class FilialController extends Controller
     public function index()
     {
         $filiais = Filial::all();
-        $empresas = Empresa::all(); // <-- necessário para o select
+        $empresas = Empresa::all();
+
         return view('view_controle.filiais', compact('filiais', 'empresas'));
     }
 
@@ -26,58 +29,106 @@ class FilialController extends Controller
             'filial_email_responsavel' => 'required|email|max:100',
             'filial_telefone_responsavel' => 'required|string|max:20',
             'filial_cpf' => 'nullable|string|max:20',
-            'filial_foto' => 'nullable|string|max:255',
+            'filial_foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        Filial::create($request->all());
+        $dados = $request->except('filial_foto');
+
+        // upload da imagem
+        if ($request->hasFile('filial_foto')) {
+            $arquivo = $request->file('filial_foto');
+            $nome = time() . '_' . $arquivo->getClientOriginalName();
+
+            $arquivo->move(public_path('images/emp_filiais_logo'), $nome);
+
+            $dados['filial_foto'] = $nome;
+        }
+
+        Filial::create($dados);
 
         return redirect()->route('filiais')
             ->with('success', 'Filial cadastrada com sucesso!');
     }
 
-
     public function edit($id)
     {
-        $filial = Filial::findOrFail($id);
-        $empresa = $filial->empresa;
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
 
-        return view('view_filiais.edit', compact('filial', 'empresa'));
+        $filial = Filial::findOrFail($id);
+        $empresas = Empresa::all();
+
+        return view('view_controle.filiais_edit', compact('filial', 'empresas'));
     }
 
     public function update(Request $request, $id)
     {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
         $filial = Filial::findOrFail($id);
 
         $request->validate([
+            'id_emp_id' => 'required|exists:empresas,id_empresa',
             'filial_nome' => 'required|max:120',
             'filial_apelido' => 'required|max:120',
             'filial_nome_responsavel' => 'required|max:120',
             'filial_email_responsavel' => 'required|email',
             'filial_telefone_responsavel' => 'required|max:20',
-            'filial_cpf' => 'required|max:14'
+            'filial_cpf' => 'nullable|max:14'
         ]);
 
-        $filial->filial_nome = $request->filial_nome;
-        $filial->filial_apelido = $request->filial_apelido;
-        $filial->filial_nome_responsavel = $request->filial_nome_responsavel;
-        $filial->filial_email_responsavel = $request->filial_email_responsavel;
-        $filial->filial_telefone_responsavel = $request->filial_telefone_responsavel;
-        $filial->filial_cpf = $request->filial_cpf;
+        $dados = $request->except('filial_foto');
 
-        $filial->save();
+        // Atualiza dados básicos
+        $filial->update($dados);
 
-        return redirect()->route('filiais', $filial->id_emp_id)
+        // Upload de nova imagem
+        if ($request->hasFile('filial_foto')) {
+
+            // remove antiga
+            if ($filial->filial_foto && file_exists(public_path('images/emp_filiais_logo/' . $filial->filial_foto))) {
+                unlink(public_path('images/emp_filiais_logo/' . $filial->filial_foto));
+            }
+
+            $arquivo = $request->file('filial_foto');
+            $nome = time() . '_' . $arquivo->getClientOriginalName();
+
+            $arquivo->move(public_path('images/emp_filiais_logo'), $nome);
+
+            $filial->update([
+                'filial_foto' => $nome
+            ]);
+        }
+
+        return redirect()->route('filiais')
             ->with('success', 'Filial atualizada com sucesso!');
     }
 
     public function destroy($id)
     {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
         $filial = Filial::findOrFail($id);
-        $empresaId = $filial->id_emp_id;
+
+        // remove imagem
+        if ($filial->filial_foto && file_exists(public_path('images/emp_filiais_logo/' . $filial->filial_foto))) {
+            unlink(public_path('images/emp_filiais_logo/' . $filial->filial_foto));
+        }
 
         $filial->delete();
 
-        return redirect()->route('filiais', $empresaId)
+        return redirect()->route('filiais')
             ->with('success', 'Filial removida com sucesso!');
     }
 }

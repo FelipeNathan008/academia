@@ -178,7 +178,7 @@
                 <td class="py-3 px-4 flex gap-2">
 
                     @if($aluno->responsavel)
-                    <a href="{{ route('alunos', $aluno->responsavel->id_responsavel) }}"
+                    <a href="{{ route('alunos', Crypt::encrypt($aluno->responsavel->id_responsavel)) }}"
                         style="background-color: #174ab9; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
                         Ver Aluno
@@ -186,7 +186,7 @@
                     @endif
 
                     @if(strtolower($aluno->aluno_bolsista) !== 'sim' && $aluno->matriculas->count() > 0)
-                    <a href="{{ route('mensalidade', $aluno->id_aluno) }}"
+                    <a href="{{ route('mensalidade', Crypt::encrypt($aluno->id_aluno)) }}"
                         style="background-color: #15803d; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center">
                         Financeiro
@@ -194,13 +194,13 @@
                     @endif
 
                     @if($aluno->matriculas->count() == 0)
-                    <a href="{{ route('matricula', $aluno->id_aluno) }}"
+                    <a href="{{ route('matricula', Crypt::encrypt($aluno->id_aluno)) }}"
                         style="background-color: #275cce; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
                         Matricular
                     </a>
                     @else
-                    <a href="{{ route('matricula', $aluno->id_aluno) }}"
+                    <a href="{{ route('matricula', Crypt::encrypt($aluno->id_aluno)) }}"
                         style="background-color: #275cce; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
                         Ver Matrícula

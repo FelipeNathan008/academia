@@ -15,7 +15,7 @@
         </p>
     </div>
 
-    <a href="{{ route('matricula', $matricula->aluno->id_aluno) }}"
+    <a href="{{ route('matricula', Crypt::encrypt($matricula->aluno->id_aluno)) }}"
         class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
         ← Voltar
     </a>

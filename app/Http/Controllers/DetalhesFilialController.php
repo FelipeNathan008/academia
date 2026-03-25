@@ -5,20 +5,43 @@ namespace App\Http\Controllers;
 use App\Models\DetalhesFilial;
 use App\Models\Filial;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 class DetalhesFilialController extends Controller
 {
     public function index($id)
     {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
         $detalhes = DetalhesFilial::where('id_filial_id', $id)->get();
-        $filiais = Filial::all(); // necessário para selects no cadastro
-        $idFilial = $id; // variável que vamos enviar
-        return view('view_controle.detalhes_filial', compact('detalhes', 'filiais', 'idFilial'));
+        $filial = Filial::findOrFail($id);
+        $idFilial = $id;
+
+        $temDetalhe = $detalhes->isNotEmpty();
+
+        return view('view_controle.detalhes_filial', compact(
+            'detalhes',
+            'idFilial',
+            'filial',
+            'temDetalhe'
+        ));
     }
 
     public function store(Request $request, $id)
     {
-        $request->merge(['id_filial_id' => $id]); // garante que o detalhe fique vinculado
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $request->merge(['id_filial_id' => $id]);
+
         $request->validate([
             'id_filial_id' => 'required|exists:filiais,id_filial|unique:detalhes_filiais,id_filial_id',
             'det_filial_cep' => 'required|string|max:15',
@@ -37,13 +60,19 @@ class DetalhesFilialController extends Controller
 
         DetalhesFilial::create($request->all());
 
-        return redirect()->route('detalhes-filial.index', $id)
-            ->with('success', 'Detalhes da filial cadastrados com sucesso!');
+        return redirect()->route('detalhes-filial.index', Crypt::encrypt($id))
+            ->with('success', 'Detalhes cadastrados!');
     }
 
 
     public function edit($id)
     {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
         $detalhe = DetalhesFilial::findOrFail($id);
         $filial = $detalhe->filial;
 
@@ -52,6 +81,12 @@ class DetalhesFilialController extends Controller
 
     public function update(Request $request, $id)
     {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
         $detalhe = DetalhesFilial::findOrFail($id);
 
         $request->validate([
@@ -71,10 +106,11 @@ class DetalhesFilialController extends Controller
 
         $detalhe->update($request->all());
 
-        return redirect()->route('detalhes-filial.index', $detalhe->id_filial_id)
-            ->with('success', 'Detalhes da filial atualizados com sucesso!');
+        return redirect()->route(
+            'detalhes-filial.index',
+            Crypt::encrypt($detalhe->id_filial_id)
+        )->with('success', 'Detalhes atualizados!');
     }
-
     public function destroy($id)
     {
         $detalhe = DetalhesFilial::findOrFail($id);

@@ -99,7 +99,7 @@
         </div>
 
         <div class="flex justify-end gap-4 mt-6">
-            <a href="{{ route('alunos', $aluno->responsavel_id_responsavel) }}"
+            <a href="{{ route('alunos', Crypt::encrypt($aluno->responsavel_id_responsavel)) }}"
                 class="px-5 py-2 border rounded-lg hover:bg-gray-100 transition">
                 Voltar
             </a>

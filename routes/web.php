@@ -43,6 +43,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
 
+
     //professores
     Route::get('/professores', [ProfessorController::class, 'index'])->name('professores');
     Route::post('/professores', [ProfessorController::class, 'store'])->name('professores.store');
@@ -71,8 +72,17 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/frequencia', [FrequenciaAlunoController::class, 'store'])->name('frequencia.store');
 
     // CONTROLE
+    //users
+    Route::get('/usuarios/{filial?}', [UsuariosController::class, 'index'])->name('usuarios.index');
+    Route::post('/usuarios', [UsuariosController::class, 'store'])->name('usuarios.store');
+    Route::get('/usuarios/{id}/edit', [UsuariosController::class, 'edit'])->name('usuarios.edit');
+    Route::put('/usuarios/{id}', [UsuariosController::class, 'update'])->name('usuarios.update');
+    Route::delete('/usuarios/{id}', [UsuariosController::class, 'destroy'])->name('usuarios.destroy');
+
+    //Filiais
     Route::get('/filiais', [FilialController::class, 'index'])->name('filiais');
     Route::get('/filiais/{id}/edit', [FilialController::class, 'edit'])->name('filiais.edit');
+    Route::put('/filiais/{id}/', [FilialController::class, 'update'])->name('filiais.update');
     Route::post('/filiais', [FilialController::class, 'store'])->name('filiais.store');
     Route::delete('/filiais/{id}', [FilialController::class, 'destroy'])->name('filiais.destroy');
 
@@ -83,7 +93,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::delete('/detalhes-filial/{id}', [DetalhesFilialController::class, 'destroy'])->name('detalhes-filial.destroy');
 
     // ADMINISTRAÇÃO
-    //Route::get('/users', [UsuariosController::class, 'index'])->name('users');
     Route::get('/graduacoes', [GraduacaoController::class, 'index'])->name('graduacoes');
     Route::post('/graduacoes', [GraduacaoController::class, 'store'])->name('graduacoes.store');
     Route::get('/graduacoes/{id}/edit', [GraduacaoController::class, 'edit'])->name('graduacoes.edit');

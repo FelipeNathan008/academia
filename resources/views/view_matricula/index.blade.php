@@ -4,11 +4,24 @@
 
 @section('content')
 
-<!-- BREADCRUMB -->
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
         <li>
-            <a href="{{ route('alunos', $aluno->responsavel_id_responsavel) }}"
+            <a href="{{ route('responsaveis') }}"
+                class="hover:text-[#8E251F] transition">
+                Responsáveis
+            </a>
+        </li>
+        <li>/</li>
+        <li>
+            <a href="{{ route('alunos', Crypt::encrypt($aluno->responsavel->id_responsavel)) }}"
+                class="hover:text-[#8E251F] transition">
+                {{ $aluno->responsavel->resp_nome }}
+            </a>
+        </li>
+        <li>/</li>
+        <li>
+            <a href="{{ route('alunos', Crypt::encrypt($aluno->responsavel_id_responsavel)) }}"
                 class="hover:text-[#8E251F] transition">
                 Alunos
             </a>
@@ -19,6 +32,7 @@
         <li class="font-semibold text-gray-700">Matrícula</li>
     </ol>
 </nav>
+
 
 @if ($errors->any())
 <div class="bg-red-100 text-red-700 p-3 rounded mb-3">
@@ -34,7 +48,7 @@
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div class="flex items-center gap-4">
 
-        <a href="{{ route('alunos', $aluno->responsavel_id_responsavel) }}"
+        <a href="{{ route('alunos', Crypt::encrypt($aluno->responsavel_id_responsavel)) }}"
             class="flex items-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
             ← Voltar
         </a>
@@ -73,7 +87,7 @@
 
 <!-- FORMULÁRIO -->
 <div id="cadastroForm" class="hidden mb-10">
-    <form action="{{ route('matricula.store', $aluno->id_aluno) }}" method="POST">
+    <form action="{{ route('matricula.store', $aluno->id_aluno) }}" method="POST" onsubmit="bloquearSubmit(event, this)">
         @csrf
 
         <div class="bg-white rounded-2xl shadow-xl p-8">
@@ -106,7 +120,7 @@
                 <!-- MODALIDADE -->
                 <div>
                     <label class="text-sm font-medium text-gray-600">Modalidade</label>
-                    <select id="modalidadeSelect"
+                    <select id="modalidadeSelect" required
                         class="w-full border rounded-lg px-4 py-2 mt-1">
                         <option value="">Selecione a modalidade</option>
                         @foreach ($grades->pluck('grade_modalidade')->unique() as $modalidade)
@@ -120,7 +134,7 @@
                 <!-- TURMA -->
                 <div>
                     <label class="text-sm font-medium text-gray-600">Turma</label>
-                    <select id="turmaSelect"
+                    <select id="turmaSelect" required
                         class="w-full border rounded-lg px-4 py-2 mt-1" disabled>
                         <option value="">Selecione a turma</option>
                     </select>
@@ -138,7 +152,7 @@
 
                 <div class="md:col-span-3">
                     <label class="text-sm font-medium text-gray-600">Observações</label>
-                    <textarea name="matri_desc" rows="3" placeholder="Ex.: Matrícula anual realizada sem bolsa"
+                    <textarea name="matri_desc" rows="3" placeholder="Ex.: Matrícula anual realizada sem bolsa" required
                         class="w-full border rounded-lg px-4 py-2 mt-1"></textarea>
                 </div>
 
@@ -221,17 +235,14 @@
 
                 <td class="py-3 px-4 flex gap-2">
 
-                    <a href="{{ route('matricula.show', $matricula->id_matricula) }}"
+                    <a href="{{ route('matricula.show', Crypt::encrypt($matricula->id_matricula)) }}"
                         style="background-color: #174ab9; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
                         Detalhes
                     </a>
 
                     @if(strtolower($aluno->aluno_bolsista) !== 'sim')
-                    <a href="{{ route('mensalidade', [
-                            'id' => $aluno->id_aluno,
-                            'matricula' => $matricula->id_matricula
-                        ]) }}"
+                    <a href="{{ route('mensalidade', Crypt::encrypt($matricula->aluno_id_aluno)) }}"
                         style="background-color: #15803d; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center"> Financeiro
                     </a>
@@ -269,6 +280,18 @@
 </div>
 
 <script>
+    function bloquearSubmit(event, form) {
+
+        if (!form.checkValidity()) {
+            return; // deixa o HTML validar normal
+        }
+        const btn = form.querySelector('button[type="submit"]');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Salvando...';
+        }
+    }
+
     function toggleCadastro() {
         document.getElementById('cadastroForm').classList.toggle('hidden');
         document.getElementById('cadastroForm').scrollIntoView({

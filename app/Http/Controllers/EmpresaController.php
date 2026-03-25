@@ -35,7 +35,7 @@ class EmpresaController extends Controller
             $file = $request->file('emp_foto');
             $filename = time() . '_' . $file->getClientOriginalName();
 
-            $file->move(public_path('images/emp_filiais_logos'), $filename);
+            $file->move(public_path('images/empresas'), $filename);
         }
 
         $empresa = Empresa::create([

@@ -231,20 +231,20 @@
                 <!-- AÇÕES -->
                 <td class="py-3 px-4 flex gap-2">
 
-                    <a href="{{ route('detalhes-aluno.index', $aluno->id_aluno) }}"
+                    <a href="{{ route('detalhes-aluno.index', Crypt::encrypt($aluno->id_aluno)) }}"
                         style="background-color: #174ab9; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
                         Graduações
                     </a>
 
-                    <a href="{{ route('matricula', $aluno->id_aluno) }}"
+                    <a href="{{ route('matricula', Crypt::encrypt($aluno->id_aluno)) }}"
                         style="background-color: #275cce; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                         Matrícula
                     </a>
 
                     @if(strtolower($aluno->aluno_bolsista) !== 'sim')
-                    <a href="{{ route('mensalidade', $aluno->id_aluno) }}"
+                    <a href="{{ route('mensalidade', Crypt::encrypt($aluno->id_aluno)) }}"
                         style="background-color: #15803d; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center">
                         Financeiro
@@ -252,7 +252,7 @@
                     @endif
 
 
-                    <a href="{{ route('alunos.edit', $aluno->id_aluno) }}"
+                    <a href="{{ route('alunos.edit', Crypt::encrypt($aluno->id_aluno)) }}"
                         style="background-color: #8E251F; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                         Editar

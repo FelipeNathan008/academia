@@ -11,11 +11,19 @@ use App\Models\Modalidade;
 use App\Models\PrecoModalidade;
 use App\Models\DetalhesMensalidade;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Auth;
 
 class MatriculaController extends Controller
 {
     public function index($id)
     {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
         $aluno = Aluno::findOrFail($id);
 
         $matriculas = Matricula::with(['grade.professor'])
@@ -47,6 +55,16 @@ class MatriculaController extends Controller
             'matri_plano'     => 'required|string|max:40',
             'grade_id_grade'  => 'required|exists:grade_horario,id_grade',
         ]);
+        $users = Auth::user();
+
+        $jaExiste = Matricula::where('aluno_id_aluno', $alunoId)
+            ->where('grade_id_grade', $request->grade_id_grade)
+            ->where('matri_status', 'Matriculado')
+            ->exists();
+
+        if ($jaExiste) {
+            return back()->with('error', 'Esse aluno já está matriculado nessa turma.');
+        }
 
         $matricula = Matricula::create([
             'aluno_id_aluno' => $alunoId,
@@ -55,6 +73,8 @@ class MatriculaController extends Controller
             'matri_plano'    => $request->matri_plano,
             'grade_id_grade' => $request->grade_id_grade,
             'matri_desc'     => $request->matri_desc,
+            'id_emp_id' => $users->id_emp_id
+
         ]);
 
         $aluno = Aluno::findOrFail($alunoId);
@@ -89,7 +109,8 @@ class MatriculaController extends Controller
             'aluno_id_aluno'         => $alunoId,
             'matricula_id_matricula' => $matricula->id_matricula,
             'mensa_dia_venc'         => $diaVencimento,
-            'mensa_valor'            => $valorMensalidade
+            'mensa_valor'            => $valorMensalidade,
+            'id_emp_id'             => $users->id_emp_id
         ]);
 
         $quantidadeParcelas = match (strtolower($request->matri_plano)) {
@@ -119,12 +140,17 @@ class MatriculaController extends Controller
         }
 
         return redirect()
-            ->route('matricula', $alunoId)
+            ->route('matricula', Crypt::encrypt($alunoId))
             ->with('success', 'Matrícula realizada com sucesso!');
     }
 
     public function show($id)
     {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
         $matricula = Matricula::with(['aluno', 'grade.professor'])
             ->findOrFail($id);
 

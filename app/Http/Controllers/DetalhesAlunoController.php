@@ -8,11 +8,18 @@ use App\Models\Graduacao;
 use App\Models\Modalidade;
 use App\Models\Responsavel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 class DetalhesAlunoController extends Controller
 {
     public function index($id)
     {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
         $aluno = Aluno::findOrFail($id);
         $modalidades = Modalidade::all();
 
@@ -79,6 +86,11 @@ class DetalhesAlunoController extends Controller
 
     public function edit($id)
     {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
         $detalhe = DetalhesAluno::findOrFail($id);
         $aluno = $detalhe->aluno;
         $modalidades = Modalidade::all();
@@ -120,7 +132,7 @@ class DetalhesAlunoController extends Controller
 
         $detalhe->update($dados);
 
-        return redirect()->route('detalhes-aluno.index', $detalhe->aluno_id_aluno)
+        return redirect()->route('detalhes-aluno.index', Crypt::encrypt($detalhe->aluno_id_aluno))
             ->with('success', 'Graduação do professor atualizada com sucesso!');
     }
 
