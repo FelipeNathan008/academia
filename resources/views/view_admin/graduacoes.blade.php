@@ -1,153 +1,170 @@
-    @extends('layouts.dashboard')
+@extends('layouts.dashboard')
 
-    @section('title', 'Graduações')
+@section('title', 'Graduações')
 
-    @section('content')
+@section('content')
 
-    <!-- TOPO -->
-    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
-        <div>
-            <h2 class="text-3xl font-extrabold text-gray-800">Graduações</h2>
-        </div>
-
-        <button onclick="toggleCadastro()"
-            class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow-md hover:bg-[#732920] hover:shadow-lg transition-all">
-            + Cadastrar Graduação
-        </button>
+@if ($errors->any())
+<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
+    
+    <div class="flex items-center gap-2 mb-2">
+        <span class="font-semibold">Atenção:</span>
+        <span class="text-sm">Verifique os campos abaixo</span>
     </div>
 
-    <!-- FORMULÁRIO DE CADASTRO -->
-    <div id="cadastroForm" class="hidden mb-10">
-        <form id="formCadastro" action="{{ route('graduacoes.store') }}" method="POST">
-            @csrf
-            <div class="bg-white rounded-2xl shadow-md p-8">
-                <h3 id="tituloCadastro" class="text-xl font-bold mb-6 text-gray-700">Cadastrar Graduação</h3>
+    <ul class="list-disc pl-5 text-sm space-y-1">
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Nome/Cor -->
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Nome / Cor</label>
-                        <input type="text" name="gradu_nome_cor" maxlength="80" required
-                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none"
-                            placeholder="Ex: Faixa Branca">
-                    </div>
-
-                    <!-- Grau -->
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Grau</label>
-                        <input type="number" name="gradu_grau" required
-                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none"
-                            placeholder="Ex: 1">
-                    </div>
-
-                    <!-- Meta de Aulas -->
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">
-                            Meta (Quantidade de Aulas)
-                        </label>
-                        <input type="number"
-                            name="gradu_meta"
-                            required
-                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none"
-                            placeholder="Ex: 30">
-                    </div>
-                </div>
-
-                <!-- AÇÕES -->
-                <div class="flex justify-end gap-4 border-t pt-6 mt-8">
-                    <button type="button" onclick="fecharCadastro()"
-                        class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">
-                        Cancelar
-                    </button>
-                    <button type="submit"
-                        class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920] transition">
-                        Salvar Graduação
-                    </button>
-                </div>
-            </div>
-        </form>
+</div>
+@endif
+<!-- TOPO -->
+<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+    <div>
+        <h2 class="text-3xl font-extrabold text-gray-800">Graduações</h2>
     </div>
 
-    <!-- FILTROS -->
-    <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+    <button onclick="toggleCadastro()"
+        class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow-md hover:bg-[#732920] hover:shadow-lg transition-all">
+        + Cadastrar Graduação
+    </button>
+</div>
 
-        <div class="flex justify-center">
-            <div class="flex flex-wrap gap-6 items-end justify-center">
+<!-- FORMULÁRIO DE CADASTRO -->
+<div id="cadastroForm" class="hidden mb-10">
+    <form id="formCadastro" action="{{ route('graduacoes.store') }}" method="POST" onsubmit="bloquearSubmit(event, this)">
+        @csrf
+        <div class="bg-white rounded-2xl shadow-md p-8">
+            <h3 id="tituloCadastro" class="text-xl font-bold mb-6 text-gray-700">Cadastrar Graduação</h3>
 
-                <!-- Nome / Cor -->
-                <div class="flex flex-col w-[250px]">
-                    <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
-                        Nome / Cor
-                    </label>
-                    <select id="filtroNome"
-                        class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
-                        <option value="">Todas</option>
-                        @foreach($graduacoes->pluck('gradu_nome_cor')->unique() as $nome)
-                        <option value="{{ strtolower($nome) }}">
-                            {{ $nome }}
-                        </option>
-                        @endforeach
-                    </select>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Nome/Cor -->
+                <div>
+                    <label class="text-sm font-medium text-gray-600">Nome / Cor</label>
+                    <input type="text" name="gradu_nome_cor" maxlength="80" required
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none"
+                        placeholder="Ex: Faixa Branca">
                 </div>
 
                 <!-- Grau -->
-                <div class="flex flex-col w-[150px]">
-                    <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
-                        Grau
-                    </label>
-                    <select id="filtroGrau"
-                        class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
-                        <option value="">Todos</option>
-                        @foreach($graduacoes->pluck('gradu_grau')->unique() as $grau)
-                        <option value="{{ $grau }}">
-                            {{ $grau }}
-                        </option>
-                        @endforeach
-                    </select>
+                <div>
+                    <label class="text-sm font-medium text-gray-600">Grau</label>
+                    <input type="number" name="gradu_grau" required
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none"
+                        placeholder="Ex: 1">
                 </div>
 
-                <!-- Limpar -->
-                <button id="limparFiltros"
-                    class="h-[48px] px-6 rounded-xl bg-gray-300
-                       text-gray-800 font-semibold hover:bg-gray-400
-                       transition shadow-md">
-                    Limpar filtros
-                </button>
+                <!-- Meta de Aulas -->
+                <div>
+                    <label class="text-sm font-medium text-gray-600">
+                        Meta (Quantidade de Aulas)
+                    </label>
+                    <input type="number"
+                        name="gradu_meta"
+                        required
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none"
+                        placeholder="Ex: 30">
+                </div>
+            </div>
 
+            <!-- AÇÕES -->
+            <div class="flex justify-end gap-4 border-t pt-6 mt-8">
+                <button type="button" onclick="fecharCadastro()"
+                    class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920] transition">
+                    Salvar Graduação
+                </button>
             </div>
         </div>
+    </form>
 
+</div>
+
+<!-- FILTROS -->
+<div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+
+    <div class="flex justify-center">
+        <div class="flex flex-wrap gap-6 items-end justify-center">
+
+            <!-- Nome / Cor -->
+            <div class="flex flex-col w-[250px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Nome / Cor
+                </label>
+                <select id="filtroNome"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+                    <option value="">Todas</option>
+                    @foreach($graduacoes->pluck('gradu_nome_cor')->unique() as $nome)
+                    <option value="{{ strtolower($nome) }}">
+                        {{ $nome }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Grau -->
+            <div class="flex flex-col w-[150px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Grau
+                </label>
+                <select id="filtroGrau"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+                    <option value="">Todos</option>
+                    @foreach($graduacoes->pluck('gradu_grau')->unique() as $grau)
+                    <option value="{{ $grau }}">
+                        {{ $grau }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Limpar -->
+            <button id="limparFiltros"
+                class="h-[48px] px-6 rounded-xl bg-gray-300
+                       text-gray-800 font-semibold hover:bg-gray-400
+                       transition shadow-md">
+                Limpar filtros
+            </button>
+
+        </div>
     </div>
 
+</div>
 
 
 
-    <!-- LISTAGEM -->
-    <div class="bg-white rounded-2xl shadow-md p-6">
-        <h3 class="text-xl font-bold mb-6 text-gray-700">Lista de Graduações</h3>
 
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="border-b border-gray-300 text-gray-600 text-sm">
-                    <th class="py-3 px-4">Nome / Cor</th>
-                    <th class="py-3 px-4">Grau</th>
-                    <th class="py-3 px-4">Meta</th>
-                    <th class="py-3 px-4">Ações</th>
-                </tr>
-            </thead>
+<!-- LISTAGEM -->
+<div class="bg-white rounded-2xl shadow-md p-6">
+    <h3 class="text-xl font-bold mb-6 text-gray-700">Lista de Graduações</h3>
 
-            <tbody>
-                @forelse ($graduacoes as $graduacao)
-                <tr class="border-b hover:bg-gray-50 transition linha-graduacao"
-                    data-nome="{{ strtolower($graduacao->gradu_nome_cor) }}"
-                    data-grau="{{ $graduacao->gradu_grau }}">
-                    <td class="py-3 px-4">
-                        <span
-                            class="bolinha-faixa"
-                            data-faixa="{{ strtolower($graduacao->gradu_nome_cor) }}"
-                            style="
+    <table class="w-full text-left border-collapse">
+        <thead>
+            <tr class="border-b border-gray-300 text-gray-600 text-sm">
+                <th class="py-3 px-4">Nome / Cor</th>
+                <th class="py-3 px-4">Grau</th>
+                <th class="py-3 px-4">Meta</th>
+                <th class="py-3 px-4">Ações</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @forelse ($graduacoes as $graduacao)
+            <tr class="border-b hover:bg-gray-50 transition linha-graduacao"
+                data-nome="{{ strtolower($graduacao->gradu_nome_cor) }}"
+                data-grau="{{ $graduacao->gradu_grau }}">
+                <td class="py-3 px-4">
+                    <span
+                        class="bolinha-faixa"
+                        data-faixa="{{ strtolower($graduacao->gradu_nome_cor) }}"
+                        style="
                                 display:inline-block;
                                 width:20px;
                                 height:20px;
@@ -157,124 +174,138 @@
                                 vertical-align:middle;
                                 background-color:transparent;
                             ">
-                        </span>
+                    </span>
 
-                        {{ $graduacao->gradu_nome_cor }}
-                    </td>
+                    {{ $graduacao->gradu_nome_cor }}
+                </td>
 
-                    <td class="py-3 px-4">{{ $graduacao->gradu_grau }}</td>
+                <td class="py-3 px-4">{{ $graduacao->gradu_grau }}</td>
 
-                    <td class="py-3 px-4">
-                        {{ $graduacao->gradu_meta ?? '-' }}
-                    </td>
+                <td class="py-3 px-4">
+                    {{ $graduacao->gradu_meta ?? '-' }}
+                </td>
 
-                    <td class="py-3 px-4 flex gap-2">
-                        <!-- Editar -->
-                        <a href="{{ route('graduacoes.edit', $graduacao->id_graduacao) }}"
-                            style="background-color: #8E251F; color: white;"
-                            class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
-                            Editar
-                        </a>
+                <td class="py-3 px-4 flex gap-2">
+                    <!-- Editar -->
+                    <a href="{{ route('graduacoes.edit', Crypt::encrypt($graduacao->id_graduacao)) }}"
+                        style="background-color: #8E251F; color: white;"
+                        class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
+                        Editar
+                    </a>
 
-                        <!-- Excluir -->
-                        <form action="{{ route('graduacoes.destroy', $graduacao->id_graduacao) }}" method="POST"
-                            onsubmit="return confirm('Deseja excluir esta graduação?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit"
-                                style="background-color: #c02600; color: white;"
-                                class="px-4 py-2 rounded-lg shadow hover:bg-[#D65A3E] transition duration-200">
-                                Excluir
-                            </button>
-                        </form>
-                    </td>
-                </tr>
+                    <!-- Excluir -->
+                    <form action="{{ route('graduacoes.destroy',  Crypt::encrypt($graduacao->id_graduacao)) }}" method="POST"
+                        onsubmit="return confirm('Deseja excluir esta graduação?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                            style="background-color: #c02600; color: white;"
+                            class="px-4 py-2 rounded-lg shadow hover:bg-[#D65A3E] transition duration-200">
+                            Excluir
+                        </button>
+                    </form>
+                </td>
+            </tr>
 
-                @empty
-                <tr>
-                    <td colspan="3" class="text-center text-gray-500 py-6">
-                        Nenhuma graduação cadastrada
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
+            @empty
+            <tr>
+                <td colspan="4" class="text-center text-gray-500 py-6">
+                    Nenhuma graduação cadastrada
+                </td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
+    
+</div>
 
-    </div>
+<!-- JS -->
+<script>
+    function bloquearSubmit(event, form) {
 
-    <!-- JS -->
-    <script>
-        document.querySelectorAll('.bolinha-faixa').forEach(bolinha => {
-            const faixa = bolinha.dataset.faixa;
-            let cor = 'transparent';
+        if (!form.checkValidity()) {
+            return; // deixa validação normal do HTML
+        }
 
-            if (faixa.includes('cinza')) cor = '#808080';
-            else if (faixa.includes('amarela')) cor = '#facc15';
-            else if (faixa.includes('laranja')) cor = '#f97316';
-            else if (faixa.includes('verde')) cor = '#22c55e';
-            else if (faixa.includes('branca')) cor = '#ffffff';
-            else if (faixa.includes('azul')) cor = '#2563eb';
-            else if (faixa.includes('roxa')) cor = '#7c3aed';
-            else if (faixa.includes('marrom')) cor = '#78350f';
-            else if (faixa.includes('preta')) cor = '#000000';
+        const btn = form.querySelector('button[type="submit"]');
 
-            bolinha.style.backgroundColor = cor;
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Salvando...';
+        }
+    }
+
+    document.querySelectorAll('.bolinha-faixa').forEach(bolinha => {
+        const faixa = bolinha.dataset.faixa;
+        let cor = 'transparent';
+
+        if (faixa.includes('cinza')) cor = '#808080';
+        else if (faixa.includes('amarela')) cor = '#facc15';
+        else if (faixa.includes('laranja')) cor = '#f97316';
+        else if (faixa.includes('verde')) cor = '#22c55e';
+        else if (faixa.includes('branca')) cor = '#ffffff';
+        else if (faixa.includes('azul')) cor = '#2563eb';
+        else if (faixa.includes('roxa')) cor = '#7c3aed';
+        else if (faixa.includes('marrom')) cor = '#78350f';
+        else if (faixa.includes('preta')) cor = '#000000';
+
+        bolinha.style.backgroundColor = cor;
+    });
+
+    // FILTRO
+    const filtroNome = document.getElementById('filtroNome');
+    const filtroGrau = document.getElementById('filtroGrau');
+    const limparBtn = document.getElementById('limparFiltros');
+    const linhas = document.querySelectorAll('.linha-graduacao');
+
+    function aplicarFiltro() {
+
+        const nome = filtroNome.value;
+        const grau = filtroGrau.value;
+
+        linhas.forEach(linha => {
+
+            const nomeLinha = linha.dataset.nome || '';
+            const grauLinha = linha.dataset.grau || '';
+
+            let mostrar = true;
+
+            if (nome && nomeLinha !== nome) {
+                mostrar = false;
+            }
+
+            if (grau && grauLinha !== grau) {
+                mostrar = false;
+            }
+
+            linha.style.display = mostrar ? '' : 'none';
         });
+    }
 
-        // FILTRO
-        const filtroNome = document.getElementById('filtroNome');
-        const filtroGrau = document.getElementById('filtroGrau');
-        const limparBtn = document.getElementById('limparFiltros');
-        const linhas = document.querySelectorAll('.linha-graduacao');
+    if (filtroNome && filtroGrau) {
+        filtroNome.addEventListener('change', aplicarFiltro);
+        filtroGrau.addEventListener('change', aplicarFiltro);
 
-        function aplicarFiltro() {
-
-            const nome = filtroNome.value;
-            const grau = filtroGrau.value;
-
-            linhas.forEach(linha => {
-
-                const nomeLinha = linha.dataset.nome || '';
-                const grauLinha = linha.dataset.grau || '';
-
-                let mostrar = true;
-
-                if (nome && nomeLinha !== nome) {
-                    mostrar = false;
-                }
-
-                if (grau && grauLinha !== grau) {
-                    mostrar = false;
-                }
-
-                linha.style.display = mostrar ? '' : 'none';
-            });
-        }
-
-        if (filtroNome && filtroGrau) {
-            filtroNome.addEventListener('change', aplicarFiltro);
-            filtroGrau.addEventListener('change', aplicarFiltro);
-
-            limparBtn.addEventListener('click', function() {
-                filtroNome.value = '';
-                filtroGrau.value = '';
-                aplicarFiltro();
-            });
-        }
+        limparBtn.addEventListener('click', function() {
+            filtroNome.value = '';
+            filtroGrau.value = '';
+            aplicarFiltro();
+        });
+    }
 
 
-        function toggleCadastro() {
-            const form = document.getElementById('cadastroForm');
-            form.classList.toggle('hidden');
-            form.scrollIntoView({
-                behavior: 'smooth'
-            });
-            document.getElementById('formCadastro').reset();
-        }
+    function toggleCadastro() {
+        const form = document.getElementById('cadastroForm');
+        form.classList.toggle('hidden');
+        form.scrollIntoView({
+            behavior: 'smooth'
+        });
+        document.getElementById('formCadastro').reset();
+    }
 
-        function fecharCadastro() {
-            document.getElementById('cadastroForm').classList.add('hidden');
-        }
-    </script>
+    function fecharCadastro() {
+        document.getElementById('cadastroForm').classList.add('hidden');
+    }
+</script>
 
-    @endsection
+@endsection

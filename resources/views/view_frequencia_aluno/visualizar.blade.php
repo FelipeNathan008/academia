@@ -4,18 +4,6 @@
 
 @section('content')
 
-<!-- TOPO -->
-<div class="flex justify-between items-center mb-8">
-    <h2 class="text-3xl font-extrabold text-gray-800">
-        Relatório de Frequência
-    </h2>
-
-    <a href="{{ route('frequencia.listagem') }}"
-        class="px-4 py-2 border rounded-lg hover:bg-gray-100">
-        ← Voltar
-    </a>
-</div>
-
 @php
 $totalPresencasGeral = 0;
 $totalFaltasGeral = 0;
@@ -27,26 +15,54 @@ $totalPresencasGeral += $matricula->frequencias->where('freq_presenca','Presente
 $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->count();
 @endphp
 @endforeach
+<!-- BREADCRUMB -->
+<nav class="mb-6 text-sm text-gray-500">
+    <ol class="flex items-center gap-2">
+        <li>
+            <a href="{{ route('frequencia.listagem') }}" class="hover:text-[#8E251F] transition">
+                Frequência
+            </a>
+        </li>
+        <li>/</li>
+        <li class="text-gray-400">{{ $grade->professor->prof_nome }}</li>
+        <li>/</li>
+        <li class="font-semibold text-gray-700">
+            Relatório
+        </li>
+    </ol>
+</nav>
 
-<!-- GRÁFICO -->
-<div class="mb-6">
-    <div class="mb-2 text-center">
-        <h3 class="text-lg font-bold text-gray-700">
-            Resumo Geral de Frequência
-        </h3>
-        <p class="text-sm text-gray-500">
-            Distribuição total de presenças e faltas da turma
-        </p>
+<!-- TOPO -->
+<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+    <div class="flex items-center gap-4">
+        <a href="{{ route('frequencia.listagem') }}"
+            class="flex items-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
+            ← Voltar
+        </a>
+
+        <h2 class="text-3xl font-extrabold text-gray-800">
+            Relatório da Frequência
+        </h2>
     </div>
+    <!-- GRÁFICO -->
+    <div class="mb-6">
+        <div class="mb-2 text-center">
+            <h3 class="text-lg font-bold text-gray-700">
+                Resumo Geral de Frequência
+            </h3>
+            <p class="text-sm text-gray-500">
+                Distribuição total de presenças e faltas da turma
+            </p>
+        </div>
 
-    <canvas
-        id="graficoFrequencia"
-        style="max-height: 250px;"
-        data-presencas="{{ $totalPresencasGeral }}"
-        data-faltas="{{ $totalFaltasGeral }}">
-    </canvas>
+        <canvas
+            id="graficoFrequencia"
+            style="max-height: 250px;"
+            data-presencas="{{ $totalPresencasGeral }}"
+            data-faltas="{{ $totalFaltasGeral }}">
+        </canvas>
+    </div>
 </div>
-
 <!-- CARD DA GRADE -->
 <div class="mb-8">
     <div class="bg-white border-l-8 border-[#174ab9] rounded-2xl shadow-lg p-6">
@@ -226,7 +242,7 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
 
                 <td class="py-3 px-4 text-center">
                     @if($matricula->aluno)
-                    <a href="{{ route('detalhes-aluno.index', $matricula->aluno->id_aluno) }}"
+                    <a href="{{ route('detalhes-aluno.index', Crypt::encrypt($matricula->aluno->id_aluno)) }}"
                         class="px-4 py-2 rounded-lg shadow text-white"
                         style="background-color: #174ab9;">
                         Graduações

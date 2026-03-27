@@ -49,6 +49,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/professores', [ProfessorController::class, 'store'])->name('professores.store');
     Route::get('/professores/{id}/edit', [ProfessorController::class, 'edit'])->name('professores.edit');
     Route::put('/professores/{id}', [ProfessorController::class, 'update'])->name('professores.update');
+    Route::delete('/professores/{id}', [ProfessorController::class, 'destroy'])->name('professores.destroy');
 
     //detalhes do professor
     Route::get('/professores/{id}/detalhes', [DetalhesProfessorController::class, 'index'])->name('detalhes-professor.index');
@@ -56,6 +57,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/detalhes-professor/{id}/edit', [DetalhesProfessorController::class, 'edit'])->name('detalhes-professor.edit');
     Route::put('/detalhes-professor/{id}', [DetalhesProfessorController::class, 'update'])->name('detalhes-professor.update');
     Route::delete('/detalhes-professor/{id}', [DetalhesProfessorController::class, 'destroy'])->name('detalhes-professor.destroy');
+    Route::get('/certificado/{path}', [DetalhesProfessorController::class, 'showCertificado'])->name('certificado.show');
 
     // Dashboard Botões
     Route::get('/dashboard/mensalidades-atrasadas', [DashboardController::class, 'mensalidadesAtrasadas'])
@@ -70,6 +72,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/frequencia/{id}/edit', [FrequenciaAlunoController::class, 'edit'])->name('frequencia.edit');
     Route::put('/frequencia/{id}', [FrequenciaAlunoController::class, 'update'])->name('frequencia.update');
     Route::post('/frequencia', [FrequenciaAlunoController::class, 'store'])->name('frequencia.store');
+    //Route::put('frequencia/editar-data/{data}', [FrequenciaAlunoController::class, 'updateDataDia'])
+    //->name('frequencia.updateDataDia');
 
     // CONTROLE
     //users
@@ -97,6 +101,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/graduacoes', [GraduacaoController::class, 'store'])->name('graduacoes.store');
     Route::get('/graduacoes/{id}/edit', [GraduacaoController::class, 'edit'])->name('graduacoes.edit');
     Route::put('/graduacoes/{id}', [GraduacaoController::class, 'update'])->name('graduacoes.update');
+    Route::delete('/graduacoes/{id}', [GraduacaoController::class, 'destroy'])->name('graduacoes.destroy');
 
     Route::get('/preco-aula', [PrecoModalidadeController::class, 'index'])->name('preco-aula');
     Route::post('/preco-aula', [PrecoModalidadeController::class, 'store'])->name('preco-aula.store');
@@ -108,6 +113,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/modalidades', [ModalidadeController::class, 'store'])->name('modalidades.store');
     Route::get('/modalidades/{id}/edit', [ModalidadeController::class, 'edit'])->name('modalidades.edit');
     Route::put('/modalidades/{id}', [ModalidadeController::class, 'update'])->name('modalidades.update');
+    Route::delete('/modalidades/{id}', [ModalidadeController::class, 'destroy'])->name('modalidades.destroy');
 
     Route::get('/horario-treino', [HorarioTreinoController::class, 'index'])->name('horario_treino');
     Route::post('/horario-treino', [HorarioTreinoController::class, 'store'])->name('horario_treino.store');
@@ -159,6 +165,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/detalhes-aluno/{id}/edit', [DetalhesAlunoController::class, 'edit'])->name('detalhes-aluno.edit');
     Route::put('/detalhes-aluno/{id}', [DetalhesAlunoController::class, 'update'])->name('detalhes-aluno.update');
     Route::delete('/detalhes-aluno/{id}', [DetalhesAlunoController::class, 'destroy'])->name('detalhes-aluno.destroy');
+    Route::get('/certificado/{path}', [DetalhesAlunoController::class, 'showCertificado'])->name('detalhes-aluno.showCertificado');
 
 
     Route::get('/grade_horarios', [GradeHorarioController::class, 'index'])->name('grade_horarios');

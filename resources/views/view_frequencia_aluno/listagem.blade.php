@@ -130,13 +130,13 @@
                 <td class="py-3 px-4 text-center">
                     <div class="flex justify-center gap-2">
 
-                        <a href="{{ route('frequencia.dias', $grade->id_grade) }}"
+                        <a href="{{ route('frequencia.dias', Crypt::encrypt($grade->id_grade)) }}"
                             class="px-4 py-2 rounded-lg shadow text-white"
                             style="background-color: #174ab9;">
-                            Detalhes
+                            Cadastrar Frequência
                         </a>
 
-                        <a href="{{ route('frequencia.visualizar', $grade->id_grade) }}"
+                        <a href="{{ route('frequencia.visualizar', Crypt::encrypt($grade->id_grade)) }}"
                             class="px-4 py-2 rounded-lg shadow text-white"
                             style="background-color: #8E251F;">
                             Ver Frequência
@@ -148,7 +148,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="5" class="text-center py-6 text-gray-500">
+                <td colspan="6" class="text-center py-6 text-gray-500">
                     Nenhuma turma cadastrada.
                 </td>
             </tr>

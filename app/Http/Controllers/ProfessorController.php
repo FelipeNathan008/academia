@@ -17,11 +17,14 @@ class ProfessorController extends Controller
 {
     public function index()
     {
-        $professores = Professor::all();
+        $user = Auth::user();
+
+        $professores = Professor::where('id_emp_id', $user->id_emp_id)->get();
 
         $graduacoes = Graduacao::select('gradu_nome_cor')
             ->selectRaw('MAX(gradu_grau) as max_grau')
             ->groupBy('gradu_nome_cor')
+            ->where('id_emp_id', $user->id_emp_id)
             ->orderByRaw("
             CASE gradu_nome_cor
                 WHEN 'Faixa Branca' THEN 1
@@ -60,6 +63,7 @@ class ProfessorController extends Controller
             'prof_foto' => 'nullable|image|max:2048',
         ]);
 
+        // SÓ DEPOIS faz upload
         $filename = null;
 
         if ($request->hasFile('prof_foto')) {
@@ -88,15 +92,32 @@ class ProfessorController extends Controller
         } catch (DecryptException $e) {
             abort(404);
         }
-        $professor = Professor::findOrFail($id);
+        $user = Auth::user();
+
+        $professor = Professor::where('id_professor', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
         return view('view_professores.edit', compact('professor'));
     }
 
     public function update(Request $request, $id)
     {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+
+        $professor = Professor::where('id_professor', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
         $request->merge([
             'prof_telefone' => preg_replace('/\D/', '', $request->prof_telefone),
         ]);
+
         $request->validate([
             'prof_nome' => 'required|string|max:120',
             'prof_nascimento' => 'required|date',
@@ -105,15 +126,10 @@ class ProfessorController extends Controller
             'prof_foto' => 'nullable|image|max:2048',
         ]);
 
-        $professor = Professor::findOrFail($id);
-
-        $professor->prof_nome = $request->prof_nome;
-        $professor->prof_nascimento = $request->prof_nascimento;
-        $professor->prof_telefone = $request->prof_telefone;
-        $professor->prof_desc = $request->prof_desc;
-
+      
+        // FOTO
         if ($request->hasFile('prof_foto')) {
-            // Deletar foto antiga opcional
+
             if ($professor->prof_foto && file_exists(public_path('images/professores/' . $professor->prof_foto))) {
                 unlink(public_path('images/professores/' . $professor->prof_foto));
             }
@@ -121,18 +137,35 @@ class ProfessorController extends Controller
             $file = $request->file('prof_foto');
             $filename = time() . '_' . $file->getClientOriginalName();
             $file->move(public_path('images/professores'), $filename);
+
             $professor->prof_foto = $filename;
         }
 
-        $professor->save();
+        $professor->update([
+            'prof_nome' => $request->prof_nome,
+            'prof_nascimento' => $request->prof_nascimento,
+            'prof_telefone' => $request->prof_telefone,
+            'prof_desc' => $request->prof_desc,
+        ]);
 
-        return redirect()->route('professores')->with('success', 'Professor atualizado com sucesso!');
+        return redirect()->route('professores')
+            ->with('success', 'Professor atualizado com sucesso!');
     }
 
 
     public function destroy($id)
     {
-        $professor = Professor::findOrFail($id);
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+
+        $professor = Professor::where('id_professor', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
         $professor->detalhes()->delete();
 
         if ($professor->prof_foto && file_exists(public_path('images/professores/' . $professor->prof_foto))) {

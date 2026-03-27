@@ -4,6 +4,22 @@
 
 @section('content')
 
+@if ($errors->any())
+<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
+    
+    <div class="flex items-center gap-2 mb-2">
+        <span class="font-semibold">Atenção:</span>
+        <span class="text-sm">Verifique os campos abaixo</span>
+    </div>
+
+    <ul class="list-disc pl-5 text-sm space-y-1">
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+
+</div>
+@endif
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div>
@@ -18,7 +34,7 @@
 
 <!-- FORMULÁRIO DE CADASTRO -->
 <div id="cadastroForm" class="hidden mb-10">
-    <form id="formCadastro" action="{{ route('modalidades.store') }}" method="POST">
+    <form id="formCadastro" action="{{ route('modalidades.store') }}" method="POST" onsubmit="bloquearSubmit(event, this)">
         @csrf
         <div class="bg-white rounded-2xl shadow-md p-8">
             <h3 class="text-xl font-bold mb-6 text-gray-700">Cadastrar Modalidade</h3>
@@ -84,14 +100,14 @@
 
                 <td class="py-3 px-4 flex gap-2">
                     <!-- Editar -->
-                    <a href="{{ route('modalidades.edit', $modalidade->id_modalidade) }}"
+                    <a href="{{ route('modalidades.edit',  Crypt::encrypt($modalidade->id_modalidade)) }}"
                         style="background-color: #8E251F; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                         Editar
                     </a>
 
                     <!-- Excluir -->
-                    <form action="{{ route('modalidades.destroy', $modalidade->id_modalidade) }}"
+                    <form action="{{ route('modalidades.destroy',  Crypt::encrypt($modalidade->id_modalidade)) }}"
                         method="POST"
                         onsubmit="return confirm('Deseja excluir esta modalidade?');">
                         @csrf
@@ -114,14 +130,31 @@
             @endforelse
         </tbody>
     </table>
+
 </div>
 
 <!-- JS -->
 <script>
+    function bloquearSubmit(event, form) {
+
+        if (!form.checkValidity()) {
+            return; // deixa validação normal do HTML
+        }
+
+        const btn = form.querySelector('button[type="submit"]');
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Salvando...';
+        }
+    }
+
     function toggleCadastro() {
         const form = document.getElementById('cadastroForm');
         form.classList.toggle('hidden');
-        form.scrollIntoView({ behavior: 'smooth' });
+        form.scrollIntoView({
+            behavior: 'smooth'
+        });
         document.getElementById('formCadastro').reset();
     }
 

@@ -3,7 +3,22 @@
 @section('title', 'Preço por Modalidade')
 
 @section('content')
+@if ($errors->any())
+<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
+    
+    <div class="flex items-center gap-2 mb-2">
+        <span class="font-semibold">Atenção:</span>
+        <span class="text-sm">Verifique os campos abaixo</span>
+    </div>
 
+    <ul class="list-disc pl-5 text-sm space-y-1">
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+
+</div>
+@endif
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div>
@@ -18,7 +33,7 @@
 
 <!-- FORMULÁRIO -->
 <div id="cadastroForm" class="hidden mb-10">
-    <form action="{{ route('preco-aula.store') }}" method="POST">
+    <form action="{{ route('preco-aula.store') }}" method="POST" onsubmit="bloquearSubmit(event, this)">
         @csrf
         <div class="bg-white rounded-2xl shadow-md p-8">
             <h3 class="text-xl font-bold mb-6 text-gray-700">Cadastrar Valor</h3>
@@ -115,13 +130,13 @@
                 <td class="py-3 px-4 flex gap-2">
 
                     <!-- Editar -->
-                    <a href="{{ route('preco-aula.edit', $valor->id_preco_modalidade) }}"
+                    <a href="{{ route('preco-aula.edit', Crypt::encrypt($valor->id_preco_modalidade)) }}"
                         class="px-4 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920] transition">
                         Editar
                     </a>
 
                     <!-- Excluir -->
-                    <form action="{{ route('preco-aula.destroy', $valor->id_preco_modalidade) }}"
+                    <form action="{{ route('preco-aula.destroy',  Crypt::encrypt($valor->id_preco_modalidade)) }}"
                         method="POST"
                         onsubmit="return confirm('Deseja excluir este valor?');">
                         @csrf
@@ -158,6 +173,20 @@
 
     function fecharCadastro() {
         document.getElementById('cadastroForm').classList.add('hidden');
+    }
+
+    function bloquearSubmit(event, form) {
+
+        if (!form.checkValidity()) {
+            return; // deixa validação normal do HTML
+        }
+
+        const btn = form.querySelector('button[type="submit"]');
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Salvando...';
+        }
     }
 
     const inputMask = document.getElementById('preco_modalidade_mask');

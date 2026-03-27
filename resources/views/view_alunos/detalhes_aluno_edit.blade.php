@@ -3,10 +3,25 @@
 @section('title', 'Editar Graduação do Aluno')
 
 @section('content')
+@if ($errors->any())
+<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
 
+    <div class="flex items-center gap-2 mb-2">
+        <span class="font-semibold">Atenção:</span>
+        <span class="text-sm">Verifique os campos abaixo</span>
+    </div>
+
+    <ul class="list-disc pl-5 text-sm space-y-1">
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+
+</div>
+@endif
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
-        <li><a href="{{ route('alunos', $aluno->responsavel_id_responsavel) }}" class="hover:text-[#8E251F] transition">Alunos</a></li>
+        <li><a href="{{ route('alunos', Crypt::encrypt($aluno->responsavel_id_responsavel)) }}" class="hover:text-[#8E251F] transition">Alunos</a></li>
         <li>/</li>
         <li class="text-gray-400">{{ $aluno->aluno_nome }}</li>
         <li>/</li>
@@ -14,20 +29,11 @@
     </ol>
 </nav>
 
-@if ($errors->any())
-<div class="bg-red-100 text-red-700 p-3 rounded mb-3">
-    <ul>
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-    </ul>
-</div>
-@endif
 
 <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-md p-8">
     <h2 class="text-2xl font-bold mb-6 text-gray-800">Editar Graduação – {{ $detalhe->det_gradu_nome_cor }}</h2>
 
-    <form action="{{ route('detalhes-aluno.update', $detalhe->id_det_aluno) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('detalhes-aluno.update', Crypt::encrypt($detalhe->id_det_aluno)) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 

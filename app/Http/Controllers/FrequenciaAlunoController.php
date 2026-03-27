@@ -5,26 +5,41 @@ namespace App\Http\Controllers;
 use App\Models\FrequenciaAluno;
 use App\Models\GradeHorario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Auth;
+
 
 class FrequenciaAlunoController extends Controller
 {
 
     public function listagemGrades()
     {
-        $grades = GradeHorario::with('matriculas')->get();
-
+        $user = Auth::user();
+        $grades = GradeHorario::with('matriculas')
+            ->where('id_emp_id', $user->id_emp_id)
+            ->get();
         return view('view_frequencia_aluno.listagem', compact('grades'));
     }
 
     public function listagemDias($gradeId)
     {
+        try {
+            $gradeId = Crypt::decrypt($gradeId);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
         $grade = GradeHorario::with(['matriculas' => function ($query) {
             $query->where('matri_status', 'Matriculado');
         }, 'matriculas.aluno'])
+            ->where('id_emp_id', $user->id_emp_id)
             ->findOrFail($gradeId);
 
         $dias = FrequenciaAluno::with('matricula.aluno')
             ->where('grade_horario_id_grade', $gradeId)
+            ->where('id_emp_id', $user->id_emp_id)
             ->orderBy('freq_data_aula', 'desc')
             ->get()
             ->groupBy('freq_data_aula');
@@ -34,61 +49,104 @@ class FrequenciaAlunoController extends Controller
 
     public function visualizar($id)
     {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
         $grade = GradeHorario::with([
             'matriculas.aluno.detalhes',
             'matriculas.frequencias'
-        ])->findOrFail($id);
+        ])->where('id_emp_id', $user->id_emp_id)
+            ->findOrFail($id);
 
         return view('view_frequencia_aluno.visualizar', compact('grade'));
     }
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+
         $request->validate([
-            'grade_id' => 'required|exists:grade_horario,id_grade',
+            'grade_id'  => 'required|exists:grade_horario,id_grade',
             'data_aula' => 'required|date',
-            'presenca' => 'required|array'
+            'presenca'  => 'required|array'
         ]);
 
         foreach ($request->presenca as $matriculaId => $status) {
 
+            $jaExiste = FrequenciaAluno::where('grade_horario_id_grade', $request->grade_id)
+                ->where('matricula_id_matricula', $matriculaId)
+                ->where('freq_data_aula', $request->data_aula)
+                ->where('id_emp_id', $user->id_emp_id)
+                ->exists();
+
+            if ($jaExiste) {
+                return back()->withErrors([
+                    'matricula' => 'Erro, já existe registro de frequência para este aluno nesta data.'
+                ])->withInput();
+            }
+
             FrequenciaAluno::create([
                 'grade_horario_id_grade' => $request->grade_id,
                 'matricula_id_matricula' => $matriculaId,
-                'freq_presenca' => $status,
-                'freq_data_aula' => $request->data_aula,
-                'freq_observacao' => $request->observacao[$matriculaId] ?? null
+                'freq_presenca'           => $status,
+                'freq_data_aula'          => $request->data_aula,
+                'freq_observacao'         => $request->observacao[$matriculaId] ?? null,
+                'id_emp_id'               => $user->id_emp_id
             ]);
         }
 
-        return redirect()->route('frequencia.dias', $request->grade_id)
+        return redirect()->route('frequencia.dias', Crypt::encrypt($request->grade_id))
             ->with('success', 'Frequência salva com sucesso!');
     }
 
     public function edit($id)
     {
-        $frequencia = FrequenciaAluno::with('matricula.aluno')
-            ->findOrFail($id);
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+        $frequencia = FrequenciaAluno::where('id_frequencia_aluno', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
 
         return view('view_frequencia_aluno.edit', compact('frequencia'));
     }
 
     public function update(Request $request, $id)
     {
+        $user = Auth::user();
+
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $frequencia = FrequenciaAluno::where('id_frequencia_aluno', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
         $request->validate([
-            'freq_presenca' => 'required',
+            'freq_presenca'   => 'required',
             'freq_observacao' => 'nullable|string'
         ]);
 
-        $frequencia = FrequenciaAluno::findOrFail($id);
-
         $frequencia->update([
-            'freq_presenca' => $request->freq_presenca,
+            'freq_presenca'   => $request->freq_presenca,
             'freq_observacao' => $request->freq_observacao
         ]);
 
         return redirect()
-            ->route('frequencia.dias', $frequencia->grade_horario_id_grade)
-            ->with('success', 'Frequência atualizada!');
+            ->route('frequencia.dias', Crypt::encrypt($frequencia->grade_horario_id_grade))
+            ->with('success', 'Frequência atualizada com sucesso!');
     }
+
+    
 }

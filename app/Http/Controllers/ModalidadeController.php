@@ -4,12 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Modalidade;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Auth;
 
 class ModalidadeController extends Controller
 {
     public function index()
     {
-        $modalidades = Modalidade::all();
+        $user = Auth::user();
+        $modalidades = Modalidade::where('id_emp_id', $user->id_emp_id)->get();
 
         return view('view_admin.modalidades', compact('modalidades'));
     }
@@ -17,29 +21,44 @@ class ModalidadeController extends Controller
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+
         $request->validate([
             'mod_nome' => 'required|string|max:100',
-            'mod_desc' => 'required|string',
+            'mod_desc' => 'required|string|max:255',
         ]);
 
-        Modalidade::create($request->all());
+        $jaExiste = Modalidade::where('mod_nome', $request->mod_nome)
+            ->where('mod_desc', $request->mod_desc)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->exists();
 
+        if ($jaExiste) {
+            return back()->withErrors([
+                'mod_nome' => 'Erro, Já existe essa modalidade cadastrada.'
+            ])->withInput();
+        }
+
+        Modalidade::create([
+            'mod_nome'  => $request->mod_nome,
+            'mod_desc'  => $request->mod_desc,
+            'id_emp_id' => $user->id_emp_id
+        ]);
         return redirect()->route('modalidades')
             ->with('success', 'Modalidade cadastrada com sucesso!');
     }
 
-    public function show($id)
-    {
-        $modalidade = Modalidade::findOrFail($id);
-
-        return response()->json([
-            'data' => $modalidade
-        ]);
-    }
-
     public function edit($id)
     {
-        $modalidade = Modalidade::findOrFail($id);
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+        $user = Auth::user();
+        $modalidade = Modalidade::where('id_modalidade', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
 
         return view('view_admin.modalidades_edit', compact('modalidade'));
     }
@@ -47,14 +66,38 @@ class ModalidadeController extends Controller
 
     public function update(Request $request, $id)
     {
-        $modalidade = Modalidade::findOrFail($id);
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+        $user = Auth::user();
+
+        $modalidade = Modalidade::where('id_modalidade', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
 
         $request->validate([
-            'mod_nome' => 'sometimes|string|max:100',
-            'mod_desc' => 'sometimes|string',
+            'mod_nome' => 'required|string|max:100',
+            'mod_desc' => 'required|string|max:255',
         ]);
 
-        $modalidade->update($request->all());
+        $jaExiste = Modalidade::where('mod_nome', $request->mod_nome)
+            ->where('mod_desc', $request->mod_desc)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->where('id_modalidade', '!=', $modalidade->id_modalidade) // ignora o próprio registro
+            ->exists();
+
+        if ($jaExiste) {
+            return back()->withErrors([
+                'mod_nome' => 'Erro, Já existe essa modalidade cadastrada.'
+            ])->withInput();
+        }
+
+        $modalidade->update([
+            'mod_nome'  => $request->mod_nome,
+            'mod_desc'  => $request->mod_desc,
+        ]);
 
         return redirect()->route('modalidades')
             ->with('success', 'Modalidade atualizada com sucesso!');
@@ -62,7 +105,18 @@ class ModalidadeController extends Controller
 
     public function destroy($id)
     {
-        $modalidade = Modalidade::findOrFail($id);
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+
+        $modalidade = Modalidade::where('id_modalidade', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
         $modalidade->delete();
 
         return redirect()->route('modalidades')

@@ -290,14 +290,14 @@
                                     <p><strong>Descrição:</strong> {{ $evento->grade_desc ?? 'Sem descrição' }}</p>
 
                                     <div class="flex justify-end gap-2 mt-2">
-                                        <a href="{{ route('frequencia.dias', $evento->id_grade) }}"
+                                        <a href="{{ route('frequencia.dias', Crypt::encrypt($evento->id_grade)) }}"
                                             class="btn btn-det">Detalhes</a>
                                         </a>
 
-                                        <a href="{{ route('grade_horarios.edit', $evento->id_grade) }}"
+                                        <a href="{{ route('grade_horarios.edit', Crypt::encrypt($evento->id_grade)) }}"
                                             class="btn btn-edit">Editar</a>
 
-                                        <form action="{{ route('grade_horarios.destroy', $evento->id_grade) }}"
+                                        <form action="{{ route('grade_horarios.destroy', Crypt::encrypt($evento->id_grade)) }}"
                                             method="POST"
                                             onsubmit="return confirm('Tem certeza que deseja excluir este evento?');">
                                             @csrf

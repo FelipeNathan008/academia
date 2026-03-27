@@ -3,10 +3,29 @@
 @section('title', 'Editar Graduação do Professor')
 
 @section('content')
+@if ($errors->any())
+<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
 
+    <div class="flex items-center gap-2 mb-2">
+        <span class="font-semibold">Atenção:</span>
+        <span class="text-sm">Verifique os campos abaixo</span>
+    </div>
+
+    <ul class="list-disc pl-5 text-sm space-y-1">
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+
+</div>
+@endif
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
-        <li><a href="{{ route('professores.index') }}" class="hover:text-[#8E251F] transition">Professores</a></li>
+        <li>
+            <a href="{{ route('professores') }}" class="hover:text-[#8E251F] transition">
+                Professores
+            </a>
+        </li>
         <li>/</li>
         <li class="text-gray-400">{{ $professor->prof_nome }}</li>
         <li>/</li>
@@ -14,20 +33,10 @@
     </ol>
 </nav>
 
-@if ($errors->any())
-<div class="bg-red-100 text-red-700 p-3 rounded mb-3">
-    <ul>
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-    </ul>
-</div>
-@endif
-
 <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-md p-8">
     <h2 class="text-2xl font-bold mb-6 text-gray-800">Editar Graduação – {{ $detalhe->det_gradu_nome_cor }}</h2>
 
-    <form action="{{ route('detalhes-professor.update', $detalhe->id_det_professor) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('detalhes-professor.update', Crypt::encrypt($detalhe->id_det_professor)) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -38,15 +47,15 @@
                     <option value="">Selecione uma graduação</option>
                     @php $cores = []; @endphp
                     @foreach($graduacoesTotais as $g)
-                        @if(!in_array($g->gradu_nome_cor, $cores))
-                            @php
-                                $cores[] = $g->gradu_nome_cor;
-                                $grausDaCor = $graduacoesTotais->filter(fn($x) => $x->gradu_nome_cor == $g->gradu_nome_cor)->pluck('gradu_grau')->sort()->values()->all();
-                            @endphp
-                            <option value="{{ $g->gradu_nome_cor }}" data-graus="{{ implode(',', $grausDaCor) }}" {{ $detalhe->det_gradu_nome_cor == $g->gradu_nome_cor ? 'selected' : '' }}>
-                                {{ $g->gradu_nome_cor }}
-                            </option>
-                        @endif
+                    @if(!in_array($g->gradu_nome_cor, $cores))
+                    @php
+                    $cores[] = $g->gradu_nome_cor;
+                    $grausDaCor = $graduacoesTotais->filter(fn($x) => $x->gradu_nome_cor == $g->gradu_nome_cor)->pluck('gradu_grau')->sort()->values()->all();
+                    @endphp
+                    <option value="{{ $g->gradu_nome_cor }}" data-graus="{{ implode(',', $grausDaCor) }}" {{ $detalhe->det_gradu_nome_cor == $g->gradu_nome_cor ? 'selected' : '' }}>
+                        {{ $g->gradu_nome_cor }}
+                    </option>
+                    @endif
                     @endforeach
                 </select>
             </div>
@@ -63,9 +72,9 @@
                 <select name="det_modalidade" class="w-full border rounded-lg px-3 py-2" required>
                     <option value="">Selecione</option>
                     @foreach($modalidades as $modalidade)
-                        <option value="{{ $modalidade->mod_nome }}" {{ $detalhe->det_modalidade == $modalidade->mod_nome ? 'selected' : '' }}>
-                            {{ $modalidade->mod_nome }}
-                        </option>
+                    <option value="{{ $modalidade->mod_nome }}" {{ $detalhe->det_modalidade == $modalidade->mod_nome ? 'selected' : '' }}>
+                        {{ $modalidade->mod_nome }}
+                    </option>
                     @endforeach
                 </select>
             </div>
@@ -79,10 +88,10 @@
                 <label class="text-sm font-medium text-gray-600">Certificado (Imagem ou PDF) - Opcional</label>
                 <input type="file" name="det_certificado" class="w-full border rounded-lg px-3 py-2" accept=".jpg,.jpeg,.png,.pdf">
                 @if($detalhe->det_certificado)
-                    <a href="{{ asset($detalhe->det_certificado) }}" target="_blank" 
-                       style="display:inline-block; background-color:#174ab9; color:white; padding:6px 12px; border-radius:6px; margin-top:6px; text-decoration:none;">
-                        Ver o arquivo atual
-                    </a>
+                <a href="{{ asset($detalhe->det_certificado) }}" target="_blank"
+                    style="display:inline-block; background-color:#174ab9; color:white; padding:6px 12px; border-radius:6px; margin-top:6px; text-decoration:none;">
+                    Ver o arquivo atual
+                </a>
                 @endif
             </div>
         </div>
@@ -95,30 +104,30 @@
 </div>
 
 <script>
-function preencherGraus(select) {
-    const grauSelect = select.closest('form').querySelector('.grau-input');
-    grauSelect.innerHTML = '';
-    if (!select.value) {
-        grauSelect.innerHTML = '<option value="">Selecione primeiro uma graduação</option>';
-        return;
+    function preencherGraus(select) {
+        const grauSelect = select.closest('form').querySelector('.grau-input');
+        grauSelect.innerHTML = '';
+        if (!select.value) {
+            grauSelect.innerHTML = '<option value="">Selecione primeiro uma graduação</option>';
+            return;
+        }
+        const graus = select.selectedOptions[0].dataset.graus.split(',').sort((a, b) => a - b);
+        grauSelect.innerHTML = '<option value="">Selecione um grau</option>';
+        graus.forEach(g => {
+            const option = document.createElement('option');
+            option.value = g;
+            option.textContent = g;
+            // Marca o grau atual
+            if (g == "{{ $detalhe->det_grau }}") option.selected = true;
+            grauSelect.appendChild(option);
+        });
     }
-    const graus = select.selectedOptions[0].dataset.graus.split(',').sort((a,b)=>a-b);
-    grauSelect.innerHTML = '<option value="">Selecione um grau</option>';
-    graus.forEach(g => {
-        const option = document.createElement('option');
-        option.value = g;
-        option.textContent = g;
-        // Marca o grau atual
-        if (g == "{{ $detalhe->det_grau }}") option.selected = true;
-        grauSelect.appendChild(option);
-    });
-}
 
-// Preencher os graus ao carregar a página
-document.addEventListener('DOMContentLoaded', function() {
-    const selectFaixa = document.querySelector('select[name="det_gradu_nome_cor"]');
-    if (selectFaixa) preencherGraus(selectFaixa);
-});
+    // Preencher os graus ao carregar a página
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectFaixa = document.querySelector('select[name="det_gradu_nome_cor"]');
+        if (selectFaixa) preencherGraus(selectFaixa);
+    });
 </script>
 
 @endsection

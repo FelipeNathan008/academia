@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class Graduacao extends Model
 {
@@ -12,9 +14,17 @@ class Graduacao extends Model
     protected $fillable = [
         'gradu_nome_cor',
         'gradu_grau',
-        'gradu_meta'
+        'gradu_meta',
+        'id_emp_id'
     ];
-
+    protected static function booted()
+    {
+        static::addGlobalScope('empresa', function (Builder $builder) {
+            if (Auth::check()) {
+                $builder->where('id_emp_id', Auth::user()->id_emp_id);
+            }
+        });
+    }
     public function scopeOrdenarPorFaixa($query)
     {
         return $query->orderByRaw("

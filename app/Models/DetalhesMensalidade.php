@@ -16,7 +16,8 @@ class DetalhesMensalidade extends Model
         'det_mensa_data_venc',
         'det_mensa_data_pagamento',
         'det_mensa_valor',
-        'det_mensa_status'
+        'det_mensa_status',
+        'id_emp_id'
     ];
 
     public function mensalidade()

@@ -3,7 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 class DetalhesAluno extends Model
 {
     protected $table = 'detalhes_aluno';
@@ -15,12 +16,22 @@ class DetalhesAluno extends Model
         'det_grau',
         'det_modalidade',
         'det_data',
-        'det_certificado'
+        'det_certificado',
+        'id_emp_id'
     ];
 
     public function aluno()
     {
         return $this->belongsTo(Aluno::class, 'aluno_id_aluno', 'id_aluno');
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope('empresa', function (Builder $builder) {
+            if (Auth::check()) {
+                $builder->where('id_emp_id', Auth::user()->id_emp_id);
+            }
+        });
     }
 
     public function scopeOrdenarPorFaixa($query)

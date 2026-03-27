@@ -13,18 +13,25 @@ use Illuminate\Support\Facades\Auth;
 
 class MensalidadeController extends Controller
 {
-    public function index(Request $request, $id_aluno)
+
+    public function index(Request $request, $id)
     {
         try {
-            $id_aluno = Crypt::decrypt($id_aluno);
+            $id = Crypt::decrypt($id);
         } catch (DecryptException $e) {
             abort(404);
         }
 
-        $aluno = Aluno::findOrFail($id_aluno);
+        $user = Auth::user();
 
+        $aluno = Aluno::where('id_aluno', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
+        // Atualiza atrasados SOMENTE da empresa
         DetalhesMensalidade::where('det_mensa_status', 'Em aberto')
             ->whereDate('det_mensa_data_venc', '<', Carbon::today())
+            ->where('id_emp_id', $user->id_emp_id)
             ->update([
                 'det_mensa_status' => 'Atrasado'
             ]);
@@ -39,7 +46,8 @@ class MensalidadeController extends Controller
         }
 
         $mensalidades = $query
-            ->where('aluno_id_aluno', $id_aluno)
+            ->where('aluno_id_aluno', $id)
+            ->where('id_emp_id', $user->id_emp_id)
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -48,7 +56,17 @@ class MensalidadeController extends Controller
 
     public function darBaixa($id)
     {
-        $detalhe = DetalhesMensalidade::findOrFail($id);
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+
+        $detalhe = DetalhesMensalidade::where('id_detalhes_mensalidade', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
 
         $detalhe->update([
             'det_mensa_status' => 'Pago',
@@ -61,7 +79,17 @@ class MensalidadeController extends Controller
 
     public function desfazerBaixa($id)
     {
-        $detalhe = DetalhesMensalidade::findOrFail($id);
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+
+        $detalhe = DetalhesMensalidade::where('id_detalhes_mensalidade', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
 
         $detalhe->update([
             'det_mensa_status' => 'Em aberto',
@@ -77,77 +105,20 @@ class MensalidadeController extends Controller
             'mensalidade_id' => 'required',
             'nova_forma' => 'required'
         ]);
+        $user = Auth::user();
 
-        DetalhesMensalidade::where(
-            'mensalidade_id_mensalidade',
-            $request->mensalidade_id
-        )
+        // valida se a mensalidade pertence à empresa
+        $mensalidade = Mensalidade::where('id_mensalidade', $request->mensalidade_id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
+        DetalhesMensalidade::where('mensalidade_id_mensalidade', $mensalidade->id_mensalidade)
+            ->where('id_emp_id', $user->id_emp_id)
             ->update([
                 'det_mensa_forma_pagamento' => $request->nova_forma
             ]);
 
+
         return back()->with('success', 'Forma de pagamento atualizada com sucesso!');
-    }
-
-
-    public function store(Request $request)
-    {
-        $request->validate([
-            'aluno_id_aluno' => 'required|exists:aluno,id_aluno',
-            'mensa_dia_venc' => 'required|string|max:2',
-            'mensa_valor'    => 'required|numeric|min:0',
-        ]);
-
-        $mensalidade = Mensalidade::create([
-            'aluno_id_aluno' => $request->aluno_id_aluno,
-            'mensa_dia_venc' => $request->mensa_dia_venc,
-            'mensa_valor'    => $request->mensa_valor,
-        ]);
-
-        return response()->json([
-            'message' => 'Mensalidade criada com sucesso',
-            'data' => $mensalidade
-        ], 201);
-    }
-
-    public function show($id)
-    {
-        $mensalidade = Mensalidade::with('aluno')->findOrFail($id);
-
-        return response()->json([
-            'data' => $mensalidade
-        ]);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $mensalidade = Mensalidade::findOrFail($id);
-
-        $request->validate([
-            'aluno_id_aluno' => 'sometimes|exists:aluno,id_aluno',
-            'mensa_dia_venc' => 'sometimes|string|max:2',
-            'mensa_valor'    => 'sometimes|numeric|min:0',
-        ]);
-
-        $mensalidade->update($request->only([
-            'aluno_id_aluno',
-            'mensa_dia_venc',
-            'mensa_valor'
-        ]));
-
-        return response()->json([
-            'message' => 'Mensalidade atualizada com sucesso',
-            'data' => $mensalidade
-        ]);
-    }
-
-    public function destroy($id)
-    {
-        $mensalidade = Mensalidade::findOrFail($id);
-        $mensalidade->delete();
-
-        return response()->json([
-            'message' => 'Mensalidade removida com sucesso'
-        ]);
     }
 }

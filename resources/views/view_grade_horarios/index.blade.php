@@ -3,7 +3,22 @@
 @section('title', 'Grade de Horários')
 
 @section('content')
+@if ($errors->any())
+<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
 
+    <div class="flex items-center gap-2 mb-2">
+        <span class="font-semibold">Atenção:</span>
+        <span class="text-sm">Verifique os campos abaixo</span>
+    </div>
+
+    <ul class="list-disc pl-5 text-sm space-y-1">
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+
+</div>
+@endif
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <h2 class="text-3xl font-extrabold text-gray-800">Grade de Horários</h2>
@@ -15,8 +30,8 @@
 </div>
 
 @if ($errors->any())
-<div class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
-    <ul class="list-disc list-inside">
+<div class="bg-red-100 text-red-700 p-3 rounded mb-3">
+    <ul>
         @foreach ($errors->all() as $error)
         <li>{{ $error }}</li>
         @endforeach
@@ -26,7 +41,7 @@
 
 <!-- FORMULÁRIO -->
 <div id="cadastroForm" class="hidden mb-10">
-    <form id="formCadastro" action="{{ route('grade_horarios.store') }}" method="POST">
+    <form id="formCadastro" action="{{ route('grade_horarios.store') }}" method="POST" onsubmit="bloquearSubmit(event, this)">
         @csrf
 
         <div class="bg-white rounded-2xl shadow-md p-8">
@@ -166,6 +181,21 @@
         cadastroForm.classList.add('hidden');
     }
 
+
+    function bloquearSubmit(event, form) {
+
+        if (!form.checkValidity()) {
+            return; // deixa validação normal do HTML
+        }
+
+        const btn = form.querySelector('button[type="submit"]');
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Salvando...';
+        }
+    }
+
     function resetCampos() {
         diaTexto.value = '';
         diaNumero.value = '';
@@ -176,11 +206,14 @@
     professor.addEventListener('change', () => {
         modalidade.disabled = !professor.value;
         horario.disabled = true;
+        modalidade.value = ''; // LIMPA MODALIDADE
+        horario.value = '';
         resetCampos();
     });
 
     modalidade.addEventListener('change', () => {
         horario.disabled = !modalidade.value;
+        horario.value = ''; 
         [...horario.options].forEach(o => {
             if (!o.dataset.modalidade) return;
             o.hidden = o.dataset.modalidade !== modalidade.value;

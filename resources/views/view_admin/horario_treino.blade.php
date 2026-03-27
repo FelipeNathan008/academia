@@ -3,7 +3,22 @@
 @section('title', 'Horários de Treino')
 
 @section('content')
+@if ($errors->any())
+<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
+    
+    <div class="flex items-center gap-2 mb-2">
+        <span class="font-semibold">Atenção:</span>
+        <span class="text-sm">Verifique os campos abaixo</span>
+    </div>
 
+    <ul class="list-disc pl-5 text-sm space-y-1">
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+
+</div>
+@endif
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <h2 class="text-3xl font-extrabold text-gray-800">Horários de Treino</h2>
@@ -16,7 +31,7 @@
 
 <!-- FORMULÁRIO -->
 <div id="cadastroForm" class="hidden mb-10">
-    <form action="{{ route('horario_treino.store') }}" method="POST">
+    <form action="{{ route('horario_treino.store') }}" method="POST" onsubmit="bloquearSubmit(event, this)">
         @csrf
 
         <div class="bg-white rounded-2xl shadow-md p-8">
@@ -220,13 +235,13 @@
                 </td>
 
                 <td class="py-3 px-4 flex gap-2">
-                    <a href="{{ route('horario_treino.edit', $horario->id_hora) }}"
+                    <a href="{{ route('horario_treino.edit', Crypt::encrypt($horario->id_hora)) }}"
                         style="background-color: #8E251F; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                         Editar
                     </a>
 
-                    <form action="{{ route('horario_treino.destroy', $horario->id_hora) }}"
+                    <form action="{{ route('horario_treino.destroy', Crypt::encrypt($horario->id_hora)) }}"
                         method="POST"
                         onsubmit="return confirm('Deseja excluir este horário?');">
                         @csrf
@@ -251,6 +266,20 @@
 </div>
 
 <script>
+    function bloquearSubmit(event, form) {
+
+        if (!form.checkValidity()) {
+            return; // deixa validação normal do HTML
+        }
+
+        const btn = form.querySelector('button[type="submit"]');
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Salvando...';
+        }
+    }
+
     const filtros = {
         modalidade: document.getElementById('filtroModalidade'),
         dia: document.getElementById('filtroDia'),

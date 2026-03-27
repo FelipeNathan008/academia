@@ -11,9 +11,19 @@ use Illuminate\Contracts\Encryption\DecryptException;
 class ResponsavelController extends Controller
 {
     // LISTAR RESPONSÁVEIS
-    public function index()
+    public function index(Request $request)
     {
-        $responsaveis = Responsavel::all();
+        $user = Auth::user();
+
+        $query = Responsavel::where('id_emp_id', $user->id_emp_id);
+
+        // FILTRO POR NOME
+        if ($request->filled('nome')) {
+            $query->where('resp_nome', 'like', '%' . $request->nome . '%');
+        }
+
+        $responsaveis = $query->paginate(10)->withQueryString();
+
         return view('view_responsavel.index', compact('responsaveis'));
     }
 
@@ -44,7 +54,20 @@ class ResponsavelController extends Controller
             'resp_cidade' => 'required|string|max:150',
         ]);
 
-        Responsavel::create($request->all());
+        $jaExiste = Responsavel::where('resp_cpf', $request->resp_cpf)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->exists();
+
+        if ($jaExiste) {
+            return back()->withErrors([
+                'resp_cpf' => 'Erro, Já existe esse CPF cadastrado.'
+            ])->withInput();
+        }
+
+        Responsavel::create([
+            ...$request->all(),
+            'id_emp_id' => $user->id_emp_id
+        ]);
 
         return redirect()
             ->route('responsaveis')
@@ -60,16 +83,29 @@ class ResponsavelController extends Controller
             abort(404);
         }
 
-        $responsavel = Responsavel::findOrFail($id);
+        $user = Auth::user();
 
-        $responsavel = Responsavel::findOrFail($id);
+        $responsavel = Responsavel::where('id_responsavel', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
         return view('view_responsavel.edit', compact('responsavel'));
     }
 
     // ATUALIZAR RESPONSÁVEL
     public function update(Request $request, $id)
     {
-        $responsavel = Responsavel::findOrFail($id);
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+
+        $responsavel = Responsavel::where('id_responsavel', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
 
         $request->merge([
             'resp_cpf' => preg_replace('/\D/', '', $request->resp_cpf),
@@ -90,6 +126,16 @@ class ResponsavelController extends Controller
             'resp_cidade' => 'required|string|max:150',
         ]);
 
+        $jaExiste = Responsavel::where('resp_cpf', $request->resp_cpf)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->exists();
+
+        if ($jaExiste) {
+            return back()->withErrors([
+                'resp_cpf' => 'Erro, Já existe esse CPF cadastrado.'
+            ])->withInput();
+        }
+
         $responsavel->update($request->all());
 
         return redirect()
@@ -100,7 +146,17 @@ class ResponsavelController extends Controller
     // EXCLUIR RESPONSÁVEL
     public function destroy($id)
     {
-        $responsavel = Responsavel::findOrFail($id);
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+        $user = Auth::user();
+
+        $responsavel = Responsavel::where('id_responsavel', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
         $responsavel->alunos()->delete();
         $responsavel->delete();
 

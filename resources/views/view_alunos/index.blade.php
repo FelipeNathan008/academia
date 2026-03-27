@@ -3,7 +3,22 @@
 @section('title', 'Alunos')
 
 @section('content')
+@if ($errors->any())
+<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
 
+    <div class="flex items-center gap-2 mb-2">
+        <span class="font-semibold">Atenção:</span>
+        <span class="text-sm">Verifique os campos abaixo</span>
+    </div>
+
+    <ul class="list-disc pl-5 text-sm space-y-1">
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+
+</div>
+@endif
 <!-- BREADCRUMB -->
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
@@ -18,15 +33,6 @@
         <li class="font-semibold text-gray-700">Alunos</li>
     </ol>
 </nav>
-@if ($errors->any())
-<div class="bg-red-100 text-red-700 p-3 rounded mb-3">
-    <ul>
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-    </ul>
-</div>
-@endif
 
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
@@ -67,8 +73,8 @@
 
 <!-- FORMULÁRIO -->
 <div id="cadastroForm" class="hidden mb-10">
-    <form action="{{ route('alunos.store', $responsavel->id_responsavel) }}"
-        method="POST"
+    <form action="{{ route('alunos.store', Crypt::encrypt($responsavel->id_responsavel)) }}"
+        method="POST" onsubmit="bloquearSubmit(event, this)"
         enctype="multipart/form-data">
         @csrf
 
@@ -109,7 +115,10 @@
 
                 <div class="md:col-span-2">
                     <label class="text-sm font-medium text-gray-600">Foto do Aluno</label>
-                    <input type="file" name="aluno_foto" required
+            
+                    <input type="file"
+                        name="aluno_foto" required
+                        accept="image/*"
                         class="w-full border rounded-lg px-4 py-2 mt-1">
                 </div>
 
@@ -258,7 +267,7 @@
                         Editar
                     </a>
 
-                    <form action="{{ route('alunos.destroy', $aluno->id_aluno) }}" method="POST"
+                    <form action="{{ route('alunos.destroy', Crypt::encrypt($aluno->id_aluno)) }}" method="POST"
                         onsubmit="return confirm('Deseja excluir este aluno?');">
                         @csrf
                         @method('DELETE')
@@ -294,6 +303,20 @@
 
     function fecharCadastro() {
         document.getElementById('cadastroForm').classList.add('hidden');
+    }
+
+    function bloquearSubmit(event, form) {
+
+        if (!form.checkValidity()) {
+            return; // deixa validação normal do HTML
+        }
+
+        const btn = form.querySelector('button[type="submit"]');
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Salvando...';
+        }
     }
 
     function validarNome(input) {

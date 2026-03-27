@@ -3,7 +3,22 @@
 @section('title', 'Graduações do Aluno')
 
 @section('content')
+@if ($errors->any())
+<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
 
+    <div class="flex items-center gap-2 mb-2">
+        <span class="font-semibold">Atenção:</span>
+        <span class="text-sm">Verifique os campos abaixo</span>
+    </div>
+
+    <ul class="list-disc pl-5 text-sm space-y-1">
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+
+</div>
+@endif
 <!-- BREADCRUMB -->
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2 flex-wrap">
@@ -41,17 +56,6 @@
     </ol>
 </nav>
 
-
-@if ($errors->any())
-<div class="bg-red-100 text-red-700 p-3 rounded mb-3">
-    <ul>
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-    </ul>
-</div>
-@endif
-
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div class="flex items-center gap-4">
@@ -84,7 +88,7 @@
 
 <!-- FORMULÁRIO -->
 <div id="cadastroForm" class="hidden mb-10">
-    <form action="{{ route('detalhes-aluno.store', $aluno->id_aluno) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('detalhes-aluno.store', Crypt::encrypt($aluno->id_aluno)) }}" method="POST" onsubmit="bloquearSubmit(event, this)" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="aluno_id_aluno" value="{{ $aluno->id_aluno }}">
 
@@ -273,8 +277,10 @@
                         <td class="py-3 px-4">{{ $det->det_modalidade }}</td>
                         <td class="py-3 px-4">{{ \Carbon\Carbon::parse($det->det_data)->format('d/m/Y') }}</td>
                         <td class="py-3 px-4 flex gap-2">
+                            
                             @if($det->det_certificado)
-                            <a href="{{ asset($det->det_certificado) }}" target="_blank"
+                            <a href="{{ route('detalhes-aluno.showCertificado', ['path' => Crypt::encrypt($det->det_certificado)]) }}"
+                                target="_blank"
                                 style="background-color: #174ab9; color: white;"
                                 class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                                 Ver Certificado
@@ -287,7 +293,7 @@
                                 Editar
                             </a>
 
-                            <form action="{{ route('detalhes-aluno.destroy', $det->id_det_aluno) }}" method="POST" onsubmit="return confirm('Deseja remover esta graduação?');">
+                            <form action="{{ route('detalhes-aluno.destroy', Crypt::encrypt($det->id_det_aluno)) }}" method="POST" onsubmit="return confirm('Deseja remover esta graduação?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Excluir</button>
@@ -314,6 +320,24 @@
 
     function fecharCadastro() {
         document.getElementById('cadastroForm').classList.add('hidden');
+    }
+
+    function bloquearSubmit(event, form) {
+
+        if (!form.checkValidity()) {
+            return; // deixa validação normal do HTML
+        }
+
+        const btn = form.querySelector('button[type="submit"]');
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Salvando...';
+        }
+    }
+
+    function validarNome(input) {
+        input.value = input.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
     }
 
     document.addEventListener('DOMContentLoaded', function() {

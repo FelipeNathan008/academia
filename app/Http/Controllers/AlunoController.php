@@ -18,8 +18,12 @@ class AlunoController extends Controller
         } catch (DecryptException $e) {
             abort(404);
         }
+        $user = Auth::user();
 
-        $responsavel = Responsavel::with('alunos')->findOrFail($id);
+        $responsavel = Responsavel::where('id_responsavel', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->with('alunos')
+            ->firstOrFail();
 
         return view('view_alunos.index', [
             'responsavel' => $responsavel,
@@ -31,6 +35,13 @@ class AlunoController extends Controller
     // CADASTRAR ALUNO PARA UM RESPONSÁVEL
     public function store(Request $request, $responsavelId)
     {
+
+        try {
+            $id = Crypt::decrypt($responsavelId);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
         $request->validate([
             'aluno_nome' => 'required|string|max:120',
             'aluno_nascimento' => 'required|date',
@@ -38,6 +49,12 @@ class AlunoController extends Controller
             'aluno_desc' => 'required|string',
             'aluno_foto' => 'required|image|max:2048',
         ]);
+
+        $user = Auth::user();
+
+        $responsavel = Responsavel::where('id_responsavel', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
 
         $filename = null;
         if ($request->hasFile('aluno_foto')) {
@@ -48,7 +65,7 @@ class AlunoController extends Controller
         $users = Auth::user();
 
         Aluno::create([
-            'responsavel_id_responsavel' => $responsavelId,
+            'responsavel_id_responsavel' => $responsavel->id_responsavel,
             'aluno_nome' => $request->aluno_nome,
             'aluno_nascimento' => $request->aluno_nascimento,
             'aluno_bolsista' => $request->aluno_bolsista,
@@ -59,7 +76,7 @@ class AlunoController extends Controller
         ]);
 
         return redirect()
-            ->route('alunos', Crypt::encrypt($responsavelId))
+            ->route('alunos', Crypt::encrypt($responsavel->id_responsavel))
             ->with('success', 'Aluno cadastrado com sucesso!');
     }
 
@@ -70,12 +87,12 @@ class AlunoController extends Controller
         } catch (DecryptException $e) {
             abort(404);
         }
-
         $user = Auth::user();
 
         $aluno = Aluno::with('responsavel')
+            ->where('id_aluno', $id)
             ->where('id_emp_id', $user->id_emp_id)
-            ->findOrFail($id);
+            ->firstOrFail();
 
         return view('view_alunos.edit', [
             'aluno' => $aluno,
@@ -85,7 +102,17 @@ class AlunoController extends Controller
 
     public function update(Request $request, $id)
     {
-        $aluno = Aluno::findOrFail($id);
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+
+        $aluno = Aluno::where('id_aluno', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
 
         $request->validate([
             'aluno_nome' => 'required|string|max:120',
@@ -124,7 +151,18 @@ class AlunoController extends Controller
 
     public function destroy($id)
     {
-        $aluno = Aluno::findOrFail($id);
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+
+        $aluno = Aluno::where('id_aluno', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
         $responsavelId = $aluno->responsavel_id_responsavel;
 
         if ($aluno->aluno_foto && file_exists(public_path('images/alunos/' . $aluno->aluno_foto))) {

@@ -15,66 +15,85 @@
 
 <!-- FILTROS -->
 <div class="bg-white rounded-2xl shadow-md p-6 overflow-x-auto mb-8">
-    <div class="flex flex-wrap gap-6 items-end justify-center max-w-6xl mx-auto">
+    <form method="GET">
+        <div class="flex flex-wrap gap-6 items-end justify-center max-w-6xl mx-auto">
 
-        <!-- Buscar por Nome -->
-        <div class="flex flex-col w-[300px]">
-            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
-                Buscar Aluno
-            </label>
-            <input type="text" id="filtroNome"
-                placeholder="Digite o nome..."
-                class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                       focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+            <!-- Buscar Aluno -->
+            <div class="flex flex-col w-[300px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                    Buscar Aluno
+                </label>
+                <input type="text" name="nome"
+                    value="{{ request('nome') }}"
+                    placeholder="Digite o nome..."
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+            </div>
+
+            <!-- Buscar Responsável -->
+            <div class="flex flex-col w-[300px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                    Buscar Responsável
+                </label>
+                <input type="text" name="responsavel"
+                    value="{{ request('responsavel') }}"
+                    placeholder="Digite o responsável..."
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+            </div>
+
+            <!-- Bolsista -->
+            <div class="flex flex-col w-[250px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                    Bolsista
+                </label>
+                <select name="bolsista"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+                    <option value="">Todos</option>
+                    <option value="sim" {{ request('bolsista') == 'sim' ? 'selected' : '' }}>Sim</option>
+                    <option value="nao" {{ request('bolsista') == 'nao' ? 'selected' : '' }}>Não</option>
+                </select>
+            </div>
+
+            <!-- Matrícula -->
+            <div class="flex flex-col w-[250px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                    Matrícula
+                </label>
+                <select name="matricula"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+                    <option value="">Todos</option>
+                    <option value="com" {{ request('matricula') == 'com' ? 'selected' : '' }}>
+                        Matriculado
+                    </option>
+                    <option value="sem" {{ request('matricula') == 'sem' ? 'selected' : '' }}>
+                        Não Matriculado
+                    </option>
+                </select>
+            </div>
+
+            <!-- Botões -->
+            <div class="flex gap-3">
+
+                <button type="submit"
+                    class="h-[48px] px-6 rounded-xl bg-[#8E251F] text-white
+                           hover:bg-[#732920] transition shadow-md">
+                    Filtrar
+                </button>
+
+                <a href="{{ route('matricula.index') }}"
+                    class="h-[48px] px-6 rounded-xl bg-gray-300 text-gray-800
+                           flex items-center justify-center
+                           hover:bg-gray-400 transition shadow-md">
+                    Limpar
+                </a>
+
+            </div>
+
         </div>
-
-        <div class="flex flex-col w-[300px]">
-            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
-                Buscar Responsável
-            </label>
-            <input type="text" id="filtroResponsavel"
-                placeholder="Digite o responsavel..."
-                class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                       focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
-        </div>
-
-
-        <!-- Bolsista -->
-        <div class="flex flex-col w-[300px]">
-            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
-                Bolsista
-            </label>
-            <select id="filtroBolsista"
-                class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                       focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
-                <option value="">Todos</option>
-                <option value="sim">Sim</option>
-                <option value="nao">Não</option>
-            </select>
-        </div>
-
-        <div class="flex flex-col w-[300px]">
-            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
-                Matrícula
-            </label>
-            <select id="filtroMatricula"
-                class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-               focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
-                <option value="">Todos</option>
-                <option value="com">Matriculado</option>
-                <option value="sem">Não Matriculado</option>
-            </select>
-        </div>
-
-        <!-- Limpar -->
-        <button id="limparFiltros"
-            class="self-end h-[48px] px-8 rounded-xl bg-gradient-to-r from-gray-300 to-gray-400
-                   text-gray-800 font-semibold hover:from-gray-400 hover:to-gray-500
-                   transition shadow-md">
-            Limpar filtros
-        </button>
-
-    </div>
+    </form>
 </div>
 
 <!-- LISTAGEM -->
@@ -219,68 +238,9 @@
             @endforelse
         </tbody>
     </table>
-
+    <div class="mt-6">
+        {{ $alunos->links() }}
+    </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-
-        const filtroNome = document.getElementById('filtroNome');
-        const filtroResponsavel = document.getElementById('filtroResponsavel');
-        const filtroBolsista = document.getElementById('filtroBolsista');
-        const filtroMatricula = document.getElementById('filtroMatricula');
-        const limparBtn = document.getElementById('limparFiltros');
-        const linhas = document.querySelectorAll('.linha-aluno');
-
-        function aplicarFiltro() {
-            const nome = filtroNome.value.toLowerCase().trim();
-            const responsavel = filtroResponsavel.value.toLowerCase().trim();
-            const bolsista = filtroBolsista.value.toLowerCase().trim();
-            const matricula = filtroMatricula.value.toLowerCase().trim();
-
-            linhas.forEach(linha => {
-
-                const nomeAluno = (linha.dataset.nome || '').toLowerCase();
-                const responsavelAluno = (linha.dataset.responsavel || '').toLowerCase();
-                const bolsistaAluno = (linha.dataset.bolsista || '').toLowerCase();
-                const matriculaAluno = (linha.dataset.matricula || '').toLowerCase();
-
-                let mostrar = true;
-
-                if (nome && !nomeAluno.includes(nome)) {
-                    mostrar = false;
-                }
-
-                if (responsavel && !responsavelAluno.includes(responsavel)) {
-                    mostrar = false;
-                }
-
-                if (bolsista && bolsistaAluno !== bolsista) {
-                    mostrar = false;
-                }
-
-                if (matricula && matriculaAluno !== matricula) {
-                    mostrar = false;
-                }
-
-                linha.style.display = mostrar ? '' : 'none';
-            });
-        }
-
-        filtroNome.addEventListener('input', aplicarFiltro);
-        filtroResponsavel.addEventListener('input', aplicarFiltro);
-        filtroBolsista.addEventListener('change', aplicarFiltro);
-        filtroMatricula.addEventListener('change', aplicarFiltro);
-
-        limparBtn.addEventListener('click', function() {
-            filtroNome.value = '';
-            filtroResponsavel.value = '';
-            filtroBolsista.value = '';
-            filtroMatricula.value = '';
-            aplicarFiltro();
-        });
-
-    });
-</script>
 
 @endsection

@@ -1,9 +1,23 @@
 @extends('layouts.dashboard')
 
 @section('title', 'Professores')
-
 @section('content')
+@if ($errors->any())
+<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
 
+    <div class="flex items-center gap-2 mb-2">
+        <span class="font-semibold">Atenção:</span>
+        <span class="text-sm">Verifique os campos abaixo</span>
+    </div>
+
+    <ul class="list-disc pl-5 text-sm space-y-1">
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+
+</div>
+@endif
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div>
@@ -18,7 +32,7 @@
 
 <!-- FORMULÁRIO DE CADASTRO -->
 <div id="cadastroForm" class="hidden mb-10">
-    <form id="formCadastro" action="{{ route('professores.store') }}" method="POST" enctype="multipart/form-data">
+    <form id="formCadastro" action="{{ route('professores.store') }}" method="POST" enctype="multipart/form-data" onsubmit=" bloquearSubmit(event, this)">
         @csrf
         <div class="bg-white rounded-2xl shadow-md p-8">
             <h3 id="tituloCadastro" class="text-xl font-bold mb-6 text-gray-700">Cadastrar Professor</h3>
@@ -171,7 +185,7 @@
                         Editar
                     </a>
 
-                    <form action="{{ route('professores.destroy', $professor->id_professor) }}" method="POST"
+                    <form action="{{ route('professores.destroy', Crypt::encrypt($professor->id_professor)) }}" method="POST"
                         onsubmit="return confirm('Deseja excluir este professor?');">
                         @csrf
                         @method('DELETE')
@@ -186,7 +200,7 @@
 
             @empty
             <tr>
-                <td colspan="4" class="text-center text-gray-500 py-6">Nenhum professor cadastrado</td>
+                <td colspan="6" class="text-center text-gray-500 py-6">Nenhum professor cadastrado</td>
             </tr>
             @endforelse
         </tbody>
@@ -204,6 +218,20 @@
             behavior: 'smooth'
         });
         document.getElementById('formCadastro').reset();
+    }
+
+    function bloquearSubmit(event, form) {
+
+        if (!form.checkValidity()) {
+            return; // deixa validação normal do HTML
+        }
+
+        const btn = form.querySelector('button[type="submit"]');
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Salvando...';
+        }
     }
 
     function fecharCadastro() {

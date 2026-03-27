@@ -7,12 +7,18 @@ use App\Models\HorarioTreino;
 use App\Models\Modalidade;
 use App\Models\Professor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Auth;
 
 class GradeHorarioController extends Controller
 {
     public function index()
     {
-        $grades = GradeHorario::with(['professor', 'horarioTreino'])->get();
+        $user = Auth::user();
+        $grades = GradeHorario::with(['professor', 'horarioTreino'])
+            ->where('id_emp_id', $user->id_emp_id)
+            ->get();
         $professores = Professor::all();
 
         $horariosTreino = HorarioTreino::whereDoesntHave('gradeHorario')->get();
@@ -26,6 +32,8 @@ class GradeHorarioController extends Controller
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+
         $request->validate([
             'professor_id_professor' => 'required|exists:professor,id_professor',
             'horario_treino_id_hora' => 'required|exists:horario_treino,id_hora',
@@ -36,10 +44,30 @@ class GradeHorarioController extends Controller
             'grade_turma'            => 'required|string|max:60',
             'grade_desc'             => 'required|string',
         ]);
+        $jaExiste = GradeHorario::where('professor_id_professor', $request->professor_id_professor)
+            ->where('horario_treino_id_hora', $request->horario_treino_id_hora)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->exists();
 
+        if ($jaExiste) {
+            return back()->withErrors([
+                'horario_treino_id_hora' => 'Erro, Já existe essa grade de horário cadastrada para este professor.'
+            ])->withInput();
+        }
 
         $horario = HorarioTreino::findOrFail($request->horario_treino_id_hora);
 
+        $jaExiste = GradeHorario::where('id_grade', $request->id_grade)
+            ->where('professor_id_professor', $request->professor_id_professor)
+            ->where('horario_treino_id_hora', $request->horario_treino_id_hora)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->exists();
+
+        if ($jaExiste) {
+            return back()->withErrors([
+                'horario_treino_id_hora' => 'Erro, Já existe essa grade de horário cadastrada.'
+            ])->withInput();
+        }
         GradeHorario::create([
             'professor_id_professor' => $request->professor_id_professor,
             'horario_treino_id_hora' => $request->horario_treino_id_hora,
@@ -49,6 +77,7 @@ class GradeHorarioController extends Controller
             'grade_fim'              => $request->grade_fim,
             'grade_turma'            => $request->grade_turma,
             'grade_desc'             => $request->grade_desc,
+            'id_emp_id'              => $user->id_emp_id
         ]);
 
         return redirect()
@@ -58,9 +87,18 @@ class GradeHorarioController extends Controller
 
     public function edit($id)
     {
-        $grade = GradeHorario::findOrFail($id);
-        $professores = Professor::all();
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
 
+        $user = Auth::user();
+        $grade = GradeHorario::where('id_grade', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
+        $professores = Professor::all();
         $horariosTreino = HorarioTreino::whereDoesntHave('gradeHorario')
             ->orWhere('id_hora', $grade->horario_treino_id_hora)
             ->get();
@@ -74,7 +112,16 @@ class GradeHorarioController extends Controller
 
     public function update(Request $request, $id)
     {
-        $grade = GradeHorario::findOrFail($id);
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+        $grade = GradeHorario::where('id_grade', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
 
         $request->validate([
             'professor_id_professor' => 'required|exists:professor,id_professor',
@@ -87,6 +134,18 @@ class GradeHorarioController extends Controller
             'grade_desc'             => 'required|string',
         ]);
 
+        $jaExiste = GradeHorario::where('professor_id_professor', $request->professor_id_professor)
+            ->where('horario_treino_id_hora', $request->horario_treino_id_hora)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->where('id_grade', '!=', $grade->id_grade)
+            ->exists();
+
+        if ($jaExiste) {
+            return back()->withErrors([
+                'horario_treino_id_hora' => 'Erro, Já existe essa grade de horário cadastrada para este professor.'
+            ])->withInput();
+        }
+
         $grade->update($request->all());
 
         return redirect()
@@ -96,7 +155,18 @@ class GradeHorarioController extends Controller
 
     public function destroy($id)
     {
-        GradeHorario::findOrFail($id)->delete();
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+        $grade = GradeHorario::where('id_grade', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
+        $grade->delete();
 
         return redirect()
             ->route('grade_horarios')

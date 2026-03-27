@@ -103,9 +103,9 @@
         'Horarios de Treino' => 'horario_treino',
         'Preço das Aulas' => 'preco-aula',
         ],
-        'Controle' => [
-        'Filiais' => 'filiais',
-        ],
+        //'Controle' => [
+        //'Filiais' => 'filiais',
+        //],
 
         ];
         } else { // user normal

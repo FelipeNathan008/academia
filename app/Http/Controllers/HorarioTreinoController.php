@@ -6,12 +6,19 @@ use App\Models\GradeHorario;
 use App\Models\HorarioTreino;
 use App\Models\Modalidade;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 class HorarioTreinoController extends Controller
 {
     public function index()
     {
-        $horarios = HorarioTreino::with('gradeHorario')->get();
+        $user = Auth::user();
+
+        $horarios = HorarioTreino::with('gradeHorario')
+            ->where('id_emp_id', $user->id_emp_id)
+            ->get();
         $modalidades = Modalidade::all();
 
         return view('view_admin.horario_treino', compact('horarios', 'modalidades'));
@@ -19,6 +26,8 @@ class HorarioTreinoController extends Controller
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+
         $request->validate([
             'hora_inicio'     => 'required',
             'hora_fim'        => 'required',
@@ -36,6 +45,7 @@ class HorarioTreinoController extends Controller
             'hora_inicio'     => $request->hora_inicio,
             'hora_fim'        => $request->hora_fim,
             'hora_modalidade' => $request->hora_modalidade,
+            'id_emp_id'       => $user->id_emp_id
         ]);
 
         return redirect()->route('horario_treino')
@@ -43,18 +53,19 @@ class HorarioTreinoController extends Controller
     }
 
 
-    public function show($id)
-    {
-        $horario = HorarioTreino::findOrFail($id);
-
-        return response()->json([
-            'data' => $horario
-        ]);
-    }
-
     public function edit($id)
     {
-        $horario = HorarioTreino::findOrFail($id);
+        $user = Auth::user();
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $horario = HorarioTreino::where('id_hora', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
         $modalidades = Modalidade::all();
 
         return view('view_admin.horario_treino_edit', compact('horario', 'modalidades'));
@@ -62,7 +73,17 @@ class HorarioTreinoController extends Controller
 
     public function update(Request $request, $id)
     {
-        $horario = HorarioTreino::findOrFail($id);
+        $user = Auth::user();
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $horario = HorarioTreino::where('id_hora', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
 
         $request->validate([
             'hora_inicio'     => 'required',
@@ -91,7 +112,17 @@ class HorarioTreinoController extends Controller
 
     public function destroy($id)
     {
-        $horario = HorarioTreino::findOrFail($id);
+        $user = Auth::user();
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $horario = HorarioTreino::where('id_hora', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
         $horario->delete();
 
         return redirect()->route('horario_treino')

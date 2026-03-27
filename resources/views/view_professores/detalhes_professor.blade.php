@@ -3,12 +3,27 @@
 @section('title', 'Graduações do Professor')
 
 @section('content')
+@if ($errors->any())
+<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
 
+    <div class="flex items-center gap-2 mb-2">
+        <span class="font-semibold">Atenção:</span>
+        <span class="text-sm">Verifique os campos abaixo</span>
+    </div>
+
+    <ul class="list-disc pl-5 text-sm space-y-1">
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+
+</div>
+@endif
 <!-- BREADCRUMB -->
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
         <li>
-            <a href="{{ route('professores.index') }}" class="hover:text-[#8E251F] transition">
+            <a href="{{ route('professores') }}" class="hover:text-[#8E251F] transition">
                 Professores
             </a>
         </li>
@@ -18,15 +33,7 @@
         <li class="font-semibold text-gray-700">Graduações</li>
     </ol>
 </nav>
-@if ($errors->any())
-<div class="bg-red-100 text-red-700 p-3 rounded mb-3">
-    <ul>
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-    </ul>
-</div>
-@endif
+
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div class="flex items-center gap-4">
@@ -61,7 +68,7 @@
 
 <!-- FORMULÁRIO -->
 <div id="cadastroForm" class="hidden mb-10">
-    <form action="{{ route('detalhes-professor.store', $professor->id_professor) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('detalhes-professor.store', Crypt::encrypt($professor->id_professor)) }}" method="POST" enctype="multipart/form-data" onsubmit="bloquearSubmit(event, this)">
         @csrf
         <input type="hidden" name="professor_id_professor" value="{{ $professor->id_professor }}">
 
@@ -260,7 +267,8 @@
                         <td class="py-3 px-4 flex gap-2">
 
                             @if($det->det_certificado)
-                            <a href="{{ asset($det->det_certificado) }}" target="_blank"
+                            <a href="{{ route('certificado.show', ['path' => Crypt::encrypt($det->det_certificado)]) }}"
+                                target="_blank"
                                 style="background-color: #174ab9; color: white;"
                                 class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                                 Ver Certificado
@@ -273,7 +281,7 @@
                                 Editar
                             </a>
 
-                            <form action="{{ route('detalhes-professor.destroy', $det->id_det_professor) }}" method="POST" onsubmit="return confirm('Deseja remover esta graduação?');">
+                            <form action="{{ route('detalhes-professor.destroy', Crypt::encrypt($det->id_det_professor)) }}" method="POST" onsubmit="return confirm('Deseja remover esta graduação?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Excluir</button>
@@ -298,6 +306,20 @@
         form.scrollIntoView({
             behavior: 'smooth'
         });
+    }
+
+    function bloquearSubmit(event, form) {
+
+        if (!form.checkValidity()) {
+            return; // deixa validação normal do HTML
+        }
+
+        const btn = form.querySelector('button[type="submit"]');
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Salvando...';
+        }
     }
 
     function fecharCadastro() {

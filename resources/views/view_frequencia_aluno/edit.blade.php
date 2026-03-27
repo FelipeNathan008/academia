@@ -57,7 +57,7 @@
         </div>
 
         <div class="flex justify-end gap-4 mt-6">
-            <a href="{{ route('frequencia.dias', $frequencia->grade_horario_id_grade) }}"
+            <a href="{{ route('frequencia.dias', Crypt::encrypt($frequencia->grade_horario_id_grade)) }}"
                 class="px-5 py-2 border rounded-lg hover:bg-gray-100 transition">
                 Voltar
             </a>

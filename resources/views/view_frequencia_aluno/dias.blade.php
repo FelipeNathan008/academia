@@ -3,7 +3,22 @@
 @section('title', 'Frequência por Dia')
 
 @section('content')
+@if ($errors->any())
+<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
 
+    <div class="flex items-center gap-2 mb-2">
+        <span class="font-semibold">Atenção:</span>
+        <span class="text-sm">Verifique os campos abaixo</span>
+    </div>
+
+    <ul class="list-disc pl-5 text-sm space-y-1">
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+
+</div>
+@endif
 <!-- BREADCRUMB -->
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
@@ -13,12 +28,13 @@
             </a>
         </li>
         <li>/</li>
+        <li class="text-gray-400">{{ $grade->professor->prof_nome }}</li>
+        <li>/</li>
         <li class="font-semibold text-gray-700">
             Dias Registrados
         </li>
     </ol>
 </nav>
-
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div class="flex items-center gap-4">
@@ -48,7 +64,7 @@
             Registrar Frequência
         </h3>
 
-        <form action="{{ route('frequencia.store') }}" method="POST">
+        <form action="{{ route('frequencia.store') }}" method="POST" onsubmit="bloquearSubmit(event, this)">
             @csrf
 
             <input type="hidden" name="grade_id" value="{{ $grade->id_grade }}">
@@ -287,7 +303,7 @@
                                         </td>
 
                                         <td class="px-4 py-3 text-center">
-                                            <a href="{{ route('frequencia.edit', ['id' => $registro->id_frequencia_aluno]) }}"
+                                            <a href="{{ route('frequencia.edit', Crypt::encrypt($registro->id_frequencia_aluno)) }}"
                                                 style="background-color: #8E251F; color: white;"
                                                 class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                                                 Editar
@@ -331,6 +347,16 @@
         document.getElementById('cadastroForm').classList.add('hidden');
     }
 
+    function bloquearSubmit(event, form) {
+        if (!form.checkValidity()) {
+            return; // deixa validação normal do HTML
+        }
+        const btn = form.querySelector('button[type="submit"]');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Salvando...';
+        }
+    }
     document.addEventListener("DOMContentLoaded", function() {
 
         // FILTRO POR DATA

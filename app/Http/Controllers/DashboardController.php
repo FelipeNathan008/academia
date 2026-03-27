@@ -128,12 +128,14 @@ class DashboardController extends Controller
 
     public function index(Request $request)
     {
+        $user = Auth::user();
 
         $anoSelecionado = $request->get('ano', Carbon::now()->year);
 
         // Buscar anos disponíveis (opcional para o select)
         $anosDisponiveis = DB::table('matricula')
             ->select(DB::raw("DISTINCT YEAR(matri_data) as ano"))
+            ->where('id_emp_id', $user->id_emp_id)
             ->orderBy('ano', 'desc')
             ->pluck('ano');
 
@@ -144,6 +146,7 @@ class DashboardController extends Controller
                 DB::raw("COUNT(*) as total")
             )
             ->whereYear('matri_data', $anoSelecionado)
+            ->where('id_emp_id', $user->id_emp_id)
             ->groupBy('mes')
             ->pluck('total', 'mes');
 
@@ -156,6 +159,7 @@ class DashboardController extends Controller
         }
 
         $totalMatriculas = DB::table('matricula')
+            ->where('id_emp_id', $user->id_emp_id)
             ->where('matri_status', 'matriculado')
             ->count();
 
@@ -163,7 +167,6 @@ class DashboardController extends Controller
             $query->select('aluno_id_aluno')->from('matricula');
         })->count();
 
-        $user = Auth::user();
 
         $matriculasNaoAtivas =  DB::table('aluno')
             ->where('id_emp_id', $user->id_emp_id)
@@ -172,16 +175,19 @@ class DashboardController extends Controller
             })->count();
 
         $totalBolsista = DB::table('aluno')
+            ->where('id_emp_id', $user->id_emp_id)
             ->where('aluno_bolsista', 'sim')
             ->count();
 
         $receitaMensal = DetalhesMensalidade::whereMonth('det_mensa_data_venc', Carbon::now()->month)
             ->whereYear('det_mensa_data_venc', Carbon::now()->year)
+            ->where('id_emp_id', $user->id_emp_id)
             ->sum('det_mensa_valor');
 
         $receitaMensalPago = DetalhesMensalidade::whereMonth('det_mensa_data_venc', Carbon::now()->month)
             ->where('det_mensa_status', 'Pago')
             ->whereYear('det_mensa_data_venc', Carbon::now()->year)
+            ->where('id_emp_id', $user->id_emp_id)
             ->sum('det_mensa_valor');
 
         DetalhesMensalidade::where('det_mensa_status', 'Em aberto')
@@ -191,12 +197,14 @@ class DashboardController extends Controller
             ]);
 
         $mensalidadesAtrasadas = DetalhesMensalidade::where('det_mensa_status', 'Atrasado')
+            ->where('id_emp_id', $user->id_emp_id)
             ->count();
 
         $modalidadeSelecionada = $request->get('modalidade');
 
         // Buscar todas as modalidades existentes
         $modalidades = DetalhesAluno::select('det_modalidade')
+            ->where('id_emp_id', $user->id_emp_id)
             ->distinct()
             ->pluck('det_modalidade');
 
@@ -206,40 +214,38 @@ class DashboardController extends Controller
             $queryDetalhes->where('det_modalidade', $modalidadeSelecionada);
         }
 
-        $subQuery = $queryDetalhes->select(
+        $subQuery = DetalhesAluno::select(
             'aluno_id_aluno',
             DB::raw("
-            MAX(
-                CASE
-                    WHEN LOWER(det_gradu_nome_cor) = 'cinza e branca' THEN 1
-                    WHEN LOWER(det_gradu_nome_cor) = 'cinza' THEN 2
-                    WHEN LOWER(det_gradu_nome_cor) = 'cinza e preta' THEN 3
+        MAX(
+            CASE
+                WHEN LOWER(det_gradu_nome_cor) = 'cinza e branca' THEN 1
+                WHEN LOWER(det_gradu_nome_cor) = 'cinza' THEN 2
+                WHEN LOWER(det_gradu_nome_cor) = 'cinza e preta' THEN 3
+                WHEN LOWER(det_gradu_nome_cor) = 'amarela e branca' THEN 4
+                WHEN LOWER(det_gradu_nome_cor) = 'amarela' THEN 5
+                WHEN LOWER(det_gradu_nome_cor) = 'amarela e preta' THEN 6
+                WHEN LOWER(det_gradu_nome_cor) = 'laranja e branca' THEN 7
+                WHEN LOWER(det_gradu_nome_cor) = 'laranja' THEN 8
+                WHEN LOWER(det_gradu_nome_cor) = 'laranja e preta' THEN 9
+                WHEN LOWER(det_gradu_nome_cor) = 'verde e branca' THEN 10
+                WHEN LOWER(det_gradu_nome_cor) = 'verde' THEN 11
+                WHEN LOWER(det_gradu_nome_cor) = 'verde e preta' THEN 12
+                WHEN LOWER(det_gradu_nome_cor) = 'branca' THEN 13
+                WHEN LOWER(det_gradu_nome_cor) = 'azul' THEN 14
+                WHEN LOWER(det_gradu_nome_cor) = 'roxa' THEN 15
+                WHEN LOWER(det_gradu_nome_cor) = 'marrom' THEN 16
+                WHEN LOWER(det_gradu_nome_cor) = 'preta' THEN 17
+                ELSE 0
+            END
+        ) as ordem_max
+    ")
+        )
+            ->where('id_emp_id', $user->id_emp_id)
+            ->groupBy('aluno_id_aluno');
 
-                    WHEN LOWER(det_gradu_nome_cor) = 'amarela e branca' THEN 4
-                    WHEN LOWER(det_gradu_nome_cor) = 'amarela' THEN 5
-                    WHEN LOWER(det_gradu_nome_cor) = 'amarela e preta' THEN 6
-
-                    WHEN LOWER(det_gradu_nome_cor) = 'laranja e branca' THEN 7
-                    WHEN LOWER(det_gradu_nome_cor) = 'laranja' THEN 8
-                    WHEN LOWER(det_gradu_nome_cor) = 'laranja e preta' THEN 9
-
-                    WHEN LOWER(det_gradu_nome_cor) = 'verde e branca' THEN 10
-                    WHEN LOWER(det_gradu_nome_cor) = 'verde' THEN 11
-                    WHEN LOWER(det_gradu_nome_cor) = 'verde e preta' THEN 12
-
-                    WHEN LOWER(det_gradu_nome_cor) = 'branca' THEN 13
-                    WHEN LOWER(det_gradu_nome_cor) = 'azul' THEN 14
-                    WHEN LOWER(det_gradu_nome_cor) = 'roxa' THEN 15
-                    WHEN LOWER(det_gradu_nome_cor) = 'marrom' THEN 16
-                    WHEN LOWER(det_gradu_nome_cor) = 'preta' THEN 17
-                    ELSE 0
-                END
-            ) as ordem_max
-        ")
-        )->groupBy('aluno_id_aluno');
-
-        $graduacoes = DB::table(DB::raw("({$subQuery->toSql()}) as sub"))
-            ->mergeBindings($subQuery->getQuery())
+        $graduacoes = DB::query()
+            ->fromSub($subQuery, 'sub')
             ->select('ordem_max', DB::raw('COUNT(*) as total'))
             ->groupBy('ordem_max')
             ->pluck('total', 'ordem_max');
