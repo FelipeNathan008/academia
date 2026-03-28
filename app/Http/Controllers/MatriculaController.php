@@ -51,7 +51,8 @@ class MatriculaController extends Controller
         $query = Aluno::with([
             'responsavel',
             'matriculas' => function ($q) use ($user) {
-                $q->where('id_emp_id', $user->id_emp_id);
+                $q->where('id_emp_id', $user->id_emp_id)    
+                    ->where('matri_status', 'Matriculado');
             }
         ])->where('id_emp_id', $user->id_emp_id);
 
@@ -74,9 +75,9 @@ class MatriculaController extends Controller
 
         // FILTRO MATRÍCULA
         if ($request->filled('matricula')) {
-            if ($request->matricula === 'com') {
+            if ($request->matricula === 'Matriculado') {
                 $query->whereHas('matriculas');
-            } elseif ($request->matricula === 'sem') {
+            } elseif ($request->matricula === 'Encerrada') {
                 $query->whereDoesntHave('matriculas');
             }
         }

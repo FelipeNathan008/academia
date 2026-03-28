@@ -115,7 +115,7 @@
 
                 <div class="md:col-span-2">
                     <label class="text-sm font-medium text-gray-600">Foto do Aluno</label>
-            
+
                     <input type="file"
                         name="aluno_foto" required
                         accept="image/*"
@@ -152,6 +152,7 @@
                 <th class="py-3 px-4">Idade</th>
                 <th class="py-3 px-4">Foto</th>
                 <th class="py-3 px-4">Bolsista</th>
+                <th class="py-3 px-4">Matriculado</th>
                 <th class="py-3 px-4">Ações</th>
             </tr>
         </thead>
@@ -236,6 +237,19 @@
                     @endif
                 </td>
 
+                <!-- Matriculado -->
+                <td class="py-3 px-4">
+                    @if($aluno->matriculas->where('matri_status', 'Matriculado')->count() > 0)
+                    <span style="padding:2px 8px; font-size:0.75rem;
+                    font-weight:600; border-radius:9999px;
+                    color:#166534; background-color:#bbf7d0;"> 🎓 Sim
+                    </span>
+                    @else
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full text-gray-700 bg-gray-200">
+                        Não
+                    </span>
+                    @endif
+                </td>
 
                 <!-- AÇÕES -->
                 <td class="py-3 px-4 flex gap-2">
@@ -282,7 +296,7 @@
 
             @empty
             <tr>
-                <td colspan="6" class="text-center py-6 text-gray-500">
+                <td colspan="7" class="text-center py-6 text-gray-500">
                     Nenhum aluno cadastrado para este responsável
                 </td>
             </tr>

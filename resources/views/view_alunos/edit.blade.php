@@ -70,6 +70,9 @@
                     value="{{ old('aluno_nascimento', $aluno->aluno_nascimento) }}"
                     class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
             </div>
+
+            <!-- aluno BOLSISTA DESABILITADO POR ENQUANTO
+             
             <div>
                 <label class="text-sm font-medium text-gray-600">Aluno Bolsista?</label>
                 <select name="aluno_bolsista" required
@@ -81,7 +84,7 @@
                         Não
                     </option>
                 </select>
-            </div>
+            </div> -->
 
             <!-- OBSERVAÇÕES -->
             <div class="md:col-span-2">

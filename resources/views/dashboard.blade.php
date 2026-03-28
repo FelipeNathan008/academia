@@ -8,8 +8,8 @@
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
     <div class="p-6 bg-white rounded-xl shadow-sm">
-        <h3 class="font-semibold text-lg mb-2">Total de Alunos</h3>
-        <p class="text-2xl font-bold mb-2">{{ $matriculasAtivas }}</p>
+        <h3 class="font-semibold text-lg mb-2">Total de Alunos Matriculados</h3>
+        <p class="text-2xl font-bold mb-2">{{ $totalAlunosMatriculados }}</p>
         <span class="text-sm text-gray-500">Total Geral</span>
     </div>
 
@@ -21,7 +21,7 @@
         </h3>
 
         <p class="text-2xl font-bold mb-2">
-            {{ $matriculasNaoAtivas }}
+            {{ $totalAlunosNaoMatriculados }}
         </p>
 
         <span class="text-sm text-blue-600 underline hover:text-blue-800 font-medium">
@@ -115,6 +115,7 @@
             id="graficoMatriculas"
             data-labels='@json($graficoLabels)'
             data-dados='@json($graficoDados)'
+            data-dados-encerrados='@json($graficoDadosEncerrados)'
             style="width: 100%; height: 100%;">
         </canvas>
     </div>
@@ -443,24 +444,23 @@
 
         const labels = JSON.parse(canvas.dataset.labels);
         const dados = JSON.parse(canvas.dataset.dados);
+        const dadosEncerrados = JSON.parse(canvas.dataset.dadosEncerrados);
 
         new Chart(canvas, {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Matrículas por Mês',
-                    data: dados,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
+                        label: 'Matrículas Ativas',
+                        data: dados,
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Matrículas Encerradas',
+                        data: dadosEncerrados,
+                        borderWidth: 1
                     }
-                }
+                ]
             }
         });
 

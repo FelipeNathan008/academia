@@ -31,11 +31,19 @@ class FrequenciaAlunoController extends Controller
         }
 
         $user = Auth::user();
-        $grade = GradeHorario::with(['matriculas' => function ($query) {
-            $query->where('matri_status', 'Matriculado');
-        }, 'matriculas.aluno'])
+        $grade = GradeHorario::with([
+            'matriculas' => function ($query) use ($user) {
+                $query->where('matri_status', 'Matriculado')
+                    ->where('id_emp_id', $user->id_emp_id);
+            },
+            'matriculas.aluno'
+        ])
             ->where('id_emp_id', $user->id_emp_id)
             ->findOrFail($gradeId);
+
+        $grade->matriculas = $grade->matriculas->sortBy(function ($matricula) {
+            return $matricula->aluno->aluno_nome ?? '';
+        });
 
         $dias = FrequenciaAluno::with('matricula.aluno')
             ->where('grade_horario_id_grade', $gradeId)
@@ -148,5 +156,38 @@ class FrequenciaAlunoController extends Controller
             ->with('success', 'Frequência atualizada com sucesso!');
     }
 
-    
+    public function alterarData(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'grade_id' => 'required',
+            'data_atual' => 'required|date',
+            'nova_data' => 'required|date'
+        ]);
+
+        // EVITA DUPLICAR DATA
+        $jaExiste = FrequenciaAluno::where('grade_horario_id_grade', $request->grade_id)
+            ->where('freq_data_aula', $request->nova_data)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->exists();
+
+        if ($jaExiste) {
+            return back()->withErrors([
+                'data' => 'Já existe frequência registrada nessa nova data.'
+            ]);
+        }
+
+        // ATUALIZA TODOS OS REGISTROS DO DIA
+        FrequenciaAluno::where('grade_horario_id_grade', $request->grade_id)
+            ->where('freq_data_aula', $request->data_atual)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->update([
+                'freq_data_aula' => $request->nova_data
+            ]);
+
+
+        return redirect()->route('frequencia.dias', Crypt::encrypt($request->grade_id))
+            ->with('success', 'Data atualizada com sucesso!');
+    }
 }

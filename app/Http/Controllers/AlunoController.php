@@ -117,7 +117,7 @@ class AlunoController extends Controller
         $request->validate([
             'aluno_nome' => 'required|string|max:120',
             'aluno_nascimento' => 'required|date',
-            'aluno_bolsista' => 'required|in:sim,nao',
+            //'aluno_bolsista' => 'required|in:sim,nao',
             'aluno_desc' => 'required|string',
             'aluno_foto' => 'nullable|image|max:2048',
         ]);
@@ -138,7 +138,7 @@ class AlunoController extends Controller
         // ATUALIZAÇÃO DOS DADOS (SEM only)
         $aluno->aluno_nome = $request->aluno_nome;
         $aluno->aluno_nascimento = $request->aluno_nascimento;
-        $aluno->aluno_bolsista = $request->aluno_bolsista;
+        //$aluno->aluno_bolsista = $request->aluno_bolsista;
         $aluno->aluno_desc = $request->aluno_desc;
 
         $aluno->save();

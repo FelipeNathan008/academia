@@ -65,10 +65,10 @@
                     class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
                            focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
                     <option value="">Todos</option>
-                    <option value="com" {{ request('matricula') == 'com' ? 'selected' : '' }}>
+                    <option value="com" {{ request('matricula') == 'Matriculado' ? 'selected' : '' }}>
                         Matriculado
                     </option>
-                    <option value="sem" {{ request('matricula') == 'sem' ? 'selected' : '' }}>
+                    <option value="sem" {{ request('matricula') == 'Encerrada' ? 'selected' : '' }}>
                         Não Matriculado
                     </option>
                 </select>

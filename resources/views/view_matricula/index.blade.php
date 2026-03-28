@@ -255,7 +255,7 @@
                     @endif
 
                     @if ($matricula->matri_status === 'Matriculado')
-                    <form action="{{ route('matricula.destroy', $matricula->id_matricula) }}"
+                    <form action="{{ route('matricula.destroy', Crypt::encrypt($matricula->id_matricula)) }}"
                         method="POST"
                         onsubmit="return confirm('Deseja encerrar esta matrícula?');">
                         @csrf

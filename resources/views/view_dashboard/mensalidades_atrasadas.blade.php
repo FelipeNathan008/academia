@@ -125,7 +125,7 @@
                         class="btn-ver px-4 py-2 rounded-lg shadow text-white"
                         style="background-color: #174ab9;"> Ver Detalhes
                     </button>
-                    <a href="{{ route('mensalidade', $mensalidade->matricula->aluno->id_aluno) }}"
+                    <a href="{{ route('mensalidade', Crypt::encrypt($mensalidade->matricula->aluno->id_aluno)) }}"
                      style="background-color: #15803d; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center">
                         Financeiro
@@ -232,7 +232,7 @@
 
                                             @if($detalhe->det_mensa_status != 'Pago')
 
-                                            <form action="{{ route('mensalidade.darBaixa', ['id' => $detalhe->id_detalhes_mensalidade]) }}"
+                                            <form action="{{ route('mensalidade.darBaixa', Crypt::encrypt(['id' => $detalhe->id_detalhes_mensalidade])) }}"
                                                 method="POST"
                                                 onsubmit="return confirm('Confirmar baixa da parcela?')">
 
@@ -248,7 +248,7 @@
 
                                             @else
 
-                                            <form action="{{ route('mensalidade.desfazerBaixa', ['id' => $detalhe->id_detalhes_mensalidade]) }}"
+                                            <form action="{{ route('mensalidade.desfazerBaixa', Crypt::encrypt(['id' => $detalhe->id_detalhes_mensalidade])) }}"
                                                 method="POST"
                                                 onsubmit="return confirm('Deseja desfazer a baixa desta parcela?')">
 

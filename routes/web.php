@@ -57,8 +57,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/detalhes-professor/{id}/edit', [DetalhesProfessorController::class, 'edit'])->name('detalhes-professor.edit');
     Route::put('/detalhes-professor/{id}', [DetalhesProfessorController::class, 'update'])->name('detalhes-professor.update');
     Route::delete('/detalhes-professor/{id}', [DetalhesProfessorController::class, 'destroy'])->name('detalhes-professor.destroy');
-    Route::get('/certificado/{path}', [DetalhesProfessorController::class, 'showCertificado'])->name('certificado.show');
-
+    Route::get('/certificado/{path}', [DetalhesProfessorController::class, 'showCertificado'])
+        ->name('certificado.show');
+        
     // Dashboard Botões
     Route::get('/dashboard/mensalidades-atrasadas', [DashboardController::class, 'mensalidadesAtrasadas'])
         ->name('dashboard.mensalidadesAtrasadas');
@@ -68,12 +69,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // FREQUENCIA ALUNO
     Route::get('/frequencia', [FrequenciaAlunoController::class, 'listagemGrades'])->name('frequencia.listagem');
     Route::get('/frequencia/{gradeId}/dias', [FrequenciaAlunoController::class, 'listagemDias'])->name('frequencia.dias');
+    Route::put('/frequencia/alterar-data', [FrequenciaAlunoController::class, 'alterarData'])->name('frequencia.alterarData');
     Route::get('/frequencia/visualizar/{id}', [FrequenciaALunoController::class, 'visualizar'])->name('frequencia.visualizar');
     Route::get('/frequencia/{id}/edit', [FrequenciaAlunoController::class, 'edit'])->name('frequencia.edit');
     Route::put('/frequencia/{id}', [FrequenciaAlunoController::class, 'update'])->name('frequencia.update');
     Route::post('/frequencia', [FrequenciaAlunoController::class, 'store'])->name('frequencia.store');
-    //Route::put('frequencia/editar-data/{data}', [FrequenciaAlunoController::class, 'updateDataDia'])
-    //->name('frequencia.updateDataDia');
 
     // CONTROLE
     //users

@@ -10,7 +10,6 @@ use App\Http\Controllers\GradeHorarioController;
 use App\Http\Controllers\GraduacaoController;
 use App\Http\Controllers\DetalhesProfessorController;
 use App\Http\Controllers\DetalhesMatriculaController;
-use App\Http\Controllers\ValorAulaController;
 use App\Http\Controllers\MensalidadeController;
 use App\Http\Controllers\FrequenciaAlunoController;
 use App\Http\Controllers\DetalhesMensalidadeController;
@@ -27,7 +26,6 @@ Route::apiResource('detalhes-professor', DetalhesProfessorController::class)
     ->only(['index', 'store', 'show', 'destroy']);
 
 Route::apiResource('detalhes-matricula', DetalhesMatriculaController::class);
-Route::apiResource('valor-aula', ValorAulaController::class);
 Route::apiResource('mensalidade', MensalidadeController::class);
 Route::apiResource('frequencia-aluno', FrequenciaAlunoController::class);
 Route::apiResource('detalhes-mensalidade', DetalhesMensalidadeController::class);

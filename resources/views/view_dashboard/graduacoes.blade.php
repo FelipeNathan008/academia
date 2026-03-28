@@ -117,7 +117,7 @@
                 <!-- AÇÕES -->
                 <td class="py-3 px-4 text-center">
 
-                    <a href="http://127.0.0.1:8000/alunos/{{ $aluno->id_aluno }}/detalhes"
+                    <a href="{{ route('detalhes-aluno.index', Crypt::encrypt($aluno->id_aluno)) }}"
                         class="px-4 py-2 rounded-lg shadow text-white"
                         style="background-color: #174ab9;">
                         Ver Detalhes

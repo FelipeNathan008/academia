@@ -17,6 +17,8 @@ class DashboardController extends Controller
 {
     public function mensalidadesAtrasadas()
     {
+        $user = Auth::user();
+
         DetalhesMensalidade::where('det_mensa_status', 'Em aberto')
             ->whereDate('det_mensa_data_venc', '<', Carbon::today())
             ->update([
@@ -34,6 +36,7 @@ class DashboardController extends Controller
             ->get();
 
         $mensalidadesAtrasadas = DetalhesMensalidade::where('det_mensa_status', 'Atrasado')
+            ->where('id_emp_id', $user->id_emp_id)
             ->count();
 
         return view('view_dashboard.mensalidades_atrasadas', compact('mensalidades', 'mensalidadesAtrasadas'));
@@ -43,16 +46,21 @@ class DashboardController extends Controller
 
     public function graduacoes()
     {
+        $user = Auth::user();
         $modalidadeFiltro = request()->query('modalidade');
         $faixaFiltro = request()->query('faixa');
 
-        $alunos = Aluno::with(['responsavel', 'detalhes'])->get();
+        $alunos = Aluno::with(['responsavel', 'detalhes'])
+            ->where('id_emp_id', $user->id_emp_id)
+            ->get();
 
         $modalidades = DetalhesAluno::select('det_modalidade')
+            ->where('id_emp_id', $user->id_emp_id)
             ->distinct()
             ->pluck('det_modalidade');
 
         $faixas = DetalhesAluno::select('det_gradu_nome_cor')
+            ->where('id_emp_id', $user->id_emp_id)
             ->distinct()
             ->pluck('det_gradu_nome_cor');
 
@@ -158,17 +166,38 @@ class DashboardController extends Controller
             $dados[] = $matriculasPorMes[$m] ?? 0;
         }
 
+        $matriculasPorMesEncerradas = DB::table('matricula')
+            ->select(
+                DB::raw("MONTH(matri_data) as mes"),
+                DB::raw("COUNT(*) as total")
+            )
+            ->whereYear('matri_data', $anoSelecionado)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->where('matri_status', 'Encerrada')
+            ->groupBy('mes')
+            ->pluck('total', 'mes');
+
+        $labels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        $dadosEncerrados = [];
+
+        for ($m = 1; $m <= 12; $m++) {
+            $dadosEncerrados[] = $matriculasPorMesEncerradas[$m] ?? 0;
+        }
+
+
+        //
         $totalMatriculas = DB::table('matricula')
             ->where('id_emp_id', $user->id_emp_id)
             ->where('matri_status', 'matriculado')
             ->count();
 
-        $matriculasAtivas =  DB::table('aluno')->whereIn('id_aluno', function ($query) {
-            $query->select('aluno_id_aluno')->from('matricula');
-        })->count();
+        $totalAlunosMatriculados =  DB::table('aluno')->where('id_emp_id', $user->id_emp_id)
+            ->whereIn('id_aluno', function ($query) {
+                $query->select('aluno_id_aluno')->from('matricula');
+            })->count();
 
 
-        $matriculasNaoAtivas =  DB::table('aluno')
+        $totalAlunosNaoMatriculados =  DB::table('aluno')
             ->where('id_emp_id', $user->id_emp_id)
             ->whereNotIn('id_aluno', function ($query) {
                 $query->select('aluno_id_aluno')->from('matricula');
@@ -208,16 +237,15 @@ class DashboardController extends Controller
             ->distinct()
             ->pluck('det_modalidade');
 
-        $queryDetalhes = DetalhesAluno::query();
+        $queryDetalhes = DetalhesAluno::where('id_emp_id', $user->id_emp_id);
 
         if ($modalidadeSelecionada) {
             $queryDetalhes->where('det_modalidade', $modalidadeSelecionada);
         }
 
-        $subQuery = DetalhesAluno::select(
+        $subQuery = $queryDetalhes->select(
             'aluno_id_aluno',
-            DB::raw("
-        MAX(
+            DB::raw("MAX(
             CASE
                 WHEN LOWER(det_gradu_nome_cor) = 'cinza e branca' THEN 1
                 WHEN LOWER(det_gradu_nome_cor) = 'cinza' THEN 2
@@ -253,11 +281,12 @@ class DashboardController extends Controller
         return view('dashboard', [
             'graficoLabels' => $labels,
             'graficoDados'  => $dados,
+            'graficoDadosEncerrados'  => $dadosEncerrados,
             'anosDisponiveis' => $anosDisponiveis,
             'anoSelecionado' => $anoSelecionado,
             'totalMatriculas' => $totalMatriculas,
-            'matriculasAtivas' => $matriculasAtivas,
-            'matriculasNaoAtivas' => $matriculasNaoAtivas,
+            'totalAlunosMatriculados' => $totalAlunosMatriculados,
+            'totalAlunosNaoMatriculados' => $totalAlunosNaoMatriculados,
             'totalBolsista' => $totalBolsista,
             'receitaMensal' => $receitaMensal,
             'receitaMensalPago' => $receitaMensalPago,

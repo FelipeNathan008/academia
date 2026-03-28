@@ -103,6 +103,7 @@
                                 <input type="checkbox"
                                     name="presenca[{{ $matricula->id_matricula }}]"
                                     value="Presente"
+                                    checked
                                     class="w-5 h-5 text-green-600 border-gray-300 rounded">
 
                                 <span class="text-sm text-gray-700">Presente</span>
@@ -237,13 +238,77 @@
                     {{ $registros->count() }} registros
                 </td>
 
-                <td class="py-3 px-4 text-center">
+                <td class="py-3 px-4 text-center flex justify-center gap-2">
+
+                    <!-- BOTÃO ABRIR -->
                     <button type="button"
                         data-id="{{ $data }}"
                         class="btn-ver px-4 py-2 rounded-lg shadow text-white"
                         style="background-color: #174ab9;">
                         Abrir
                     </button>
+
+                    <!-- NOVO BOTÃO EDITAR -->
+                    <button type="button"
+                        data-edit="{{ $data }}"
+                        class="btn-editar px-4 py-2 rounded-lg shadow text-white"
+                        style="background-color: #ca8a04;">
+                        Editar
+                    </button>
+
+                </td>
+            </tr>
+
+            <tr id="editar-dia-{{ $data }}" class="hidden bg-yellow-50">
+                <td colspan="3" class="px-6 py-6">
+
+                    <form action="{{ route('frequencia.alterarData') }}" method="POST"
+                        onsubmit="return confirm('Alterar a data de TODOS os registros deste dia?')">
+
+                        @csrf
+                        @method('PUT')
+
+                        <input type="hidden" name="grade_id" value="{{ $grade->id_grade }}">
+                        <input type="hidden" name="data_atual" value="{{ $data }}">
+
+                        <div class="flex flex-col md:flex-row md:items-end gap-4">
+
+                            <!-- DATA ATUAL -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Data Atual
+                                </label>
+
+                                <div class="px-3 py-2 border rounded-md bg-gray-50 text-gray-700 text-sm">
+                                    {{ \Carbon\Carbon::parse($data)->format('d/m/Y') }}
+                                </div>
+                            </div>
+
+                            <!-- NOVA DATA -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Nova Data
+                                </label>
+
+                                <input type="date"
+                                    name="nova_data"
+                                    class="px-3 py-2 border rounded-md text-sm"
+                                    required>
+                            </div>
+
+                            <!-- BOTÃO -->
+                            <div>
+                                <button type="submit"
+                                    class="px-4 py-2 text-xs font-semibold text-white rounded-lg shadow"
+                                    style="background-color: #15803d;">
+                                    Confirmar
+                                </button>
+                            </div>
+
+                        </div>
+
+                    </form>
+
                 </td>
             </tr>
 
@@ -266,7 +331,7 @@
                                         <th class="px-4 py-3">Aluno</th>
                                         <th class="px-4 py-3">Presença</th>
                                         <th class="px-4 py-3">Observação</th>
-                                        <th class="px-4 py-3 text-center">Ações</th>
+                                        <th class="py-3 px-4 text-center">Ações</th>
                                     </tr>
                                 </thead>
 
@@ -346,6 +411,17 @@
     function fecharCadastro() {
         document.getElementById('cadastroForm').classList.add('hidden');
     }
+
+    document.querySelectorAll('.btn-editar').forEach(btn => {
+        btn.addEventListener('click', function() {
+
+            const id = this.getAttribute('data-edit');
+            const linha = document.getElementById('editar-dia-' + id);
+
+            linha.classList.toggle('hidden');
+
+        });
+    });
 
     function bloquearSubmit(event, form) {
         if (!form.checkValidity()) {
