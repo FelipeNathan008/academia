@@ -4,22 +4,8 @@
 
 @section('content')
 
-@if ($errors->any())
-<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
-    
-    <div class="flex items-center gap-2 mb-2">
-        <span class="font-semibold">Atenção:</span>
-        <span class="text-sm">Verifique os campos abaixo</span>
-    </div>
 
-    <ul class="list-disc pl-5 text-sm space-y-1">
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-    </ul>
-
-</div>
-@endif
+<x-alert-error />
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div>

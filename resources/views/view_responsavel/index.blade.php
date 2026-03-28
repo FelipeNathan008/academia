@@ -4,22 +4,8 @@
 
 @section('content')
 
-@if ($errors->any())
-<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
 
-    <div class="flex items-center gap-2 mb-2">
-        <span class="font-semibold">Atenção:</span>
-        <span class="text-sm">Verifique os campos abaixo</span>
-    </div>
-
-    <ul class="list-disc pl-5 text-sm space-y-1">
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-    </ul>
-
-</div>
-@endif
+<x-alert-error />
 
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
@@ -49,7 +35,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                <!-- Nome e Parentesco -->
+                <!-- Nome e Tipo -->
                 <div style="display: flex; gap: 4%;">
                     <div style="flex: 1;">
                         <label class="text-sm font-medium text-gray-600">Nome do Responsável</label>
@@ -60,15 +46,11 @@
                     </div>
 
                     <div style="flex: 1;">
-                        <label class="text-sm font-medium text-gray-600">Parentesco</label>
+                        <label class="text-sm font-medium text-gray-600">Tipo</label>
                         <select name="resp_parentesco" required
                             class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
-                            <option value="">Selecione o parentesco</option>
-                            <option>Pai</option>
-                            <option>Mãe</option>
-                            <option>Responsável Legal</option>
-                            <option>Avô(ó)</option>
-                            <option>Tio(a)</option>
+                            <option value="">Selecione o Tipo</option>
+                            <option>Responsável</option>
                             <option>Outro</option>
                         </select>
                     </div>
@@ -208,7 +190,7 @@
         <thead>
             <tr class="border-b text-gray-600 text-sm">
                 <th class="py-3 px-4 text-left">Nome</th>
-                <th class="py-3 px-4 text-left">Parentesco</th>
+                <th class="py-3 px-4 text-left">Tipo</th>
                 <th class="py-3 px-4 text-left">Telefone</th>
                 <th class="py-3 px-4 text-left">Endereço</th>
                 <th class="py-3 px-4 text-left">Ações</th>

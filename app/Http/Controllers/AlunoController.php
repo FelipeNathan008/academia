@@ -44,6 +44,7 @@ class AlunoController extends Controller
 
         $request->validate([
             'aluno_nome' => 'required|string|max:120',
+            'aluno_parentesco' => 'required|string|max:60',
             'aluno_nascimento' => 'required|date',
             'aluno_bolsista' => 'required|in:sim,nao',
             'aluno_desc' => 'required|string',
@@ -67,6 +68,7 @@ class AlunoController extends Controller
         Aluno::create([
             'responsavel_id_responsavel' => $responsavel->id_responsavel,
             'aluno_nome' => $request->aluno_nome,
+            'aluno_parentesco' => $request->aluno_parentesco,
             'aluno_nascimento' => $request->aluno_nascimento,
             'aluno_bolsista' => $request->aluno_bolsista,
             'aluno_desc' => $request->aluno_desc,
@@ -117,6 +119,7 @@ class AlunoController extends Controller
         $request->validate([
             'aluno_nome' => 'required|string|max:120',
             'aluno_nascimento' => 'required|date',
+            'aluno_parentesco' => 'required|string|max:60',
             //'aluno_bolsista' => 'required|in:sim,nao',
             'aluno_desc' => 'required|string',
             'aluno_foto' => 'nullable|image|max:2048',
@@ -137,6 +140,7 @@ class AlunoController extends Controller
 
         // ATUALIZAÇÃO DOS DADOS (SEM only)
         $aluno->aluno_nome = $request->aluno_nome;
+        $aluno->aluno_parentesco = $request->aluno_parentesco;
         $aluno->aluno_nascimento = $request->aluno_nascimento;
         //$aluno->aluno_bolsista = $request->aluno_bolsista;
         $aluno->aluno_desc = $request->aluno_desc;

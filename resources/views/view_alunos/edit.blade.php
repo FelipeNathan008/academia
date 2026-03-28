@@ -3,22 +3,9 @@
 @section('title', 'Editar Aluno')
 
 @section('content')
-@if ($errors->any())
-<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
-    
-    <div class="flex items-center gap-2 mb-2">
-        <span class="font-semibold">Atenção:</span>
-        <span class="text-sm">Verifique os campos abaixo</span>
-    </div>
 
-    <ul class="list-disc pl-5 text-sm space-y-1">
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-    </ul>
+<x-alert-error />
 
-</div>
-@endif
 <!-- BREADCRUMB -->
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
@@ -59,6 +46,34 @@
                     value="{{ old('aluno_nome', $aluno->aluno_nome) }}"
                     oninput="validarNome(this)"
                     class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+            </div>
+
+            <div>
+                <label class="text-sm font-medium text-gray-600">Parentesco</label>
+                <select name="aluno_parentesco" required
+                    class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+
+                    <option value="Filho" {{ old('aluno_parentesco', $aluno->aluno_parentesco) == 'filho' ? 'selected' : '' }}>
+                        Filho
+                    </option>
+
+                    <option value="Sobrinho" {{ old('aluno_parentesco', $aluno->aluno_parentesco) == 'sobrinho' ? 'selected' : '' }}>
+                        Sobrinho
+                    </option>
+
+                    <option value="Neto" {{ old('aluno_parentesco', $aluno->aluno_parentesco) == 'neto' ? 'selected' : '' }}>
+                        Neto
+                    </option>
+
+                    <option value="Responsável" {{ old('aluno_parentesco', $aluno->aluno_parentesco) == 'responsavel' ? 'selected' : '' }}>
+                        Responsável
+                    </option>
+
+                    <option value="Outro" {{ old('aluno_parentesco', $aluno->aluno_parentesco) == 'outro' ? 'selected' : '' }}>
+                        Outro
+                    </option>
+
+                </select>
             </div>
 
             <!-- NASCIMENTO -->

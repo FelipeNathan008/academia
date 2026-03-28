@@ -14,6 +14,7 @@ class Aluno extends Model
     protected $fillable = [
         'responsavel_id_responsavel',
         'aluno_nome',
+        'aluno_parentesco',
         'aluno_nascimento',
         'aluno_desc',
         'aluno_foto',

@@ -2,22 +2,10 @@
 
 @section('title', 'Professores')
 @section('content')
-@if ($errors->any())
-<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
 
-    <div class="flex items-center gap-2 mb-2">
-        <span class="font-semibold">Atenção:</span>
-        <span class="text-sm">Verifique os campos abaixo</span>
-    </div>
 
-    <ul class="list-disc pl-5 text-sm space-y-1">
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-    </ul>
+<x-alert-error />
 
-</div>
-@endif
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div>
@@ -108,6 +96,7 @@
                 <th class="py-3 px-4">Idade</th>
                 <th class="py-3 px-4">Telefone</th>
                 <th class="py-3 px-4">Foto</th>
+                <th class="py-3 px-4">Qtd. Alunos</th>
                 <th class="py-3 px-4">Ações</th>
             </tr>
         </thead>
@@ -179,6 +168,12 @@
                         Graduações
                     </a>
 
+                    <a href="{{ route('detalhes-professor.index', Crypt::encrypt($professor->id_professor)) }}"
+                        style="background-color: #0f3891; color: white;"
+                        class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
+                        Qtd. Alunos
+                    </a>
+
                     <a href="{{ route('professores.edit', Crypt::encrypt($professor->id_professor)) }}"
                         style="background-color: #8E251F; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
@@ -200,7 +195,7 @@
 
             @empty
             <tr>
-                <td colspan="6" class="text-center text-gray-500 py-6">Nenhum professor cadastrado</td>
+                <td colspan="7" class="text-center text-gray-500 py-6">Nenhum professor cadastrado</td>
             </tr>
             @endforelse
         </tbody>

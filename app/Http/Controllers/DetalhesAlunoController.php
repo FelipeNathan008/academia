@@ -90,6 +90,7 @@ class DetalhesAlunoController extends Controller
         ]);
 
         $jaExiste = DetalhesAluno::where('aluno_id_aluno', $id)
+            ->where('det_gradu_nome_cor', $request->det_gradu_nome_cor)
             ->where('det_grau', $request->det_grau)
             ->where('det_modalidade', $request->det_modalidade)
             ->where('id_emp_id', $user->id_emp_id)

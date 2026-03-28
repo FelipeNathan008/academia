@@ -127,6 +127,7 @@ class ResponsavelController extends Controller
         ]);
 
         $jaExiste = Responsavel::where('resp_cpf', $request->resp_cpf)
+            ->where('id_responsavel', '!=', $id)
             ->where('id_emp_id', $user->id_emp_id)
             ->exists();
 

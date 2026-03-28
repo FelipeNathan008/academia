@@ -3,22 +3,10 @@
 @section('title', 'Editar Horário da Grade')
 
 @section('content')
-@if ($errors->any())
-<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
 
-    <div class="flex items-center gap-2 mb-2">
-        <span class="font-semibold">Atenção:</span>
-        <span class="text-sm">Verifique os campos abaixo</span>
-    </div>
 
-    <ul class="list-disc pl-5 text-sm space-y-1">
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-    </ul>
+<x-alert-error />
 
-</div>
-@endif
 <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-md p-8">
     <h2 class="text-2xl font-bold mb-6 text-gray-800">
         Editar Horário ({{ $grade->grade_modalidade }} - {{ $grade->grade_dia_semana }})

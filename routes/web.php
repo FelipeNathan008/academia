@@ -57,9 +57,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/detalhes-professor/{id}/edit', [DetalhesProfessorController::class, 'edit'])->name('detalhes-professor.edit');
     Route::put('/detalhes-professor/{id}', [DetalhesProfessorController::class, 'update'])->name('detalhes-professor.update');
     Route::delete('/detalhes-professor/{id}', [DetalhesProfessorController::class, 'destroy'])->name('detalhes-professor.destroy');
-    Route::get('/certificado/{path}', [DetalhesProfessorController::class, 'showCertificado'])
+    Route::get('/certificado-professor/{path}', [DetalhesProfessorController::class, 'showCertificado'])
         ->name('certificado.show');
-        
+
     // Dashboard Botões
     Route::get('/dashboard/mensalidades-atrasadas', [DashboardController::class, 'mensalidadesAtrasadas'])
         ->name('dashboard.mensalidadesAtrasadas');
@@ -165,8 +165,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/detalhes-aluno/{id}/edit', [DetalhesAlunoController::class, 'edit'])->name('detalhes-aluno.edit');
     Route::put('/detalhes-aluno/{id}', [DetalhesAlunoController::class, 'update'])->name('detalhes-aluno.update');
     Route::delete('/detalhes-aluno/{id}', [DetalhesAlunoController::class, 'destroy'])->name('detalhes-aluno.destroy');
-    Route::get('/certificado/{path}', [DetalhesAlunoController::class, 'showCertificado'])->name('detalhes-aluno.showCertificado');
-
+    Route::get('/certificado-aluno/{path}', [DetalhesAlunoController::class, 'showCertificado'])
+        ->name('detalhes-aluno.showCertificado');
 
     Route::get('/grade_horarios', [GradeHorarioController::class, 'index'])->name('grade_horarios');
     Route::post('/grade_horarios', [GradeHorarioController::class, 'store'])->name('grade_horarios.store');

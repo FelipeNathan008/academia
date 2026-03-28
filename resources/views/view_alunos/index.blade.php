@@ -3,22 +3,9 @@
 @section('title', 'Alunos')
 
 @section('content')
-@if ($errors->any())
-<div class="bg-gray-100 text-gray-800 p-4 rounded-xl mb-4 border border-gray-300 shadow-sm">
 
-    <div class="flex items-center gap-2 mb-2">
-        <span class="font-semibold">Atenção:</span>
-        <span class="text-sm">Verifique os campos abaixo</span>
-    </div>
+<x-alert-error />
 
-    <ul class="list-disc pl-5 text-sm space-y-1">
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-    </ul>
-
-</div>
-@endif
 <!-- BREADCRUMB -->
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
@@ -90,7 +77,18 @@
                         oninput="validarNome(this)"
                         class="w-full border rounded-lg px-4 py-2 mt-1">
                 </div>
-
+                <div>
+                    <label class="text-sm font-medium text-gray-600">Parentesco</label>
+                    <select name="aluno_parentesco" required
+                        class="w-full border rounded-lg px-4 py-2 mt-1">
+                        <option value="">Selecione</option>
+                        <option value="Filho">Filho</option>
+                        <option value="Sobrinho">Sobrinho</option>
+                        <option value="Neto">Neto</option>
+                        <option value="Responsável">Responsável</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
                 <div>
                     <label class="text-sm font-medium text-gray-600">Data de Nascimento</label>
                     <input type="date" name="aluno_nascimento" required
@@ -148,11 +146,13 @@
         <thead>
             <tr class="border-b text-gray-600 text-sm">
                 <th class="py-3 px-4">Aluno</th>
+                <th class="py-3 px-4">Parentesco</th>
                 <th class="py-3 px-4">Nascimento</th>
                 <th class="py-3 px-4">Idade</th>
                 <th class="py-3 px-4">Foto</th>
                 <th class="py-3 px-4">Bolsista</th>
                 <th class="py-3 px-4">Matriculado</th>
+                <th class="py-3 px-4">Graduado</th>
                 <th class="py-3 px-4">Ações</th>
             </tr>
         </thead>
@@ -171,6 +171,10 @@
                 <!-- NOME -->
                 <td class="py-3 px-4">{{ $aluno->aluno_nome }}</td>
 
+                <!-- PARENTESCO -->
+                <td
+                    class="py-3 px-4">{{ $aluno->aluno_parentesco }}
+                </td>
 
                 <!-- NASCIMENTO -->
                 <td class="py-3 px-4">
@@ -245,15 +249,40 @@
                     color:#166534; background-color:#bbf7d0;"> 🎓 Sim
                     </span>
                     @else
-                    <span class="px-2 py-1 text-xs font-semibold rounded-full text-gray-700 bg-gray-200">
+                    <span style="
+                        padding:4px 10px;
+                        font-size:0.75rem;
+                        font-weight:600;
+                        border-radius:9999px;
+                        color:#7f1d1d;
+                        background-color:#fecaca;">
                         Não
                     </span>
                     @endif
                 </td>
 
+                <!-- Graduado -->
+                <td class="py-3 px-4">
+                    @if($aluno->detalhes->where('aluno_id_aluno',$aluno->id_aluno)->count() > 0)
+                    <span style="padding:2px 8px; font-size:0.75rem;
+                font-weight:600; border-radius:9999px;
+                color:#166534; background-color:#bbf7d0;"> 🥋 Sim
+                            </span>
+                    @else
+                    <span style="
+                        padding:4px 10px;
+                        font-size:0.75rem;
+                        font-weight:600;
+                        border-radius:9999px;
+                        color:#7f1d1d;
+                        background-color:#fecaca;">
+                        Não
+                    </span> 
+                    @endif
+                </td>
+
                 <!-- AÇÕES -->
                 <td class="py-3 px-4 flex gap-2">
-
                     <a href="{{ route('detalhes-aluno.index', Crypt::encrypt($aluno->id_aluno)) }}"
                         style="background-color: #174ab9; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
@@ -296,7 +325,7 @@
 
             @empty
             <tr>
-                <td colspan="7" class="text-center py-6 text-gray-500">
+                <td colspan="9" class="text-center py-6 text-gray-500">
                     Nenhum aluno cadastrado para este responsável
                 </td>
             </tr>

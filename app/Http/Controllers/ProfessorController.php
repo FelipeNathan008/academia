@@ -40,6 +40,7 @@ class ProfessorController extends Controller
         $detalhes = DetalhesProfessor::all();
         $modalidades = Modalidade::all();
 
+        $alunos
         return view(
             'view_professores.index',
             compact('professores', 'graduacoes', 'detalhes', 'modalidades')
