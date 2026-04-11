@@ -86,7 +86,7 @@
 
 <!-- LISTAGEM -->
 <div class="bg-white rounded-2xl shadow-md p-6">
-    <h3 class="text-xl font-bold mb-6 text-gray-700">Lista de Professores</h3>
+    <h3 class="text-xl font-bold mb-6 text-gray-700">LISTA DE PROFESSORES</h3>
 
     <table class="w-full text-left border-collapse">
         <thead>
@@ -95,6 +95,7 @@
                 <th class="py-3 px-4">Nascimento</th>
                 <th class="py-3 px-4">Idade</th>
                 <th class="py-3 px-4">Telefone</th>
+                <th class="py-3 px-4">Empresa</th>
                 <th class="py-3 px-4">Foto</th>
                 <th class="py-3 px-4">Qtd. Alunos</th>
                 <th class="py-3 px-4">Ações</th>
@@ -123,7 +124,7 @@
 
                 <td class="py-3 px-4">
                     @if($nascimento)
-                    {{ $nascimento->age }} anos
+                    {{ $nascimento->age }}
 
                     @if ($nascimento->isBirthday())
                     <span style="margin-left:6px; padding:2px 8px; font-size:0.75rem; font-weight:600;
@@ -149,6 +150,11 @@
                     -
                     @endif
                 </td>
+
+                <td class="py-3 px-4 font-bold">
+                    {{ $professor->empresas->emp_nome ?? '-' }}
+                </td>
+
                 <td class="py-3 px-4">
                     @if($professor->prof_foto)
                     <div class="w-12 h-12 overflow-hidden">
@@ -159,6 +165,11 @@
                     -
                     @endif
                 </td>
+
+                <td class="py-3 px-4 font-bold">
+                    {{ $professor->qtd_aluno ?? '0'}}
+                </td>
+
                 <td class="py-3 px-4 flex gap-2">
 
                     <!-- Botão Graduações -->
@@ -166,12 +177,6 @@
                         style="background-color: #174ab9; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
                         Graduações
-                    </a>
-
-                    <a href="{{ route('detalhes-professor.index', Crypt::encrypt($professor->id_professor)) }}"
-                        style="background-color: #0f3891; color: white;"
-                        class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
-                        Qtd. Alunos
                     </a>
 
                     <a href="{{ route('professores.edit', Crypt::encrypt($professor->id_professor)) }}"

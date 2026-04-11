@@ -35,6 +35,14 @@ class Matricula extends Model
         });
     }
 
+    public function mensalidades()
+    {
+        return $this->hasMany(
+            Mensalidade::class,
+            'matricula_id_matricula', 
+            'id_matricula' 
+        );
+    }
     public function grade()
     {
         return $this->belongsTo(GradeHorario::class, 'grade_id_grade', 'id_grade');

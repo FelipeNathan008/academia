@@ -8,11 +8,9 @@
 <div class="flex justify-between items-center mb-8">
     <div>
         <h2 class="text-3xl font-extrabold text-gray-800">
-            Detalhes da Matrícula
+            INFORMAÇÕES COMPLETAS DA MATRÍCULA SELECIONADA
         </h2>
-        <p class="text-sm text-gray-500 mt-1">
-            Informações completas da matrícula selecionada
-        </p>
+
     </div>
 
     <a href="{{ route('matricula', Crypt::encrypt($matricula->aluno->id_aluno)) }}"

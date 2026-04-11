@@ -50,7 +50,7 @@
             ← Voltar
         </a>
 
-        <h2 class="text-3xl font-extrabold text-gray-800">Graduações do Aluno</h2>
+        <h2 class="text-3xl font-extrabold text-gray-800">Matrículas / Graduações do Aluno</h2>
     </div>
 
     <button onclick="toggleCadastro()"
@@ -65,9 +65,9 @@
         <p class="text-xs uppercase tracking-widest text-gray-500">Aluno selecionado</p>
         <h3 class="text-2xl font-extrabold text-gray-800 mt-1">{{ $aluno->aluno_nome }}</h3>
         <p class="mt-2 text-sm text-gray-600">
-            Data de nascimento:
+            Idade:
             <strong class="text-gray-800">
-                {{ $aluno->aluno_nascimento ?? '-' }}
+                {{ $aluno->aluno_nascimento ? \Carbon\Carbon::parse($aluno->aluno_nascimento)->age : '-' }}
             </strong>
         </p>
     </div>
@@ -196,7 +196,7 @@
 
 <!-- LISTAGEM EM TABELA -->
 <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
-    <h3 class="text-xl font-bold mb-6 text-gray-700">Graduações Cadastradas</h3>
+    <h3 class="text-xl font-bold mb-6 text-gray-700">GRADUAÇÕES CADASTRADAS</h3>
 
     @php
     $ordem = [
@@ -264,7 +264,7 @@
                         <td class="py-3 px-4">{{ $det->det_modalidade }}</td>
                         <td class="py-3 px-4">{{ \Carbon\Carbon::parse($det->det_data)->format('d/m/Y') }}</td>
                         <td class="py-3 px-4 flex gap-2">
-                            
+
                             @if($det->det_certificado)
                             <a href="{{ route('detalhes-aluno.showCertificado', ['path' => Crypt::encrypt($det->det_certificado)]) }}"
                                 target="_blank"

@@ -51,8 +51,12 @@ class MatriculaController extends Controller
         $query = Aluno::with([
             'responsavel',
             'matriculas' => function ($q) use ($user) {
-                $q->where('id_emp_id', $user->id_emp_id)    
-                    ->where('matri_status', 'Matriculado');
+                $q->where('id_emp_id', $user->id_emp_id)
+                    ->where('matri_status', 'Matriculado')
+                    ->with([
+                        'grade',
+                        'mensalidades.detalhes' 
+                    ]);
             }
         ])->where('id_emp_id', $user->id_emp_id);
 
@@ -81,13 +85,13 @@ class MatriculaController extends Controller
                 $query->whereDoesntHave('matriculas');
             }
         }
-
+        $totalAlunos = Aluno::where('id_emp_id', $user->id_emp_id)->count();
         $alunos = $query
             ->orderBy('aluno_nome')
             ->paginate(10)
             ->withQueryString();
 
-        return view('view_matricula.index_sidebar', compact('alunos'));
+        return view('view_matricula.index_sidebar', compact('alunos', 'totalAlunos'));
     }
 
     public function store(Request $request, $id)

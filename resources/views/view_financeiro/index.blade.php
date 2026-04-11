@@ -45,7 +45,7 @@
         </a>
 
         <h2 class="text-3xl font-extrabold text-gray-800">
-            Mensalidades
+            Matrículas / Financeiro /Mensalidades
         </h2>
     </div>
 
@@ -69,7 +69,7 @@
 <div class="bg-white rounded-2xl shadow-md p-6">
 
     <h3 class="text-xl font-bold mb-6 text-gray-700">
-        Histórico Financeiro
+        HISTÓRICO FINANCEIRO
     </h3>
 
     <table class="w-full text-left border-collapse">

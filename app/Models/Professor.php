@@ -33,7 +33,10 @@ class Professor extends Model
         });
     }
 
-
+    public function empresas()
+    {
+        return $this->belongsTo(Empresa::class, 'id_emp_id', 'id_empresa');
+    }
     public function detalhes()
     {
         return $this->hasMany(DetalhesProfessor::class, 'professor_id_professor', 'id_professor');

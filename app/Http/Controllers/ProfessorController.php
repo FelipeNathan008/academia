@@ -11,6 +11,7 @@ use App\Models\Modalidade;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\DB;
 
 
 class ProfessorController extends Controller
@@ -40,10 +41,18 @@ class ProfessorController extends Controller
         $detalhes = DetalhesProfessor::all();
         $modalidades = Modalidade::all();
 
-        $alunos
+        foreach ($professores as $professor) {
+            $professor->qtd_aluno = DB::table('matricula as m')
+                ->join('grade_horario as g', 'm.grade_id_grade', '=', 'g.id_grade')
+                ->where('g.professor_id_professor', $professor->id_professor)
+                ->count();
+        }
+        $professoresEmpresa = Professor::with('empresas')
+            ->where('id_emp_id', $user->id_emp_id)
+            ->get();
         return view(
-            'view_professores.index',
-            compact('professores', 'graduacoes', 'detalhes', 'modalidades')
+            'view_admin.view_professores.index',
+            compact('professores','professoresEmpresa', 'graduacoes', 'detalhes', 'modalidades')
         );
     }
 
@@ -98,7 +107,7 @@ class ProfessorController extends Controller
         $professor = Professor::where('id_professor', $id)
             ->where('id_emp_id', $user->id_emp_id)
             ->firstOrFail();
-        return view('view_professores.edit', compact('professor'));
+        return view('view_admin.view_professores.edit', compact('professor'));
     }
 
     public function update(Request $request, $id)
@@ -127,7 +136,7 @@ class ProfessorController extends Controller
             'prof_foto' => 'nullable|image|max:2048',
         ]);
 
-      
+
         // FOTO
         if ($request->hasFile('prof_foto')) {
 

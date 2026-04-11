@@ -3,7 +3,17 @@
 @section('title', 'Responsáveis')
 
 @section('content')
+<style>
+    .responsavel-sem-aluno td {
+        background-color: #fee2e2;
+        /* equivalente ao red-100 */
+    }
 
+    .responsavel-sem-aluno:hover td {
+        background-color: #fecaca;
+        /* equivalente ao red-200 */
+    }
+</style>
 
 <x-alert-error />
 
@@ -12,8 +22,9 @@
 
     <div class="flex items-center gap-4">
         <h2 class="text-3xl font-extrabold text-gray-800">
-            Responsáveis
+            Matrículas / Responsáveis
         </h2>
+
     </div>
 
     <button onclick="toggleCadastro()"
@@ -32,6 +43,7 @@
             <h3 class="text-xl font-bold mb-6 text-gray-700">
                 Cadastrar Responsável
             </h3>
+
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -182,24 +194,36 @@
 
 <!-- LISTAGEM -->
 <div class="bg-white rounded-2xl shadow-md p-6">
-    <h3 class="text-xl font-bold mb-6 text-gray-700">
-        Responsáveis Cadastrados
-    </h3>
+    <h3 class="text-xl font-bold mb-6 text-gray-700 flex items-center gap-4 flex-wrap">
 
+        <span>RESPONSÁVEIS CADASTRADOS</span>
+
+        <!-- TOTAL GERAL -->
+        <span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm">
+            Total: {{ $totalResponsaveis }}
+        </span>
+
+        <!-- TOTAL FILTRADO -->
+        <span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm">
+            Filtrados: {{ $responsaveis->total() }}
+        </span>
+
+    </h3>
     <table class="w-full">
         <thead>
             <tr class="border-b text-gray-600 text-sm">
                 <th class="py-3 px-4 text-left">Nome</th>
                 <th class="py-3 px-4 text-left">Tipo</th>
                 <th class="py-3 px-4 text-left">Telefone</th>
-                <th class="py-3 px-4 text-left">Endereço</th>
                 <th class="py-3 px-4 text-left">Ações</th>
             </tr>
         </thead>
         <tbody>
             @forelse ($responsaveis as $resp)
-            <tr class="border-b hover:bg-gray-50 transition linha-responsavel"
-                data-nome="{{ strtolower($resp->resp_nome) }}">
+            <tr class="border-b transition linha-responsavel
+                {{ $resp->alunos_count == 0 
+                    ? 'responsavel-sem-aluno' 
+                    : 'hover:bg-gray-50' }}">
 
                 <td class="py-3 px-4 ">
                     {{ $resp->resp_nome }}
@@ -213,13 +237,6 @@
                     {{ preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $resp->resp_telefone) }}
                 </td>
 
-                <td class="py-3 px-4">
-                    {{ $resp->resp_logradouro }}
-                    @if($resp->resp_numero), {{ $resp->resp_numero }}@endif
-                    @if($resp->resp_complemento) - {{ $resp->resp_complemento }}@endif
-                    , {{ $resp->resp_bairro }}
-                    @if($resp->resp_cidade) - {{ $resp->resp_cidade }}@endif
-                </td>
 
                 <td class="py-3 px-4">
                     <div class="flex gap-2">

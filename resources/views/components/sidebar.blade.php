@@ -91,13 +91,14 @@
 
         if ($user->role === 'admin') {
         $menu = [
-        'Dashboard' => 'dashboard',
-        'Alunos/Responsáveis' => 'responsaveis',
-        'Matrícula' => 'matricula.index',
-        'Professores' => 'professores',
+        'Dashboard Princiapl igual da alpha' => 'dashboard',
+        'Matrícula' => 'responsaveis',
+        'Alunos' => 'matricula.index',
         'Grade de Horários' => 'grade_horarios',
         'Frequência dos Alunos' => 'frequencia.listagem',
         'Administração' => [
+        'Dashboard' => 'dashboard',
+        'Professores' => 'professores',
         'Graduações' => 'graduacoes',
         'Modalidades' => 'modalidades',
         'Horarios de Treino' => 'horario_treino',
@@ -111,8 +112,8 @@
         } else { // user normal
         $menu = [
         'Painel' => 'painel',
-        'Alunos/Responsáveis' => 'responsaveis',
-        'Matrícula' => 'matricula.index',
+        'Matrícula' => 'responsaveis',
+        'alunos' => 'matricula.index',
         'Frequência do Aluno' => 'grade_horarios',
         ];
         }
@@ -124,7 +125,15 @@
         @php
         $isSubActive = false;
         foreach ($route as $subRoute) {
-        if (request()->routeIs($subRoute) || request()->routeIs($subRoute.'.edit')) {
+        if (
+        request()->routeIs($subRoute) ||
+        request()->routeIs($subRoute.'.edit') ||
+
+        ($subRoute === 'professores' && (
+        request()->routeIs('detalhes-professor.index') ||
+        request()->routeIs('detalhes-professor.edit')
+        ))
+        ) {
         $isSubActive = true;
         break;
         }
@@ -145,7 +154,18 @@
             class="mt-1 space-y-1 {{ $isSubActive ? '' : 'hidden' }}">
             @foreach($route as $subLabel => $subRoute)
             @php
-            $isSubmenuActive = request()->routeIs($subRoute) || request()->routeIs($subRoute.'.edit');
+            $isSubmenuActive =
+            request()->routeIs($subRoute) ||
+            request()->routeIs($subRoute.'.edit') ||
+
+            ($subRoute === 'professores' && (
+            request()->routeIs('detalhes-professor.index') ||
+            request()->routeIs('detalhes-professor.edit')
+            ));
+            ($subRoute === 'dashboard' && (
+            request()->routeIs('dashboard.mensalidadesAtrasadas') ||
+            request()->routeIs('dashboard.graduacoes')
+            ));
             @endphp
             <a href="{{ route($subRoute) }}"
                 class="block pl-12 py-2 rounded-lg transition
@@ -161,8 +181,8 @@
         @else
         {{-- ITEM NORMAL --}}
         @php
-        // Ativa Alunos/Responsáveis se estiver em qualquer rota de alunos ou responsáveis
-        if ($label === 'Alunos/Responsáveis') {
+        // Ativa matricula se estiver em qualquer rota de alunos ou responsáveis
+        if ($label === 'Matrícula') {
         $isActive = in_array(Route::currentRouteName(), [
         'alunos',
         'alunos.edit',

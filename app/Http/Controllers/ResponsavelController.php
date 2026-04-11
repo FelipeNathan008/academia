@@ -22,9 +22,14 @@ class ResponsavelController extends Controller
             $query->where('resp_nome', 'like', '%' . $request->nome . '%');
         }
 
-        $responsaveis = $query->paginate(10)->withQueryString();
+        $totalResponsaveis = Responsavel::where('id_emp_id', $user->id_emp_id)->count();
 
-        return view('view_responsavel.index', compact('responsaveis'));
+        $responsaveis = $query
+            ->withCount('alunos')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('view_responsavel.index', compact('responsaveis','totalResponsaveis'));
     }
 
     // CADASTRAR RESPONSÁVEL

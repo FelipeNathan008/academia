@@ -40,7 +40,7 @@ class DetalhesProfessorController extends Controller
             ->orderBy('gradu_grau')
             ->get();
 
-        return view('view_professores.detalhes_professor', compact(
+        return view('view_admin.view_professores.detalhes_professor', compact(
             'professor',
             'graduacoes',
             'graduacoesTotais',
@@ -130,7 +130,7 @@ class DetalhesProfessorController extends Controller
         $modalidades = Modalidade::where('id_emp_id', $user->id_emp_id)->get();
         $graduacoesTotais = Graduacao::all();
 
-        return view('view_professores.detalhes_professor_edit', compact(
+        return view('view_admin.view_professores.detalhes_professor_edit', compact(
             'detalhe',
             'professor',
             'modalidades',

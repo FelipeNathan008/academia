@@ -71,6 +71,10 @@
             Data de nascimento:
             <strong class="text-gray-800">
                 {{ \Carbon\Carbon::parse($aluno->aluno_nascimento)->format('d/m/Y') }}
+            </strong> <br>
+            Idade:
+            <strong class="text-gray-800">
+                {{ $aluno->aluno_nascimento ? \Carbon\Carbon::parse($aluno->aluno_nascimento)->age : '-' }}
             </strong>
         </p>
     </div>
@@ -168,7 +172,7 @@
 <!-- LISTAGEM -->
 <div class="bg-white rounded-2xl shadow-md p-6">
     <h3 class="text-xl font-bold mb-6 text-gray-700">
-        Histórico de Matrículas
+        HISTÓRICO DE MATRÍCULAS
     </h3>
 
     <table class="w-full text-left border-collapse">
@@ -229,7 +233,7 @@
                     <a href="{{ route('matricula.show', Crypt::encrypt($matricula->id_matricula)) }}"
                         style="background-color: #174ab9; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
-                        Detalhes
+                        Ver Matrícula
                     </a>
 
                     @if(strtolower($aluno->aluno_bolsista) !== 'sim')

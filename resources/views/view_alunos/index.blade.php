@@ -30,7 +30,7 @@
         </a>
 
         <h2 class="text-3xl font-extrabold text-gray-800">
-            Alunos do Responsável
+            Matrículas / Alunos do Responsável
         </h2>
     </div>
 
@@ -139,7 +139,7 @@
 <!-- LISTAGEM EM CARDS -->
 <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
     <h3 class="text-xl font-bold mb-6 text-gray-700">
-        Alunos Cadastrados
+        ALUNOS CADASTRADOS
     </h3>
 
     <table class="w-full text-left border-collapse">
@@ -147,7 +147,6 @@
             <tr class="border-b text-gray-600 text-sm">
                 <th class="py-3 px-4">Aluno</th>
                 <th class="py-3 px-4">Parentesco</th>
-                <th class="py-3 px-4">Nascimento</th>
                 <th class="py-3 px-4">Idade</th>
                 <th class="py-3 px-4">Foto</th>
                 <th class="py-3 px-4">Bolsista</th>
@@ -176,15 +175,10 @@
                     class="py-3 px-4">{{ $aluno->aluno_parentesco }}
                 </td>
 
-                <!-- NASCIMENTO -->
-                <td class="py-3 px-4">
-                    {{ $nascimento ? $nascimento->format('d/m/Y') : '-' }}
-                </td>
-
                 <!-- IDADE + ANIVERSÁRIO -->
                 <td class="py-3 px-4">
                     @if($nascimento)
-                    {{ $nascimento->age }} anos
+                    {{ $nascimento->age }}
 
                     @if ($nascimento->isBirthday())
                     <span style="margin-left:6px; padding:2px 8px; font-size:0.75rem;
@@ -267,7 +261,7 @@
                     <span style="padding:2px 8px; font-size:0.75rem;
                 font-weight:600; border-radius:9999px;
                 color:#166534; background-color:#bbf7d0;"> 🥋 Sim
-                            </span>
+                    </span>
                     @else
                     <span style="
                         padding:4px 10px;
@@ -277,7 +271,7 @@
                         color:#7f1d1d;
                         background-color:#fecaca;">
                         Não
-                    </span> 
+                    </span>
                     @endif
                 </td>
 
