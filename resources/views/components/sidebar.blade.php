@@ -95,6 +95,7 @@
         'Matrícula' => 'responsaveis',
         'Alunos' => 'matricula.index',
         'Grade de Horários' => 'grade_horarios',
+        'Professores / Alunos' => 'professores.sidebar',
         'Frequência dos Alunos' => 'frequencia.listagem',
         'Administração' => [
         'Dashboard' => 'dashboard',

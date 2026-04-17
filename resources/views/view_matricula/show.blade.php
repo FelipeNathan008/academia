@@ -4,6 +4,49 @@
 
 @section('content')
 
+<!-- BREADCUMP -->
+<nav class="mb-6 text-sm text-gray-500">
+    <ol class="flex items-center gap-2">
+        <li>
+            <a href="{{ route('responsaveis') }}"
+                class="hover:text-[#8E251F] transition">
+                Responsáveis
+            </a>
+        </li>
+        <li>/</li>
+        <li class="text-gray-400">{{ $matricula->aluno->responsavel->resp_nome }}</li>
+
+        <li>/</li>
+        <li>
+            <a href="{{ route('alunos', Crypt::encrypt($matricula->aluno->responsavel->id_responsavel)) }}"
+                class="hover:text-[#8E251F] transition">
+                Alunos
+            </a>
+        </li>
+        <li>/</li>
+        <li>
+            <span class="text-gray-400">
+                {{ $matricula->aluno->aluno_nome }}
+            </span>
+        </li>
+        <li>/</li>
+        <li>
+            <a href="{{ route('detalhes-aluno.index', Crypt::encrypt($matricula->aluno->id_aluno)) }}" class="hover:text-[#8E251F] transition">
+                Graduações
+            </a>
+        </li>
+        <li>/</li>
+        <li>
+            <a href="{{ route('matricula', Crypt::encrypt($matricula->aluno->id_aluno)) }}"
+                class="hover:text-[#8E251F] transition">
+                Matrícula
+            </a>
+        </li>
+        <li>/</li>
+        <li class="font-semibold text-gray-700">Ver Matrícula</li>
+    </ol>
+</nav>
+
 <!-- TOPO -->
 <div class="flex justify-between items-center mb-8">
     <div>

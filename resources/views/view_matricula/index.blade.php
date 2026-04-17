@@ -15,12 +15,8 @@
             </a>
         </li>
         <li>/</li>
-        <li>
-            <a href="{{ route('alunos', Crypt::encrypt($aluno->responsavel->id_responsavel)) }}"
-                class="hover:text-[#8E251F] transition">
-                {{ $aluno->responsavel->resp_nome }}
-            </a>
-        </li>
+        <li class="text-gray-400">{{ $aluno->responsavel->resp_nome }}</li>
+
         <li>/</li>
         <li>
             <a href="{{ route('alunos', Crypt::encrypt($aluno->responsavel_id_responsavel)) }}"
@@ -31,7 +27,15 @@
         <li>/</li>
         <li class="text-gray-400">{{ $aluno->aluno_nome }}</li>
         <li>/</li>
+        <li>
+            <a href="{{ route('detalhes-aluno.index', Crypt::encrypt($aluno->id_aluno)) }}" class="hover:text-[#8E251F] transition">
+                Graduações
+            </a>
+        </li>
+        <li>/</li>
         <li class="font-semibold text-gray-700">Matrícula</li>
+        <li>/</li>
+        <li class="text-gray-400">Financeiro</li>
     </ol>
 </nav>
 

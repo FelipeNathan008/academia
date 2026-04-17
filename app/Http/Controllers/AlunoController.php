@@ -45,7 +45,12 @@ class AlunoController extends Controller
         $request->validate([
             'aluno_nome' => 'required|string|max:120',
             'aluno_parentesco' => 'required|string|max:60',
-            'aluno_nascimento' => 'required|date',
+            'aluno_nascimento' => [
+                'required',
+                'date',
+                'before_or_equal:' . now()->subYears(6)->format('Y-m-d'),
+                'after_or_equal:' . now()->subYears(100)->format('Y-m-d'),
+            ],
             'aluno_bolsista' => 'required|in:sim,nao',
             'aluno_desc' => 'required|string',
             'aluno_foto' => 'required|image|max:2048',
@@ -118,7 +123,12 @@ class AlunoController extends Controller
 
         $request->validate([
             'aluno_nome' => 'required|string|max:120',
-            'aluno_nascimento' => 'required|date',
+            'aluno_nascimento' => [
+                'required',
+                'date',
+                'before_or_equal:' . now()->subYears(6)->format('Y-m-d'),
+                'after_or_equal:' . now()->subYears(100)->format('Y-m-d'),
+            ],
             'aluno_parentesco' => 'required|string|max:60',
             //'aluno_bolsista' => 'required|in:sim,nao',
             'aluno_desc' => 'required|string',
@@ -152,6 +162,18 @@ class AlunoController extends Controller
             ->with('success', 'Aluno atualizado com sucesso!');
     }
 
+    public function show($id)
+    {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $aluno = Aluno::where('id_aluno', $id)->firstOrFail();
+
+        return view('view_alunos.show', compact('aluno'));
+    }
 
     public function destroy($id)
     {

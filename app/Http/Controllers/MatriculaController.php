@@ -85,6 +85,7 @@ class MatriculaController extends Controller
                 $query->whereDoesntHave('matriculas');
             }
         }
+        
         $totalAlunos = Aluno::where('id_emp_id', $user->id_emp_id)->count();
         $alunos = $query
             ->orderBy('aluno_nome')

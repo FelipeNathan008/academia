@@ -17,6 +17,13 @@
             </a>
         </li>
         <li>/</li>
+
+        <li>
+            <span class="text-gray-400">
+                {{ $responsavel->resp_nome }}
+            </span>
+        </li>
+        <li>/</li>
         <li class="font-semibold text-gray-700">Editar Responsável</li>
     </ol>
 </nav>

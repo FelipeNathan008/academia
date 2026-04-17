@@ -46,9 +46,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     //professores
     Route::get('/professores', [ProfessorController::class, 'index'])->name('professores');
+    Route::get('/professores-sidebar', [ProfessorController::class, 'index_sidebar'])->name('professores.sidebar')->middleware('auth');
     Route::post('/professores', [ProfessorController::class, 'store'])->name('professores.store');
     Route::get('/professores/{id}/edit', [ProfessorController::class, 'edit'])->name('professores.edit');
     Route::put('/professores/{id}', [ProfessorController::class, 'update'])->name('professores.update');
+    Route::get('/professores/{id}', [ProfessorController::class, 'show'])->name('professores.show');
     Route::delete('/professores/{id}', [ProfessorController::class, 'destroy'])->name('professores.destroy');
 
     //detalhes do professor
@@ -142,6 +144,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/responsaveis/{id}/alunos', [AlunoController::class, 'store'])->name('alunos.store');
     Route::get('/alunos/{id}/editar', [AlunoController::class, 'edit'])->name('alunos.edit');
     Route::put('/alunos/{id}', [AlunoController::class, 'update'])->name('alunos.update');
+    Route::get('/alunos/{id}', [AlunoController::class, 'show'])->name('alunos.show');
     Route::delete('/alunos/{id}', [AlunoController::class, 'destroy'])->name('alunos.destroy');
 
 

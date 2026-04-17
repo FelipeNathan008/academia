@@ -18,6 +18,12 @@
         <li class="text-gray-400">{{ $responsavel->resp_nome }}</li>
         <li>/</li>
         <li class="font-semibold text-gray-700">Alunos</li>
+        <li>/</li>
+        <li class="text-gray-400">Graduações</li>
+        <li>/</li>
+        <li class="text-gray-400">Matrículas</li>
+        <li>/</li>
+        <li class="text-gray-400">Financeiro</li>
     </ol>
 </nav>
 
@@ -91,9 +97,16 @@
                 </div>
                 <div>
                     <label class="text-sm font-medium text-gray-600">Data de Nascimento</label>
-                    <input type="date" name="aluno_nascimento" required
-                        class="w-full border rounded-lg px-4 py-2 mt-1">
+                    <input type="date" name="aluno_nascimento"
+                        max="{{ \Carbon\Carbon::now()->subYears(6)->format('Y-m-d') }}"
+                        min="{{ \Carbon\Carbon::now()->subYears(100)->format('Y-m-d') }}"
+
+                        oninvalid="validarData(this)"
+                        oninput="this.setCustomValidity('')"
+
+                        required class="w-full border rounded-lg px-4 py-2 mt-1">
                 </div>
+
 
                 <div>
                     <label class="text-sm font-medium text-gray-600">Aluno Bolsista?</label>
@@ -331,6 +344,18 @@
 
 
 <script>
+    function validarData(campo) {
+        if (campo.validity.valueMissing) {
+            campo.setCustomValidity('A data de nascimento é obrigatória');
+        } else if (campo.validity.rangeOverflow) {
+            campo.setCustomValidity('Você precisa ter pelo menos 6 anos');
+        } else if (campo.validity.rangeUnderflow) {
+            campo.setCustomValidity('Idade não compatível com o sistema');
+        } else {
+            campo.setCustomValidity('');
+        }
+    }
+
     function toggleCadastro() {
         document.getElementById('cadastroForm').classList.toggle('hidden');
         document.getElementById('cadastroForm').scrollIntoView({

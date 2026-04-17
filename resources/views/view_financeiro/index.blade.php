@@ -32,6 +32,19 @@
         <li>/</li>
         <li class="text-gray-400">{{ $aluno->aluno_nome }}</li>
         <li>/</li>
+        <li>
+            <a href="{{ route('detalhes-aluno.index', Crypt::encrypt($aluno->id_aluno)) }}" class="hover:text-[#8E251F] transition">
+                Graduações
+            </a>
+        </li>
+        <li>/</li>
+        <li>
+            <a href="{{ route('matricula', Crypt::encrypt($aluno->id_aluno)) }}"
+                class="hover:text-[#8E251F] transition">
+                Matrícula
+            </a>
+        </li>
+        <li>/</li>
         <li class="font-semibold text-gray-700">Financeiro</li>
     </ol>
 </nav>

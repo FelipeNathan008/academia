@@ -16,12 +16,8 @@
             </a>
         </li>
         <li>/</li>
-        <li>
-            <a href="{{ route('alunos', Crypt::encrypt($responsavel->id_responsavel)) }}"
-                class="hover:text-[#8E251F] transition">
-                {{ $responsavel->resp_nome }}
-            </a>
-        </li>
+        <li class="text-gray-400">{{ $responsavel->resp_nome }}</li>
+
         <li>/</li>
         <li>
             <a href="{{ route('alunos', Crypt::encrypt($responsavel->id_responsavel)) }}"
@@ -39,7 +35,10 @@
         <li class="font-semibold text-gray-700">
             Graduações
         </li>
-
+        <li>/</li>
+        <li class="text-gray-400">Matrículas</li>
+        <li>/</li>
+        <li class="text-gray-400">Financeiro</li>
     </ol>
 </nav>
 

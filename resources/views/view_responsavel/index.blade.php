@@ -17,6 +17,22 @@
 
 <x-alert-error />
 
+<!-- BREADCRUMB -->
+<nav class="mb-6 text-sm text-gray-500">
+    <ol class="flex items-center gap-2">
+        <li class="font-semibold text-gray-700">Responsáveis</li>
+
+        <li>/</li>
+        <li class="text-gray-400">Alunos</li>
+        <li>/</li>
+        <li class="text-gray-400">Graduações</li>
+        <li>/</li>
+        <li class="text-gray-400">Matrículas</li>
+        <li>/</li>
+        <li class="text-gray-400">Financeiro</li>
+    </ol>
+</nav>
+
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
 

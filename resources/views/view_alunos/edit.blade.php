@@ -17,7 +17,19 @@
         <li>/</li>
         <li class="text-gray-400">{{ $responsavel->resp_nome }}</li>
         <li>/</li>
-        <li class="font-semibold text-gray-700">Alunos</li>
+        <li>
+            <a href="{{ route('alunos', Crypt::encrypt($responsavel->id_responsavel)) }}"
+                class="hover:text-[#8E251F] transition">
+                Alunos
+            </a>
+        </li>
+        <li>/</li>
+
+        <li>
+            <span class="text-gray-400">
+                {{ $aluno->aluno_nome }}
+            </span>
+        </li>
         <li>/</li>
         <li class="font-semibold text-gray-700">Editar Aluno</li>
     </ol>
@@ -80,8 +92,10 @@
             <div>
                 <label class="text-sm font-medium text-gray-600">Data de Nascimento</label>
                 <input type="date"
-                    name="aluno_nascimento"
-                    required
+                    name="aluno_nascimento" required max="{{ \Carbon\Carbon::now()->subYears(6)->format('Y-m-d') }}"
+                    min="{{ \Carbon\Carbon::now()->subYears(100)->format('Y-m-d') }}"
+                    oninput="this.setCustomValidity('')"
+                    oninvalid="validarData(this)"
                     value="{{ old('aluno_nascimento', $aluno->aluno_nascimento) }}"
                     class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
             </div>
@@ -149,6 +163,18 @@
 <script>
     function validarNome(input) {
         input.value = input.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
+    }
+
+    function validarData(campo) {
+        if (campo.validity.valueMissing) {
+            campo.setCustomValidity('A data de nascimento é obrigatória');
+        } else if (campo.validity.rangeOverflow) {
+            campo.setCustomValidity('Você precisa ter pelo menos 6 anos');
+        } else if (campo.validity.rangeUnderflow) {
+            campo.setCustomValidity('Idade não compatível com o sistema');
+        } else {
+            campo.setCustomValidity('');
+        }
     }
 </script>
 

@@ -142,6 +142,7 @@ class DetalhesAlunoController extends Controller
             ->firstOrFail();
 
         $aluno = $detalhe->aluno;
+        $responsavel = $aluno->responsavel;
 
         $modalidades = Modalidade::where('id_emp_id', $user->id_emp_id)->get();
         $graduacoesTotais = Graduacao::all();
@@ -150,7 +151,8 @@ class DetalhesAlunoController extends Controller
             'detalhe',
             'aluno',
             'modalidades',
-            'graduacoesTotais'
+            'graduacoesTotais',
+            'responsavel'
         ));
     }
 

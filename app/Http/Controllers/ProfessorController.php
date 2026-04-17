@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\DB;
+use App\Models\Aluno;
 
 
 class ProfessorController extends Controller
@@ -45,14 +46,148 @@ class ProfessorController extends Controller
             $professor->qtd_aluno = DB::table('matricula as m')
                 ->join('grade_horario as g', 'm.grade_id_grade', '=', 'g.id_grade')
                 ->where('g.professor_id_professor', $professor->id_professor)
+                ->where('m.matri_status', 'Matriculado')
                 ->count();
+
+            $professor->alunos = DB::table('aluno as a')
+                ->join('matricula as m', 'a.id_aluno', '=', 'm.aluno_id_aluno')
+                ->join('grade_horario as g', 'm.grade_id_grade', '=', 'g.id_grade')
+
+                ->leftJoin('responsavel as r', 'a.responsavel_id_responsavel', '=', 'r.id_responsavel')
+
+                ->where('g.professor_id_professor', $professor->id_professor)
+                ->where('m.matri_status', 'Matriculado')
+
+                ->select(
+                    'a.id_aluno',
+                    'a.aluno_nome',
+                    'a.aluno_nascimento',
+                    'a.aluno_bolsista',
+                    'a.responsavel_id_responsavel',
+                    'g.grade_modalidade',
+                    'r.id_responsavel',
+
+                    // 🔥 ATRASADO (MUITO MAIS RÁPIDO)
+                    DB::raw("
+            EXISTS (
+                SELECT 1
+                FROM mensalidade me
+                JOIN detalhes_mensalidade d 
+                    ON me.id_mensalidade = d.mensalidade_id_mensalidade
+                WHERE me.aluno_id_aluno = a.id_aluno
+                AND d.det_mensa_data_venc < CURDATE()
+                AND d.det_mensa_status != 'Pago'
+            ) as atrasado
+        "),
+
+                    // 🔥 MATRICULADO (SEM COUNT)
+                    DB::raw("
+            EXISTS (
+                SELECT 1
+                FROM matricula m2
+                WHERE m2.aluno_id_aluno = a.id_aluno
+                AND m2.matri_status = 'Matriculado'
+            ) as matriculado
+        ")
+                )
+
+                ->distinct()
+                ->get();
         }
+
         $professoresEmpresa = Professor::with('empresas')
             ->where('id_emp_id', $user->id_emp_id)
             ->get();
         return view(
             'view_admin.view_professores.index',
-            compact('professores','professoresEmpresa', 'graduacoes', 'detalhes', 'modalidades')
+            compact('professores', 'professoresEmpresa', 'graduacoes', 'detalhes', 'modalidades')
+        );
+    }
+
+    public function index_sidebar()
+    {
+        $user = Auth::user();
+
+        $professores = Professor::where('id_emp_id', $user->id_emp_id)->get();
+
+        $graduacoes = Graduacao::select('gradu_nome_cor')
+            ->selectRaw('MAX(gradu_grau) as max_grau')
+            ->groupBy('gradu_nome_cor')
+            ->where('id_emp_id', $user->id_emp_id)
+            ->orderByRaw("
+            CASE gradu_nome_cor
+                WHEN 'Faixa Branca' THEN 1
+                WHEN 'Faixa Azul' THEN 2
+                WHEN 'Faixa Roxa' THEN 3
+                WHEN 'Faixa Marrom' THEN 4
+                WHEN 'Faixa Preta' THEN 5
+                ELSE 99
+            END
+        ")
+            ->get();
+
+        $detalhes = DetalhesProfessor::all();
+        $modalidades = Modalidade::all();
+
+        foreach ($professores as $professor) {
+            $professor->qtd_aluno = DB::table('matricula as m')
+                ->join('grade_horario as g', 'm.grade_id_grade', '=', 'g.id_grade')
+                ->where('g.professor_id_professor', $professor->id_professor)
+                ->where('m.matri_status', 'Matriculado')
+                ->count();
+
+            $professor->alunos = DB::table('aluno as a')
+                ->join('matricula as m', 'a.id_aluno', '=', 'm.aluno_id_aluno')
+                ->join('grade_horario as g', 'm.grade_id_grade', '=', 'g.id_grade')
+
+                ->leftJoin('responsavel as r', 'a.responsavel_id_responsavel', '=', 'r.id_responsavel')
+
+                ->where('g.professor_id_professor', $professor->id_professor)
+                ->where('m.matri_status', 'Matriculado')
+
+                ->select(
+                    'a.id_aluno',
+                    'a.aluno_nome',
+                    'a.aluno_nascimento',
+                    'a.aluno_bolsista',
+                    'a.responsavel_id_responsavel',
+                    'g.grade_modalidade',
+                    'r.id_responsavel',
+
+                    // 🔥 ATRASADO (MUITO MAIS RÁPIDO)
+                    DB::raw("
+            EXISTS (
+                SELECT 1
+                FROM mensalidade me
+                JOIN detalhes_mensalidade d 
+                    ON me.id_mensalidade = d.mensalidade_id_mensalidade
+                WHERE me.aluno_id_aluno = a.id_aluno
+                AND d.det_mensa_data_venc < CURDATE()
+                AND d.det_mensa_status != 'Pago'
+            ) as atrasado
+        "),
+
+                    // 🔥 MATRICULADO (SEM COUNT)
+                    DB::raw("
+            EXISTS (
+                SELECT 1
+                FROM matricula m2
+                WHERE m2.aluno_id_aluno = a.id_aluno
+                AND m2.matri_status = 'Matriculado'
+            ) as matriculado
+        ")
+                )
+
+                ->distinct()
+                ->get();
+        }
+
+        $professoresEmpresa = Professor::with('empresas')
+            ->where('id_emp_id', $user->id_emp_id)
+            ->get();
+        return view(
+            'view_admin.view_professores.index_sidebar',
+            compact('professores', 'professoresEmpresa', 'graduacoes', 'detalhes', 'modalidades')
         );
     }
 
@@ -162,6 +297,22 @@ class ProfessorController extends Controller
             ->with('success', 'Professor atualizado com sucesso!');
     }
 
+    public function show($id)
+    {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+
+        $professor = Professor::where('id_professor', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
+        return view('view_admin.view_professores.show', compact('professor'));
+    }
 
     public function destroy($id)
     {

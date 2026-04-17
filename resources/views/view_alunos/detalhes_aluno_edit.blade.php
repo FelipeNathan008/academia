@@ -9,9 +9,28 @@
 
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
-        <li><a href="{{ route('alunos', Crypt::encrypt($aluno->responsavel_id_responsavel)) }}" class="hover:text-[#8E251F] transition">Alunos</a></li>
+        <li>
+            <a href="{{ route('responsaveis') }}"
+                class="hover:text-[#8E251F] transition">
+                Responsáveis
+            </a>
+        </li>
         <li>/</li>
-        <li class="text-gray-400">{{ $aluno->aluno_nome }}</li>
+        <li class="text-gray-400">{{ $responsavel->resp_nome }}</li>
+
+        <li>/</li>
+        <li>
+            <a href="{{ route('alunos', Crypt::encrypt($responsavel->id_responsavel)) }}"
+                class="hover:text-[#8E251F] transition">
+                Alunos
+            </a>
+        </li>
+        <li>/</li>
+        <li>
+            <span class="text-gray-400">
+                {{ $aluno->aluno_nome }}
+            </span>
+        </li>
         <li>/</li>
         <li class="font-semibold text-gray-700">Editar Graduação</li>
     </ol>
@@ -32,15 +51,15 @@
                     <option value="">Selecione uma graduação</option>
                     @php $cores = []; @endphp
                     @foreach($graduacoesTotais as $g)
-                        @if(!in_array($g->gradu_nome_cor, $cores))
-                            @php
-                                $cores[] = $g->gradu_nome_cor;
-                                $grausDaCor = $graduacoesTotais->filter(fn($x) => $x->gradu_nome_cor == $g->gradu_nome_cor)->pluck('gradu_grau')->sort()->values()->all();
-                            @endphp
-                            <option value="{{ $g->gradu_nome_cor }}" data-graus="{{ implode(',', $grausDaCor) }}" {{ $detalhe->det_gradu_nome_cor == $g->gradu_nome_cor ? 'selected' : '' }}>
-                                {{ $g->gradu_nome_cor }}
-                            </option>
-                        @endif
+                    @if(!in_array($g->gradu_nome_cor, $cores))
+                    @php
+                    $cores[] = $g->gradu_nome_cor;
+                    $grausDaCor = $graduacoesTotais->filter(fn($x) => $x->gradu_nome_cor == $g->gradu_nome_cor)->pluck('gradu_grau')->sort()->values()->all();
+                    @endphp
+                    <option value="{{ $g->gradu_nome_cor }}" data-graus="{{ implode(',', $grausDaCor) }}" {{ $detalhe->det_gradu_nome_cor == $g->gradu_nome_cor ? 'selected' : '' }}>
+                        {{ $g->gradu_nome_cor }}
+                    </option>
+                    @endif
                     @endforeach
                 </select>
             </div>
@@ -57,9 +76,9 @@
                 <select name="det_modalidade" class="w-full border rounded-lg px-3 py-2" required>
                     <option value="">Selecione</option>
                     @foreach($modalidades as $modalidade)
-                        <option value="{{ $modalidade->mod_nome }}" {{ $detalhe->det_modalidade == $modalidade->mod_nome ? 'selected' : '' }}>
-                            {{ $modalidade->mod_nome }}
-                        </option>
+                    <option value="{{ $modalidade->mod_nome }}" {{ $detalhe->det_modalidade == $modalidade->mod_nome ? 'selected' : '' }}>
+                        {{ $modalidade->mod_nome }}
+                    </option>
                     @endforeach
                 </select>
             </div>
@@ -73,10 +92,10 @@
                 <label class="text-sm font-medium text-gray-600">Certificado (Imagem ou PDF) - Opcional</label>
                 <input type="file" name="det_certificado" class="w-full border rounded-lg px-3 py-2" accept=".jpg,.jpeg,.png,.pdf">
                 @if($detalhe->det_certificado)
-                    <a href="{{ asset($detalhe->det_certificado) }}" target="_blank" 
-                       style="display:inline-block; background-color:#174ab9; color:white; padding:6px 12px; border-radius:6px; margin-top:6px; text-decoration:none;">
-                        Ver o arquivo atual
-                    </a>
+                <a href="{{ asset($detalhe->det_certificado) }}" target="_blank"
+                    style="display:inline-block; background-color:#174ab9; color:white; padding:6px 12px; border-radius:6px; margin-top:6px; text-decoration:none;">
+                    Ver o arquivo atual
+                </a>
                 @endif
             </div>
         </div>
@@ -89,29 +108,29 @@
 </div>
 
 <script>
-function preencherGraus(select) {
-    const grauSelect = select.closest('form').querySelector('.grau-input');
-    grauSelect.innerHTML = '';
-    if (!select.value) {
-        grauSelect.innerHTML = '<option value="">Selecione primeiro uma graduação</option>';
-        return;
+    function preencherGraus(select) {
+        const grauSelect = select.closest('form').querySelector('.grau-input');
+        grauSelect.innerHTML = '';
+        if (!select.value) {
+            grauSelect.innerHTML = '<option value="">Selecione primeiro uma graduação</option>';
+            return;
+        }
+        const graus = select.selectedOptions[0].dataset.graus.split(',').sort((a, b) => a - b);
+        grauSelect.innerHTML = '<option value="">Selecione um grau</option>';
+        graus.forEach(g => {
+            const option = document.createElement('option');
+            option.value = g;
+            option.textContent = g;
+            if (g == "{{ $detalhe->det_grau }}") option.selected = true;
+            grauSelect.appendChild(option);
+        });
     }
-    const graus = select.selectedOptions[0].dataset.graus.split(',').sort((a,b)=>a-b);
-    grauSelect.innerHTML = '<option value="">Selecione um grau</option>';
-    graus.forEach(g => {
-        const option = document.createElement('option');
-        option.value = g;
-        option.textContent = g;
-        if (g == "{{ $detalhe->det_grau }}") option.selected = true;
-        grauSelect.appendChild(option);
-    });
-}
 
-// Preenche os graus ao carregar a página
-document.addEventListener('DOMContentLoaded', function() {
-    const selectFaixa = document.querySelector('select[name="det_gradu_nome_cor"]');
-    if (selectFaixa) preencherGraus(selectFaixa);
-});
+    // Preenche os graus ao carregar a página
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectFaixa = document.querySelector('select[name="det_gradu_nome_cor"]');
+        if (selectFaixa) preencherGraus(selectFaixa);
+    });
 </script>
 
 @endsection
