@@ -32,8 +32,7 @@
             INFORMAÇÕES COMPLETAS DO ALUNO
         </h2>
     </div>
-
-    <a href="{{ route('alunos', Crypt::encrypt($aluno->responsavel->id_responsavel)) }}"
+    <a href="{{ url()->previous() ?? route('alunos') }}"
         class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
         ← Voltar
     </a>

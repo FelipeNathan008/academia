@@ -91,19 +91,21 @@
 
         if ($user->role === 'admin') {
         $menu = [
-        'Dashboard Princiapl igual da alpha' => 'dashboard',
+        'Dashboard' => 'dashboard',
         'Matrícula' => 'responsaveis',
         'Alunos' => 'matricula.index',
-        'Grade de Horários' => 'grade_horarios',
-        'Professores / Alunos' => 'professores.sidebar',
+        'Agenda Mensal' => 'grade_horarios.visualizar',
+        'Professores / Alunos' => 'professores.alunos',
         'Frequência dos Alunos' => 'frequencia.listagem',
         'Administração' => [
-        'Dashboard' => 'dashboard',
+        'Dashboard Admin' => 'dashboard.admin',
         'Professores' => 'professores',
+        'Grade de Horários' => 'grade_horarios',
         'Graduações' => 'graduacoes',
         'Modalidades' => 'modalidades',
         'Horarios de Treino' => 'horario_treino',
         'Preço das Aulas' => 'preco-aula',
+        'Turmas' => 'turmas',
         ],
         //'Controle' => [
         //'Filiais' => 'filiais',
@@ -132,7 +134,8 @@
 
         ($subRoute === 'professores' && (
         request()->routeIs('detalhes-professor.index') ||
-        request()->routeIs('detalhes-professor.edit')
+        request()->routeIs('detalhes-professor.edit') ||
+        request()->routeIs('professores.show')
         ))
         ) {
         $isSubActive = true;
@@ -161,7 +164,8 @@
 
             ($subRoute === 'professores' && (
             request()->routeIs('detalhes-professor.index') ||
-            request()->routeIs('detalhes-professor.edit')
+            request()->routeIs('detalhes-professor.edit') ||
+            request()->routeIs('professores.show')
             ));
             ($subRoute === 'dashboard' && (
             request()->routeIs('dashboard.mensalidadesAtrasadas') ||
@@ -200,12 +204,16 @@
         'frequencia.listagem',
         'frequencia.visualizar'
         ]);
+        }elseif ($label === 'Alunos') {
+        $isActive = in_array(Route::currentRouteName(), [
+        'alunos.show',
+        'matricula.index',
+        ]);
         }elseif ($label === 'Matrícula') {
         $isActive = in_array(Route::currentRouteName(), [
-        'matricula.index',
         'matricula.show',
         'matricula.edit',
-        'matricula'
+        'matriculas'
         ]);
         }elseif ($label === 'Dashboard') {
         $isActive = in_array(Route::currentRouteName(), [
@@ -216,7 +224,8 @@
         } elseif ($label === 'Professores') {
         $isActive = in_array(Route::currentRouteName(), [
         'professores', 'professores.edit',
-        'detalhes-professor.index', 'detalhes-professor.edit'
+        'detalhes-professor.index', 'detalhes-professor.edit',
+        'professores.show'
         ]);
         } else {
         $isActive = request()->routeIs($route);

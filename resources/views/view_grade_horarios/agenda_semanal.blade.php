@@ -131,19 +131,24 @@
 <div class="bg-white rounded-2xl shadow-md p-6 overflow-x-auto">
     <div class="flex flex-wrap gap-6 items-end justify-center max-w-6xl mx-auto">
 
-        <!-- Modalidade -->
+
         <div class="flex flex-col w-[300px]">
             <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
                 Modalidade
             </label>
+
             <select id="filtroModalidade"
                 class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                       focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+               focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+
                 <option value="">Todas</option>
-                <option value="Jiu-jitsu">Jiu-Jitsu</option>
-                <option value="Judô">Judô</option>
-                <option value="NO GI">NO GI</option>
-                <option value="Karate">Karate</option>
+
+                @foreach ($modalidades as $modalidade)
+                <option value="{{ $modalidade->mod_nome }}">
+                    {{ $modalidade->mod_nome }}
+                </option>
+                @endforeach
+
             </select>
         </div>
 
@@ -293,6 +298,7 @@
                                         <a href="{{ route('frequencia.dias', Crypt::encrypt($evento->id_grade)) }}"
                                             class="btn btn-det">Detalhes</a>
                                         </a>
+                                        @if($modo === 'admin')
 
                                         <a href="{{ route('grade_horarios.edit', Crypt::encrypt($evento->id_grade)) }}"
                                             class="btn btn-edit">Editar</a>
@@ -304,6 +310,7 @@
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-delete">Excluir</button>
                                         </form>
+                                        @endif
                                     </div>
                                 </div>
                             </div>

@@ -20,6 +20,7 @@ use App\Http\Controllers\{
     GradeHorarioController,
     MensalidadeController,
     PrecoModalidadeController,
+    TurmaController,
     UsuariosController,
 };
 
@@ -41,12 +42,21 @@ Route::post('/empresa/store', [EmpresaController::class, 'store'])->name('empres
 //ROTA PARA ADMIN
 Route::middleware(['auth', 'admin'])->group(function () {
 
+    //Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
+    Route::get('/dashboard-admin', [DashboardController::class, 'index'])->name('dashboard.admin')->middleware('auth');
 
+
+    // Dashboard Botões
+    Route::get('/dashboard/mensalidades-atrasadas', [DashboardController::class, 'mensalidadesAtrasadas'])
+        ->name('dashboard.mensalidadesAtrasadas');
+    Route::get('/dashboard/graduacoes', [DashboardController::class, 'graduacoes'])
+        ->name('dashboard.graduacoes');
 
     //professores
     Route::get('/professores', [ProfessorController::class, 'index'])->name('professores');
-    Route::get('/professores-sidebar', [ProfessorController::class, 'index_sidebar'])->name('professores.sidebar')->middleware('auth');
+    Route::get('/professores/alunos', [ProfessorController::class, 'index'])->name('professores.alunos');
+
     Route::post('/professores', [ProfessorController::class, 'store'])->name('professores.store');
     Route::get('/professores/{id}/edit', [ProfessorController::class, 'edit'])->name('professores.edit');
     Route::put('/professores/{id}', [ProfessorController::class, 'update'])->name('professores.update');
@@ -61,12 +71,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::delete('/detalhes-professor/{id}', [DetalhesProfessorController::class, 'destroy'])->name('detalhes-professor.destroy');
     Route::get('/certificado-professor/{path}', [DetalhesProfessorController::class, 'showCertificado'])
         ->name('certificado.show');
-
-    // Dashboard Botões
-    Route::get('/dashboard/mensalidades-atrasadas', [DashboardController::class, 'mensalidadesAtrasadas'])
-        ->name('dashboard.mensalidadesAtrasadas');
-    Route::get('/dashboard/graduacoes', [DashboardController::class, 'graduacoes'])
-        ->name('dashboard.graduacoes');
 
     // FREQUENCIA ALUNO
     Route::get('/frequencia', [FrequenciaAlunoController::class, 'listagemGrades'])->name('frequencia.listagem');
@@ -122,6 +126,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/horario-treino/{id}/edit', [HorarioTreinoController::class, 'edit'])->name('horario_treino.edit');
     Route::put('/horario-treino/{id}', [HorarioTreinoController::class, 'update'])->name('horario_treino.update');
     Route::delete('/horario-treino/{id}', [HorarioTreinoController::class, 'destroy'])->name('horario_treino.destroy');
+
+    Route::get('/turmas', [TurmaController::class, 'index'])->name('turmas');
+    Route::post('/turmas', [TurmaController::class, 'store'])->name('turmas.store');
+    Route::get('/turmas/{id}/edit', [TurmaController::class, 'edit'])->name('turmas.edit');
+    Route::put('/turmas/{id}', [TurmaController::class, 'update'])->name('turmas.update');
+    Route::delete('/turmas/{id}', [TurmaController::class, 'destroy'])->name('turmas.destroy');
 });
 
 
@@ -172,6 +182,7 @@ Route::middleware('auth')->group(function () {
         ->name('detalhes-aluno.showCertificado');
 
     Route::get('/grade_horarios', [GradeHorarioController::class, 'index'])->name('grade_horarios');
+    Route::get('/agenda', [GradeHorarioController::class, 'index'])->name('grade_horarios.visualizar');
     Route::post('/grade_horarios', [GradeHorarioController::class, 'store'])->name('grade_horarios.store');
     Route::get('/grade_horarios/{id}/edit', [GradeHorarioController::class, 'edit'])->name('grade_horarios.edit');
     Route::put('grade_horarios/update/{id}', [GradeHorarioController::class, 'update'])->name('grade_horarios.update');

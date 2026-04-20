@@ -6,6 +6,7 @@ use App\Models\GradeHorario;
 use App\Models\HorarioTreino;
 use App\Models\Modalidade;
 use App\Models\Professor;
+use App\Models\Turma;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -13,20 +14,32 @@ use Illuminate\Support\Facades\Auth;
 
 class GradeHorarioController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $modo = 'admin'; // padrão
+
+        if ($request->routeIs('grade_horarios.visualizar')) {
+            $modo = 'visualizar';
+        }
+
         $user = Auth::user();
+
         $grades = GradeHorario::with(['professor', 'horarioTreino'])
             ->where('id_emp_id', $user->id_emp_id)
             ->get();
-        $professores = Professor::all();
 
+        $professores = Professor::all();
+        $modalidades = Modalidade::where('id_emp_id', $user->id_emp_id)->get();
         $horariosTreino = HorarioTreino::whereDoesntHave('gradeHorario')->get();
+        $turmas = Turma::where('id_emp_id', $user->id_emp_id)->get();
 
         return view('view_grade_horarios.index', compact(
             'grades',
             'professores',
-            'horariosTreino'
+            'horariosTreino',
+            'turmas',
+            'modo',
+            'modalidades'
         ));
     }
 
@@ -102,11 +115,12 @@ class GradeHorarioController extends Controller
         $horariosTreino = HorarioTreino::whereDoesntHave('gradeHorario')
             ->orWhere('id_hora', $grade->horario_treino_id_hora)
             ->get();
-
+        $turmas = Turma::where('id_emp_id', $user->id_emp_id)->get();
         return view('view_grade_horarios.edit', compact(
             'grade',
             'professores',
-            'horariosTreino'
+            'horariosTreino',
+            'turmas'
         ));
     }
 

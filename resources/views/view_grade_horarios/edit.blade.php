@@ -104,9 +104,16 @@
             <label class="text-sm font-medium text-gray-600">Turma</label>
             <select name="grade_turma" required
                 class="w-full border rounded-lg px-4 py-2 mt-1">
-                <option value="adultos" {{ $grade->grade_turma=='adultos'?'selected':'' }}>Adultos</option>
-                <option value="criancas" {{ $grade->grade_turma=='criancas'?'selected':'' }}>Crianças</option>
-                <option value="mulheres" {{ $grade->grade_turma=='mulheres'?'selected':'' }}>Mulheres</option>
+
+                <option value="">Selecione a turma</option>
+
+                @foreach($turmas as $turma)
+                <option value="{{ $turma->turma_nome }}"
+                    {{ $grade->grade_turma == $turma->turma_nome ? 'selected' : '' }}>
+                    {{ $turma->turma_nome }}
+                </option>
+                @endforeach
+
             </select>
         </div>
 

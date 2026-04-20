@@ -9,15 +9,25 @@
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div>
-        <h2 class="text-3xl font-extrabold text-gray-800">Professores</h2>
+        <h2 class="text-3xl font-extrabold text-gray-800">
+            @if($modo === 'alunos')
+            Professores / Alunos
+            @else
+            Professores
+            @endif
+        </h2>
     </div>
 
+    @if($modo !== 'alunos')
     <button onclick="toggleCadastro()"
         class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow-md hover:bg-[#732920] hover:shadow-lg transition-all">
         + Cadastrar Professor
     </button>
+    @endif
+
 </div>
 
+@if($modo !== 'alunos')
 <!-- FORMULÁRIO DE CADASTRO -->
 <div id="cadastroForm" class="hidden mb-10">
     <form id="formCadastro" action="{{ route('professores.store') }}" method="POST" enctype="multipart/form-data" onsubmit=" bloquearSubmit(event, this)">
@@ -83,6 +93,7 @@
         </div>
     </form>
 </div>
+@endif
 
 <!-- LISTAGEM -->
 <div class="bg-white rounded-2xl shadow-md p-6">
@@ -96,7 +107,9 @@
                 <th class="py-3 px-4">Empresa</th>
                 <th class="py-3 px-4">Foto</th>
                 <th class="py-3 px-4">Qtd. Alunos</th>
+                @if($modo !== 'alunos')
                 <th class="py-3 px-4">Graduado</th>
+                @endif
                 <th class="py-3 px-4">Ações</th>
             </tr>
         </thead>
@@ -157,6 +170,8 @@
                     {{ $professor->qtd_aluno ?? '0'}}
                 </td>
 
+                @if($modo !== 'alunos')
+
                 <!-- Graduado -->
                 <td class="py-3 px-4">
                     @if($professor->detalhes->where('professor_id_professor',$professor->id_professor)->count() > 0)
@@ -176,15 +191,19 @@
                     </span>
                     @endif
                 </td>
-
+                @endif
 
                 <td class="py-3 px-4 flex gap-2">
+
                     <button type="button"
                         data-id="{{ $professor->id_professor }}"
                         class="btn-ver-prof px-4 py-2 rounded-lg shadow text-white"
                         style="background-color: #275cce; color: white;">
                         Ver Alunos
                     </button>
+
+                    @if($modo !== 'alunos')
+
                     <!-- Botão Graduações -->
                     <a href="{{ route('detalhes-professor.index', Crypt::encrypt($professor->id_professor)) }}"
                         style="background-color: #174ab9; color: white;"
@@ -214,14 +233,57 @@
                             Excluir
                         </button>
                     </form>
+                    @endif
+
                 </td>
             </tr>
 
-            <!--ABA OCULTA -->
             <tr id="detalhe-prof-{{ $professor->id_professor }}" class="hidden bg-gray-50">
                 <td colspan="8" class="px-6 py-6">
 
-                    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden p-4">
+
+                        <div class="flex flex-col w-[300px]">
+                            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                                Turma / Horário
+                            </label>
+
+                            <select class="filtro-unico border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                                focus:ring-2 focus:ring-[#8E251F] focus:outline-none"
+                                data-prof="{{ $professor->id_professor }}">
+
+                                <option value="">Todas</option>
+                                @php
+                                $diasMap = [
+                                1 => 'Dom',
+                                2 => 'Seg',
+                                3 => 'Ter',
+                                4 => 'Qua',
+                                5 => 'Qui',
+                                6 => 'Sex',
+                                7 => 'Sáb'
+                                ];
+                                @endphp
+                                @foreach($professor->alunos->unique('id_grade') as $g)
+
+                                @php
+                                $dias = collect(explode(',', $g->grade_dia_semana ?? ''))
+                                ->map(fn($d) => $diasMap[$d] ?? $d)
+                                ->implode(', ');
+                                @endphp
+
+                                <option value="{{ $g->id_grade }}">
+                                    {{ $g->grade_modalidade }}
+                                    - {{ $g->grade_turma }}
+                                    - ({{ \Carbon\Carbon::parse($g->grade_inicio)->format('H:i') }}
+                                    até {{ \Carbon\Carbon::parse($g->grade_fim)->format('H:i') }})
+                                    - {{ $dias }}
+                                </option>
+
+                                @endforeach
+
+                            </select>
+                        </div>
 
                         <!-- HEADER -->
                         <div class="px-4 py-3 bg-gray-100 border-b">
@@ -253,7 +315,9 @@
                                     : null;
                                     @endphp
 
-                                    <tr class="hover:bg-gray-50 transition">
+                                    <tr class="linha-aluno hover:bg-gray-50 transition"
+                                        data-grade="{{ $aluno->id_grade }}"
+                                        data-horario="{{ $aluno->grade_inicio }}">
 
                                         <td class="px-4 py-3">
                                             {{ $aluno->aluno_nome }}
@@ -399,6 +463,32 @@
 
     });
 
+    document.querySelectorAll(".filtro-unico").forEach(select => {
+        select.addEventListener("change", function() {
+
+            const grade = this.value;
+            const profId = this.dataset.prof;
+
+            const container = document.querySelector("#detalhe-prof-" + profId);
+            const linhas = container.querySelectorAll(".linha-aluno");
+
+            linhas.forEach(linha => {
+
+                if (!grade) {
+                    linha.style.display = "";
+                    return;
+                }
+
+                if (linha.dataset.grade === grade) {
+                    linha.style.display = "";
+                } else {
+                    linha.style.display = "none";
+                }
+
+            });
+
+        });
+    });
 
     function bloquearSubmit(event, form) {
 

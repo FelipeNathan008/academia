@@ -10,10 +10,12 @@
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <h2 class="text-3xl font-extrabold text-gray-800">Grade de Horários</h2>
 
+    @if($modo === 'admin')
     <button onclick="toggleCadastro()"
         class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow hover:bg-[#732920] transition">
         + Cadastrar Horário
     </button>
+    @endif
 </div>
 
 @if ($errors->any())
@@ -25,7 +27,7 @@
     </ul>
 </div>
 @endif
-
+@if($modo === 'admin')
 <!-- FORMULÁRIO -->
 <div id="cadastroForm" class="hidden mb-10">
     <form id="formCadastro" action="{{ route('grade_horarios.store') }}" method="POST" onsubmit="bloquearSubmit(event, this)">
@@ -108,10 +110,15 @@
                 <label class="text-sm font-medium text-gray-600">Turma</label>
                 <select name="grade_turma" required
                     class="w-full border rounded-lg px-4 py-2 mt-1">
+
                     <option value="">Selecione a turma</option>
-                    <option value="adultos">Adultos</option>
-                    <option value="criancas">Crianças</option>
-                    <option value="mulheres">Mulheres</option>
+
+                    @foreach ($turmas as $turma)
+                    <option value="{{ $turma->turma_nome }}">
+                        {{ $turma->turma_nome }}
+                    </option>
+                    @endforeach
+
                 </select>
             </div>
 
@@ -134,9 +141,8 @@
         </div>
     </form>
 </div>
-
-@include('view_grade_horarios.agenda_semanal')
-
+@endif
+@include('view_grade_horarios.agenda_semanal', ['modo' => $modo])
 <!-- JS -->
 <script>
     const professor = document.getElementById('professorSelect');
@@ -200,7 +206,7 @@
 
     modalidade.addEventListener('change', () => {
         horario.disabled = !modalidade.value;
-        horario.value = ''; 
+        horario.value = '';
         [...horario.options].forEach(o => {
             if (!o.dataset.modalidade) return;
             o.hidden = o.dataset.modalidade !== modalidade.value;

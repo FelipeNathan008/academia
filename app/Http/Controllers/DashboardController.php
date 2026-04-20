@@ -137,7 +137,11 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
+        $modo = 'user'; // padrão
 
+        if ($request->routeIs('dashboard.admin')) {
+            $modo = 'admin';
+        }
         $anoSelecionado = $request->get('ano', Carbon::now()->year);
 
         // Buscar anos disponíveis (opcional para o select)
@@ -279,6 +283,7 @@ class DashboardController extends Controller
             ->pluck('total', 'ordem_max');
 
         return view('dashboard', [
+            'modo' => $modo,
             'graficoLabels' => $labels,
             'graficoDados'  => $dados,
             'graficoDadosEncerrados'  => $dadosEncerrados,
