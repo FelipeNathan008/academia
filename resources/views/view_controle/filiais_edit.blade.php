@@ -30,19 +30,8 @@
 
         <!-- Empresa + Nome -->
         <div class="flex gap-4 mb-4">
-            <div class="flex-1">
-                <label class="text-sm font-medium text-gray-600">Empresa</label>
-                <select name="id_emp_id"
-                    class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+            <input type="hidden" name="id_emp_id" value="{{ auth()->user()->id_emp_id }}">
 
-                    @foreach($empresas as $empresa)
-                    <option value="{{ $empresa->id_empresa }}"
-                        {{ $filial->id_emp_id == $empresa->id_empresa ? 'selected' : '' }}>
-                        {{ $empresa->emp_nome }}
-                    </option>
-                    @endforeach
-                </select>
-            </div>
 
             <div class="flex-1">
                 <label class="text-sm font-medium text-gray-600">Nome da Filial</label>

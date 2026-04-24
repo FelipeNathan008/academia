@@ -86,11 +86,6 @@
             transform: scale(1.05);
         }
 
-        footer {
-            margin-top: 25px;
-            font-size: 12px;
-            color: #aaaaaa;
-        }
     </style>
 </head>
 
@@ -112,9 +107,7 @@
             <a href="{{ route('cadastro_empresa') }}" class="btn-cadastro">Cadastrar</a>
 
         </div>
-        <footer>
-            © 2026 Academia Jiu-Jitsu - Todos os direitos reservados
-        </footer>
+
     </div>
 
 </body>

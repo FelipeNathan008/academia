@@ -18,35 +18,35 @@ use Illuminate\Support\Facades\Crypt;
     </button>
 </div>
 
+<!-- CARD DA EMPRESA -->
+<div class="mb-8">
+    <div class="bg-white border-l-8 border-[#8E251F] rounded-2xl shadow-lg p-6">
+        <p class="text-xs uppercase tracking-widest text-gray-500">
+            Empresa selecionada
+        </p>
+
+        <h3 class="text-2xl font-extrabold text-gray-800 mt-1">
+            {{ $empresa->emp_nome }}
+        </h3>
+    </div>
+</div>
+
+
 <!-- FORMULÁRIO DE CADASTRO -->
 <div id="cadastroForm" class="hidden mb-10">
-    <form id="formCadastro" action="{{ route('filiais.store') }}" method="POST" enctype="multipart/form-data">
+    <form id="formCadastro" action="{{ route('filiais.store') }}" method="POST" enctype="multipart/form-data" onsubmit="bloquearSubmit(event, this)">
         @csrf
 
         <div class="bg-white rounded-2xl shadow-md p-8">
             <h3 class="text-xl font-bold mb-6 text-gray-700">Cadastrar Filial</h3>
 
+            <input type="hidden" name="id_emp_id" value="{{ auth()->user()->id_emp_id }}">
+
             <div class="flex flex-col gap-4">
+                <input type="text" name="filial_nome" placeholder="Digite o nome da filial"
+                    oninput="validarTexto(this)" required
+                    class="w-full border rounded-lg px-4 py-2 mt-1">
 
-                <!-- Empresa + Nome -->
-                <div style="display: flex; gap: 4%;">
-                    <div style="flex: 1;">
-                        <label class="text-sm font-medium text-gray-600">Empresa</label>
-                        <select name="id_emp_id" required class="w-full border rounded-lg px-4 py-2 mt-1">
-                            <option value="" disabled selected>Selecione a empresa</option>
-                            @foreach($empresas as $empresa)
-                            <option value="{{ $empresa->id_empresa }}">{{ $empresa->emp_nome }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div style="flex: 1;">
-                        <label class="text-sm font-medium text-gray-600">Nome da Filial</label>
-                        <input type="text" name="filial_nome" placeholder="Digite o nome da filial"
-                            oninput="validarTexto(this)" required
-                            class="w-full border rounded-lg px-4 py-2 mt-1">
-                    </div>
-                </div>
 
                 <!-- Apelido + Responsável -->
                 <div style="display: flex; gap: 4%;">
@@ -86,7 +86,7 @@ use Illuminate\Support\Facades\Crypt;
                     <div style="flex: 1;">
                         <label class="text-sm font-medium text-gray-600">CPF</label>
                         <input type="text" name="filial_cpf" placeholder="000.000.000-00"
-                            oninput="mascaraCPF(this)"
+                            oninput="mascaraCPF(this)" required
                             class="w-full border rounded-lg px-4 py-2 mt-1">
                     </div>
 
@@ -186,7 +186,7 @@ use Illuminate\Support\Facades\Crypt;
 
             @empty
             <tr>
-                <td colspan="6" class="text-center text-gray-500 py-6">
+                <td colspan="7" class="text-center text-gray-500 py-6">
                     Nenhuma filial cadastrada
                 </td>
             </tr>
@@ -197,6 +197,20 @@ use Illuminate\Support\Facades\Crypt;
 
 <!-- JS -->
 <script>
+    function bloquearSubmit(event, form) {
+
+        if (!form.checkValidity()) {
+            return; // deixa validação normal do HTML
+        }
+
+        const btn = form.querySelector('button[type="submit"]');
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Salvando...';
+        }
+    }
+
     function toggleCadastro() {
         const form = document.getElementById('cadastroForm');
         form.classList.toggle('hidden');

@@ -65,8 +65,8 @@
 
 <!-- FORMULÁRIO -->
 <div id="cadastroForm" class="hidden mb-10">
-    <form id="formCadastro" action="{{ route('detalhes-filial.store', Crypt::encrypt($idFilial)) }}" method="POST">
-        @csrf
+    <form id="formCadastro" action="{{ route('detalhes-filial.store', Crypt::encrypt($idFilial)) }}" method="POST" onsubmit="bloquearSubmit(event, this)">
+        @csrf 
         <input type="hidden" name="id_filial_id" value="{{ $idFilial }}">
 
         <div class="bg-white rounded-2xl shadow-md p-8">
@@ -264,6 +264,20 @@
 
 <!-- JS -->
 <script>
+    function bloquearSubmit(event, form) {
+
+        if (!form.checkValidity()) {
+            return; // deixa validação normal do HTML
+        }
+
+        const btn = form.querySelector('button[type="submit"]');
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Salvando...';
+        }
+    }
+
     function toggleCadastro() {
         const form = document.getElementById('cadastroForm');
         form.classList.toggle('hidden');

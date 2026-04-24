@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Cadastro de Empresa</title>
 
     <style>
@@ -103,18 +104,30 @@
             transform: scale(1.03);
         }
 
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: #8E251F;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover {
+            background-color: #732920;
+            transform: scale(1.03);
+        }
+
         .erro {
             color: #ff6b6b;
             font-size: 12px;
             margin-top: 2px;
         }
 
-        footer {
-            margin-top: 25px;
-            text-align: center;
-            font-size: 12px;
-            color: #aaa;
-        }
 
         @media(max-width:650px) {
             .form-grid {
@@ -125,13 +138,31 @@
                 grid-column: auto;
             }
         }
+
+        select {
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            background: #f2f2f2;
+            transition: 0.2s;
+        }
+
+        select:focus {
+            background: white;
+            box-shadow: 0 0 0 2px #8E251F;
+        }
     </style>
 </head>
 
 <body>
 
     <div class="container">
-
+        <a href="{{ route('apresentacao') }}" class="btn-login">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="white" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H3.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L3.707 7.5H14.5A.5.5 0 0 1 15 8z" />
+            </svg>
+        </a>
         <h1>Cadastro de Empresa</h1>
 
         <form action="{{ route('empresa.store') }}" method="POST" enctype="multipart/form-data">
@@ -171,7 +202,11 @@
 
                 <div class="form-group full">
                     <label>Tipo de Empresa *</label>
-                    <input type="text" name="emp_tipo" placeholder="Ex: Academia de Jiu-Jitsu" required>
+                    <select name="emp_tipo" required>
+                        <option value="">Selecione o tipo</option>
+                        <option value="matriz">Matriz</option>
+                        <option value="filial">Filial</option>
+                    </select>
                 </div>
 
                 <div class="form-group full">
@@ -190,9 +225,6 @@
 
         </form>
 
-        <footer>
-            © 2026 Academia Jiu-Jitsu - Todos os direitos reservados
-        </footer>
 
     </div>
     <script>

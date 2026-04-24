@@ -125,7 +125,7 @@
 
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="email" name="email" id="email" value="{{ old('email') }}" required autofocus>
+                <input type="email" name="email" placeholder="academia@email.com" id="email" value="{{ old('email') }}" required autofocus>
                 @error('email')
                 <small style="color:red">{{ $message }}</small>
                 @enderror
@@ -133,7 +133,7 @@
 
             <div class="form-group">
                 <label for="password">Senha</label>
-                <input type="password" name="password" id="password" required>
+                <input type="password" placeholder="**********" name="password" id="password" required>
                 @error('password')
                 <small style="color:red">{{ $message }}</small>
                 @enderror

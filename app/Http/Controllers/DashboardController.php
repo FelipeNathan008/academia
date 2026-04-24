@@ -11,6 +11,7 @@ use App\Models\DetalhesMensalidade;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\Turma;
 
 
 class DashboardController extends Controller
@@ -282,6 +283,12 @@ class DashboardController extends Controller
             ->groupBy('ordem_max')
             ->pluck('total', 'ordem_max');
 
+        $turmas = Turma::select('turma_nome', 'id_turma')
+            ->distinct()
+            ->get();
+
+        $turmaSelecionada = $request->get('turma');
+
         return view('dashboard', [
             'modo' => $modo,
             'graficoLabels' => $labels,
@@ -299,6 +306,9 @@ class DashboardController extends Controller
 
             'modalidades' => $modalidades,
             'modalidadeSelecionada' => $modalidadeSelecionada,
+
+            'turmas' => $turmas,
+            'turmaSelecionada' => $turmaSelecionada,
 
             'graduacaoCinzaBranca'   => $graduacoes[1] ?? 0,
             'graduacaoCinza'         => $graduacoes[2] ?? 0,

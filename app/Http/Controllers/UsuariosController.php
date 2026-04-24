@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Empresa;
 use App\Models\Filial;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
@@ -33,6 +34,20 @@ class UsuariosController extends Controller
         return view('view_controle.usuarios', compact('users', 'empresa', 'filial'));
     }
 
+    public function empresaIndex()
+    {
+        $user = Auth::user();
+
+        $empresa = Empresa::where('id_empresa', $user->id_emp_id)
+            ->firstOrFail();
+
+        $users = User::where('id_emp_id', $empresa->id_empresa)
+            ->whereNull('id_filial_id')
+            ->get();
+
+        return view('view_controle.usuarios_empresa', compact('users', 'empresa'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -53,7 +68,7 @@ class UsuariosController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'id_emp_id' => $request->id_emp_id,
-            'id_filial_id' => $request->id_filial_id
+            'id_filial_id' => $request->id_filial_id ?: null
         ]);
 
         return redirect()->back()->with('success', 'Usuário cadastrado com sucesso!');
@@ -75,6 +90,52 @@ class UsuariosController extends Controller
         }
     }
 
+    // EDIT EMPRESA
+    public function editEmpresa($idCriptografado)
+    {
+        try {
+            $id = Crypt::decrypt($idCriptografado);
+            $user = User::findOrFail($id);
+
+            return view('view_controle.usuarios_edit_empresa', compact('user'));
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+    }
+
+    // UPDATE EMPRESA
+    public function updateEmpresa(Request $request, $idCriptografado)
+    {
+        $id = Crypt::decrypt($idCriptografado);
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:100',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8',
+            'role' => 'required|in:admin,user',
+        ], [
+            'email.unique' => 'Este e-mail já está cadastrado.',
+            'password.min' => 'A senha deve ter no mínimo 8 caracteres.'
+        ]);
+
+        $data = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'role' => $request->role,
+            'id_emp_id' => $user->id_emp_id, // mantém empresa
+            'id_filial_id' => null // 🔥 garante que continua sendo da empresa
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        $user->update($data);
+
+        return redirect()->route('usuarios.empresa')
+            ->with('success', 'Usuário atualizado com sucesso!');
+    }
 
     public function update(Request $request, $idCriptografado)
     {
@@ -104,8 +165,11 @@ class UsuariosController extends Controller
 
         $user->update($data);
 
-        return redirect()->route('usuarios.index', Crypt::encrypt($user->id_filial_id))
-            ->with('success', 'Usuário atualizado com sucesso!');
+        if ($user->id_filial_id) {
+            return redirect()->route('usuarios.index', Crypt::encrypt($user->id_filial_id));
+        } else {
+            return redirect()->route('usuarios.empresa');
+        }
     }
 
     public function destroy($idCriptografado)

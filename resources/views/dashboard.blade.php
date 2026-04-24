@@ -141,6 +141,9 @@
             onchange="this.form.submit()"
             class="border rounded-lg px-4 py-2">
 
+            @if($modalidades->isEmpty())
+            <option value="">Nenhuma graduação cadastrada</option>
+            @else
             <option value="">Selecione</option>
 
             @foreach ($modalidades as $modalidade)
@@ -149,21 +152,8 @@
                 {{ $modalidade }}
             </option>
             @endforeach
+            @endif
 
-        </select>
-    </div>
-
-    <!-- Turma -->
-    <div class="flex flex-col">
-        <label for="tipoGraduacao" class="mb-1 text-sm font-semibold text-gray-700">
-            Selecione Turma
-        </label>
-
-        <select id="tipoGraduacao"
-            class="border rounded-lg px-4 py-2">
-            <option value="">Selecione</option>
-            <option value="adultos">Adultos</option>
-            <option value="kids">Kids</option>
         </select>
     </div>
 
@@ -444,100 +434,93 @@
 
         const canvas = document.getElementById('graficoMatriculas');
 
-        const labels = JSON.parse(canvas.dataset.labels);
-        const dados = JSON.parse(canvas.dataset.dados);
-        const dadosEncerrados = JSON.parse(canvas.dataset.dadosEncerrados);
+        if (canvas) {
+            const labels = JSON.parse(canvas.dataset.labels);
+            const dados = JSON.parse(canvas.dataset.dados);
+            const dadosEncerrados = JSON.parse(canvas.dataset.dadosEncerrados);
 
-        new Chart(canvas, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                        label: 'Matrículas Ativas',
-                        data: dados,
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Matrículas Encerradas',
-                        data: dadosEncerrados,
-                        borderWidth: 1
-                    }
-                ]
-            }
+            new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                            label: 'Matrículas Ativas',
+                            data: dados,
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Matrículas Encerradas',
+                            data: dadosEncerrados,
+                            borderWidth: 1
+                        }
+                    ]
+                }
+            });
+        }
+
+        // CORES DAS BOLINHAS
+        document.querySelectorAll('.bolinha-faixa-dashboard').forEach(bolinha => {
+            const faixa = bolinha.dataset.faixa;
+            let cor = 'transparent';
+
+            if (faixa.includes('cinza e branca')) cor = '#808080';
+            else if (faixa.includes('branca')) cor = '#ffffff';
+            else if (faixa.includes('amarela')) cor = '#facc15';
+            else if (faixa.includes('laranja')) cor = '#f97316';
+            else if (faixa.includes('verde')) cor = '#22c55e';
+            else if (faixa.includes('azul')) cor = '#2563eb';
+            else if (faixa.includes('roxa')) cor = '#7c3aed';
+            else if (faixa.includes('marrom')) cor = '#78350f';
+            else if (faixa.includes('preta')) cor = '#000000';
+
+            bolinha.style.backgroundColor = cor;
         });
 
-    });
+        // CONTROLE APENAS POR MODALIDADE
+        const blocoKids = document.getElementById('graduacoesKids');
+        const blocoAdultos = document.getElementById('graduacoesAdultos');
+        const selectModalidade = document.querySelector('select[name="modalidade"]');
 
-    document.querySelectorAll('.bolinha-faixa-dashboard').forEach(bolinha => {
-        const faixa = bolinha.dataset.faixa;
-        let cor = 'transparent';
+        function atualizarVisualizacao() {
 
-        if (faixa.includes('cinza e branca')) cor = '#808080';
-        else if (faixa.includes('branca')) cor = '#ffffff';
-        else if (faixa.includes('amarela')) cor = '#facc15';
-        else if (faixa.includes('laranja')) cor = '#f97316';
-        else if (faixa.includes('verde')) cor = '#22c55e';
-        else if (faixa.includes('azul')) cor = '#2563eb';
-        else if (faixa.includes('roxa')) cor = '#7c3aed';
-        else if (faixa.includes('marrom')) cor = '#78350f';
-        else if (faixa.includes('preta')) cor = '#000000';
+            const modalidadeSelecionada = selectModalidade.value;
 
-        bolinha.style.backgroundColor = cor;
-    });
+            // Se NÃO escolheu modalidade → esconde tudo
+            if (!modalidadeSelecionada) {
+                blocoAdultos.style.display = 'none';
+                blocoKids.style.display = 'none';
+                return;
+            }
 
-    const selectTipo = document.getElementById('tipoGraduacao');
-    const blocoKids = document.getElementById('graduacoesKids');
-    const blocoAdultos = document.getElementById('graduacoesAdultos');
-
-    const selectModalidade = document.querySelector('select[name="modalidade"]');
-
-    function atualizarVisualizacao() {
-
-        const modalidadeSelecionada = selectModalidade.value;
-        const tipoSelecionado = selectTipo.value;
-
-        if (!modalidadeSelecionada || !tipoSelecionado) {
-            blocoAdultos.style.display = 'none';
-            blocoKids.style.display = 'none';
-            return;
-        }
-
-        if (tipoSelecionado === 'adultos') {
+            // Se escolheu modalidade → mostra ambos
             blocoAdultos.style.display = 'grid';
-            blocoKids.style.display = 'none';
-        } else if (tipoSelecionado === 'kids') {
-            blocoAdultos.style.display = 'none';
             blocoKids.style.display = 'grid';
         }
-    }
 
-    selectTipo.addEventListener('change', atualizarVisualizacao);
-    selectModalidade.addEventListener('change', atualizarVisualizacao);
+        if (selectModalidade) {
+            selectModalidade.addEventListener('change', atualizarVisualizacao);
+        }
 
-    document.addEventListener("DOMContentLoaded", atualizarVisualizacao);
+        atualizarVisualizacao();
 
-
-    document.addEventListener("DOMContentLoaded", function() {
-
+        // ESTILO DOS CARDS
         document.querySelectorAll('.graduacao-card').forEach(card => {
 
-            // aplica border-left
             const borderColor = card.dataset.borderColor;
             if (borderColor) {
                 card.style.borderLeft = `8px solid ${borderColor}`;
             }
 
-            // aplica estilo do círculo
             const circle = card.querySelector('.graduacao-circle');
             const circleStyle = circle?.dataset.style;
 
             if (circle && circleStyle) {
                 circle.style.cssText = `
-                width:22px;
-                height:22px;
-                border-radius:50%;
-                ${circleStyle}
-            `;
+                    width:22px;
+                    height:22px;
+                    border-radius:50%;
+                    ${circleStyle}
+                `;
             }
         });
 

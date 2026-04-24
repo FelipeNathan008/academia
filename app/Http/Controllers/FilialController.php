@@ -7,16 +7,18 @@ use App\Models\Empresa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Auth;
 
 class FilialController extends Controller
 {
 
     public function index()
     {
-        $filiais = Filial::all();
-        $empresas = Empresa::all();
-
-        return view('view_controle.filiais', compact('filiais', 'empresas'));
+        $user = Auth::user();
+        $filiais = Filial::where('id_emp_id', $user->id_emp_id)->get();
+        $empresa = Empresa::where('id_empresa', $user->id_emp_id)
+            ->firstOrFail();
+        return view('view_controle.filiais', compact('filiais', 'empresa'));
     }
 
     public function store(Request $request)
@@ -33,6 +35,9 @@ class FilialController extends Controller
         ]);
 
         $dados = $request->except('filial_foto');
+
+
+        $dados['id_emp_id'] = Auth::user()->id_emp_id;
 
         // upload da imagem
         if ($request->hasFile('filial_foto')) {

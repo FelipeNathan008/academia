@@ -103,7 +103,7 @@
         <thead>
             <tr class="border-b border-gray-300 text-gray-600 text-sm">
                 <th class="py-3 px-4">Nome</th>
-                <th class="py-3 px-4">Idade</th>
+               <!-- <th class="py-3 px-4">Idade</th>-->
                 <th class="py-3 px-4">Empresa</th>
                 <th class="py-3 px-4">Foto</th>
                 <th class="py-3 px-4">Qtd. Alunos</th>
@@ -130,7 +130,7 @@
 
 
 
-                <td class="py-3 px-4">
+               <!-- <td class="py-3 px-4">
                     @if($nascimento)
                     {{ $nascimento->age }}
 
@@ -148,7 +148,7 @@
                     @else
                     -
                     @endif
-                </td>
+                </td> -->
 
 
                 <td class="py-3 px-4 font-bold">
@@ -408,7 +408,7 @@
 
                                     @empty
                                     <tr>
-                                        <td colspan="5" class="px-4 py-4 text-center text-gray-400">
+                                        <td colspan="6" class="px-4 py-4 text-center text-gray-400">
                                             Nenhum aluno vinculado
                                         </td>
                                     </tr>

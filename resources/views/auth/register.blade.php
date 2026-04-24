@@ -107,6 +107,7 @@
             font-size: 12px;
             margin-top: 2px;
         }
+
     </style>
 
 </head>
@@ -149,19 +150,7 @@
                 <input type="password" name="password_confirmation" placeholder="Repita a senha" required>
             </div>
 
-            <!-- Novo campo select para Role -->
-            <div class="form-group">
-                <label>Função *</label>
-                <select name="role" required>
-                    <option value="">Selecione a função</option>
-                    <option value="admin">Administrador</option>
-                    <option value="user">Aluno</option>
-                    <option value="professor">Professor</option>
-                </select>
-                @error('role')
-                <div class="erro">{{ $message }}</div>
-                @enderror
-            </div>
+            <input type="hidden" name="role" value="admin">
 
             <button type="submit" class="btn">
                 Criar Conta

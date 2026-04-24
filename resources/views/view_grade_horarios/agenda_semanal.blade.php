@@ -117,6 +117,16 @@
         background-color: #0d47a1;
     }
 
+    .popover .btn-ver {
+        background-color: #174ab9;
+        color: white;
+    }
+
+    .popover .btn-ver:hover {
+        background-color: #0c3470;
+    }
+
+
     .popover .btn-delete {
         background-color: #e53935;
         color: white;
@@ -291,8 +301,6 @@
                                         <strong>Fim:</strong>
                                         {{ \Carbon\Carbon::parse($evento->grade_fim)->format('H:i') }}
                                     </p>
-
-                                    <p><strong>Descrição:</strong> {{ $evento->grade_desc ?? 'Sem descrição' }}</p>
 
                                     <div class="flex justify-end gap-2 mt-2">
                                         <a href="{{ route('frequencia.dias', Crypt::encrypt($evento->id_grade)) }}"
