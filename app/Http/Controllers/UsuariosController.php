@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Aluno;
 use App\Models\User;
 use App\Models\Empresa;
 use App\Models\Filial;
+use App\Models\Professor;
+use App\Models\Responsavel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -45,7 +48,46 @@ class UsuariosController extends Controller
             ->whereNull('id_filial_id')
             ->get();
 
-        return view('view_controle.usuarios_empresa', compact('users', 'empresa'));
+        // IDs já utilizados
+        $professoresUsados = User::whereNotNull('professor_id')->pluck('professor_id');
+        $responsaveisUsados = User::whereNotNull('responsavel_id')->pluck('responsavel_id');
+
+        // FILTRO
+        $professores = Professor::where('id_emp_id', $empresa->id_empresa)
+            ->whereNull('id_filial_id')
+            ->whereNotIn('id_professor', $professoresUsados)
+            ->get();
+
+        $responsaveis = Responsavel::where('id_emp_id', $empresa->id_empresa)
+            ->whereNull('id_filial_id')
+            ->whereNotIn('id_responsavel', $responsaveisUsados)
+            ->get();
+
+        return view('view_controle.usuarios_empresa', compact('users', 'empresa', 'responsaveis', 'professores'));
+    }
+
+    public function buscarPessoas(Request $request)
+    {
+        $tipo = $request->tipo; // professor ou responsavel
+        $busca = $request->busca;
+
+        if ($tipo === 'professor') {
+
+            $usados = User::whereNotNull('professor_id')->pluck('professor_id');
+
+            $dados = Professor::whereNotIn('id_professor', $usados)
+                ->when($busca, fn($q) => $q->where('prof_nome', 'like', "%{$busca}%"))
+                ->paginate(5);
+        } else {
+
+            $usados = User::whereNotNull('responsavel_id')->pluck('responsavel_id');
+
+            $dados = Responsavel::whereNotIn('id_responsavel', $usados)
+                ->when($busca, fn($q) => $q->where('resp_nome', 'like', "%{$busca}%"))
+                ->paginate(2);
+        }
+
+        return response()->json($dados);
     }
 
     public function store(Request $request)
@@ -54,13 +96,40 @@ class UsuariosController extends Controller
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:admin,user',
+            'role' => 'required|in:admin,professor,aluno',
             'id_emp_id' => 'required|exists:empresas,id_empresa',
-            'id_filial_id' => 'nullable|exists:filiais,id_filial'
+            'id_filial_id' => 'nullable|exists:filiais,id_filial',
+
+            'id_professor_id' => 'nullable|exists:professor,id_professor',
+            'id_responsavel_id' => 'nullable|exists:responsavel,id_responsavel',
         ], [
             'email.unique' => 'Este e-mail já está cadastrado.',
             'password.min' => 'A senha deve ter no mínimo 8 caracteres.'
         ]);
+
+        $professorId = null;
+        $responsavelId = null;
+
+        if ($request->role === 'professor') {
+            $professorId = $request->id_professor_id;
+        }
+
+        if ($request->role === 'aluno') {
+            $responsavelId = $request->id_responsavel_id;
+        }
+
+        if ($request->role === 'professor' && $request->id_professor_id) {
+            if (User::where('professor_id', $request->id_professor_id)->exists()) {
+                return back()->withErrors(['Professor já vinculado a outro usuário.']);
+            }
+        }
+
+        if ($request->role === 'aluno' && $request->id_responsavel_id) {
+            if (User::where('responsavel_id', $request->id_responsavel_id)->exists()) {
+                return back()->withErrors(['Responsável já vinculado a outro usuário.']);
+            }
+        }
+
 
         User::create([
             'name' => $request->name,
@@ -68,7 +137,10 @@ class UsuariosController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'id_emp_id' => $request->id_emp_id,
-            'id_filial_id' => $request->id_filial_id ?: null
+            'id_filial_id' => $request->id_filial_id ?: null,
+
+            'professor_id' => $professorId,
+            'responsavel_id' => $responsavelId,
         ]);
 
         return redirect()->back()->with('success', 'Usuário cadastrado com sucesso!');
@@ -113,7 +185,10 @@ class UsuariosController extends Controller
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8',
-            'role' => 'required|in:admin,user',
+            'role' => 'required|in:admin,professor,aluno',
+
+            'professor_id' => 'nullable|exists:professor,id_professor',
+            'responsavel_id' => 'nullable|exists:responsavel,id_responsavel',
         ], [
             'email.unique' => 'Este e-mail já está cadastrado.',
             'password.min' => 'A senha deve ter no mínimo 8 caracteres.'
@@ -123,8 +198,8 @@ class UsuariosController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
-            'id_emp_id' => $user->id_emp_id, // mantém empresa
-            'id_filial_id' => null // 🔥 garante que continua sendo da empresa
+            'id_emp_id' => $user->id_emp_id,
+            'id_filial_id' => null
         ];
 
         if ($request->filled('password')) {
@@ -146,7 +221,10 @@ class UsuariosController extends Controller
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8',
-            'role' => 'required|in:admin,user',
+            'role' => 'required|in:admin,professor,aluno',
+
+            'professor_id' => 'nullable|exists:professor,id_professor',
+            'responsavel_id' => 'nullable|exists:responsavel,id_responsavel',
         ], [
             'email.unique' => 'Este e-mail já está cadastrado.',
             'password.min' => 'A senha deve ter no mínimo 8 caracteres.'

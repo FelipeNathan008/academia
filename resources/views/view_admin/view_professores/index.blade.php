@@ -10,24 +10,17 @@
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div>
         <h2 class="text-3xl font-extrabold text-gray-800">
-            @if($modo === 'alunos')
             Professores / Alunos
-            @else
-            Professores
-            @endif
         </h2>
     </div>
 
-    @if($modo !== 'alunos')
     <button onclick="toggleCadastro()"
         class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow-md hover:bg-[#732920] hover:shadow-lg transition-all">
         + Cadastrar Professor
     </button>
-    @endif
 
 </div>
 
-@if($modo !== 'alunos')
 <!-- FORMULÁRIO DE CADASTRO -->
 <div id="cadastroForm" class="hidden mb-10">
     <form id="formCadastro" action="{{ route('professores.store') }}" method="POST" enctype="multipart/form-data" onsubmit=" bloquearSubmit(event, this)">
@@ -103,13 +96,11 @@
         <thead>
             <tr class="border-b border-gray-300 text-gray-600 text-sm">
                 <th class="py-3 px-4">Nome</th>
-               <!-- <th class="py-3 px-4">Idade</th>-->
+                <!-- <th class="py-3 px-4">Idade</th>-->
                 <th class="py-3 px-4">Empresa</th>
                 <th class="py-3 px-4">Foto</th>
                 <th class="py-3 px-4">Qtd. Alunos</th>
-                @if($modo !== 'alunos')
                 <th class="py-3 px-4">Graduado</th>
-                @endif
                 <th class="py-3 px-4">Ações</th>
             </tr>
         </thead>
@@ -130,7 +121,7 @@
 
 
 
-               <!-- <td class="py-3 px-4">
+                <!-- <td class="py-3 px-4">
                     @if($nascimento)
                     {{ $nascimento->age }}
 
@@ -170,7 +161,6 @@
                     {{ $professor->qtd_aluno ?? '0'}}
                 </td>
 
-                @if($modo !== 'alunos')
 
                 <!-- Graduado -->
                 <td class="py-3 px-4">
@@ -191,7 +181,6 @@
                     </span>
                     @endif
                 </td>
-                @endif
 
                 <td class="py-3 px-4 flex gap-2">
 
@@ -202,7 +191,6 @@
                         Ver Alunos
                     </button>
 
-                    @if($modo !== 'alunos')
 
                     <!-- Botão Graduações -->
                     <a href="{{ route('detalhes-professor.index', Crypt::encrypt($professor->id_professor)) }}"
@@ -233,7 +221,6 @@
                             Excluir
                         </button>
                     </form>
-                    @endif
 
                 </td>
             </tr>
@@ -297,6 +284,7 @@
                             <table class="w-full text-sm text-left">
                                 <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
                                     <tr>
+                                        <th class="px-4 py-3">Foto</th>
                                         <th class="px-4 py-3">Aluno</th>
                                         <th class="px-4 py-3">Idade</th>
                                         <th class="px-4 py-3">Modalidade</th>
@@ -318,6 +306,17 @@
                                     <tr class="linha-aluno hover:bg-gray-50 transition"
                                         data-grade="{{ $aluno->id_grade }}"
                                         data-horario="{{ $aluno->grade_inicio }}">
+
+                                        <td class="py-3 px-4">
+                                            @if($aluno->aluno_foto)
+                                            <div class="w-12 h-12 overflow-hidden">
+                                                <img src="{{ asset('images/alunos/' . $aluno->aluno_foto) }}"
+                                                    alt="Foto" style="width:48px; height:48px; object-fit:cover;">
+                                            </div>
+                                            @else
+                                            -
+                                            @endif
+                                        </td>
 
                                         <td class="px-4 py-3">
                                             {{ $aluno->aluno_nome }}

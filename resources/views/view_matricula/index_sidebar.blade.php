@@ -115,6 +115,7 @@
     <table class="w-full text-left border-collapse">
         <thead>
             <tr class="border-b text-gray-600 text-sm">
+                <th class="py-3 px-4">Foto</th>
                 <th class="py-3 px-4">Aluno</th>
                 <th class="py-3 px-4">Idade</th>
                 <th class="py-3 px-4">Modalidade</th>
@@ -140,6 +141,16 @@
                 data-responsavel="{{ strtolower($aluno->responsavel->resp_nome ?? '') }}"
                 data-matricula="{{ $aluno->matriculas->count() > 0 ? 'com' : 'sem' }}">
 
+                <td class="py-3 px-4">
+                    @if($aluno->aluno_foto)
+                    <div class="w-12 h-12 overflow-hidden">
+                        <img src="{{ asset('images/alunos/' . $aluno->aluno_foto) }}"
+                            alt="Foto" style="width:48px; height:48px; object-fit:cover;">
+                    </div>
+                    @else
+                    -
+                    @endif
+                </td>
 
                 <!-- NOME -->
                 <td class="py-3 px-4 font-medium text-gray-800">

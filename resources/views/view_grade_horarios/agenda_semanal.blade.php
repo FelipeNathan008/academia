@@ -306,7 +306,6 @@
                                         <a href="{{ route('frequencia.dias', Crypt::encrypt($evento->id_grade)) }}"
                                             class="btn btn-det">Detalhes</a>
                                         </a>
-                                        @if($modo === 'admin')
 
                                         <a href="{{ route('grade_horarios.edit', Crypt::encrypt($evento->id_grade)) }}"
                                             class="btn btn-edit">Editar</a>
@@ -318,7 +317,7 @@
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-delete">Excluir</button>
                                         </form>
-                                        @endif
+
                                     </div>
                                 </div>
                             </div>

@@ -73,9 +73,18 @@ use Illuminate\Support\Facades\Crypt;
 
             <div>
                 <label class="text-sm text-gray-600">Função</label>
-                <select name="role" required class="w-full border rounded-lg px-4 py-2 mt-1">
-                    <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Administrador</option>
-                    <option value="user" {{ $user->role == 'user' ? 'selected' : '' }}>Usuário</option>
+                <select name="role" class="w-full border rounded-lg px-4 py-2 mt-1">
+                    <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>
+                        Administrador
+                    </option>
+
+                    <option value="professor" {{ $user->role == 'professor' ? 'selected' : '' }}>
+                        Professor
+                    </option>
+
+                    <option value="aluno" {{ $user->role == 'aluno' ? 'selected' : '' }}>
+                        Aluno
+                    </option>
                 </select>
             </div>
 

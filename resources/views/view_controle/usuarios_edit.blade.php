@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Crypt;
         <li>/</li>
         <li class="text-gray-400">{{ $filial->filial_apelido }}</li>
         <li>/</li>
-        <a href="{{ route('usuarios.index', ['filial' => Crypt::encrypt($filial->id_filial)]) }}"class="hover:text-[#8E251F] transition">
+        <a href="{{ route('usuarios.index', ['filial' => Crypt::encrypt($filial->id_filial)]) }}" class="hover:text-[#8E251F] transition">
             Usuários da Filial
         </a>
 
@@ -108,8 +108,12 @@ use Illuminate\Support\Facades\Crypt;
                         Administrador
                     </option>
 
-                    <option value="user" {{ $user->role == 'user' ? 'selected' : '' }}>
-                        Usuário
+                    <option value="professor" {{ $user->role == 'professor' ? 'selected' : '' }}>
+                        Professor
+                    </option>
+
+                    <option value="aluno" {{ $user->role == 'aluno' ? 'selected' : '' }}>
+                        Aluno
                     </option>
                 </select>
             </div>

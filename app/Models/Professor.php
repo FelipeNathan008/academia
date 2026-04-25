@@ -41,4 +41,8 @@ class Professor extends Model
     {
         return $this->hasMany(DetalhesProfessor::class, 'professor_id_professor', 'id_professor');
     }
+    public function user()
+    {
+        return $this->hasOne(User::class, 'professor_id', 'id_professor');
+    }
 }

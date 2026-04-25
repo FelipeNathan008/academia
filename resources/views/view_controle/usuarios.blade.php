@@ -129,7 +129,8 @@ use Illuminate\Support\Facades\Crypt;
                     <select name="role" required class="w-full border rounded-lg px-4 py-2 mt-1">
                         <option value="" disabled selected>Selecione a função</option>
                         <option value="admin">Administrador</option>
-                        <option value="user">Usuário</option>
+                        <option value="professor">Professor</option>
+                        <option value="aluno">Aluno</option>
                     </select>
                 </div>
             </div>

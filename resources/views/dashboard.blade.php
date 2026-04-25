@@ -50,7 +50,6 @@
             Ver todos os Alunos →
         </span>
     </a>
-    @if($modo === 'admin')
     <div class="p-6 bg-white rounded-xl shadow-sm">
         <h3 class="font-semibold text-lg mb-2">Receita Mensal (Pago/Total)</h3>
         <p class="text-2xl font-bold mb-2">
@@ -64,7 +63,6 @@
         </p>
         <span class="text-sm text-gray-500">Mês atual</span>
     </div>
-    @endif
     <a href="{{ route('dashboard.mensalidadesAtrasadas') }}"
         class="block p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition">
 
@@ -82,7 +80,7 @@
     </a>
 </div>
 
-@if($modo === 'admin')
+
 <div style="
     background: white;
     padding: 14px;
@@ -122,7 +120,7 @@
     </div>
 
 </div>
-@endif
+
 
 <h2 class="text-xl font-bold mb-4">
     Alunos por Graduação

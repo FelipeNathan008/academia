@@ -23,9 +23,10 @@ class User extends Authenticatable
         'password',
         'id_emp_id',
         'id_filial_id',
-        'role'
+        'role',
+        'professor_id',
+        'responsavel_id'
     ];
-
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -57,5 +58,14 @@ class User extends Authenticatable
     public function filial()
     {
         return $this->belongsTo(Filial::class, 'id_filial_id');
+    }
+    public function professor()
+    {
+        return $this->belongsTo(Professor::class, 'professor_id', 'id_professor');
+    }
+
+    public function responsavel()
+    {
+        return $this->belongsTo(Responsavel::class, 'responsavel_id', 'id_responsavel');
     }
 }

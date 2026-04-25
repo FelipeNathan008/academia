@@ -11,7 +11,6 @@ class Responsavel extends Model
     protected $primaryKey = 'id_responsavel';
 
     protected $fillable = [
-        'aluno_id_aluno',
         'resp_nome',
         'resp_parentesco',
         'resp_cpf',

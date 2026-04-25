@@ -16,11 +16,7 @@ class GradeHorarioController extends Controller
 {
     public function index(Request $request)
     {
-        $modo = 'admin'; // padrão
 
-        if ($request->routeIs('grade_horarios.visualizar')) {
-            $modo = 'visualizar';
-        }
 
         $user = Auth::user();
 
@@ -38,7 +34,6 @@ class GradeHorarioController extends Controller
             'professores',
             'horariosTreino',
             'turmas',
-            'modo',
             'modalidades'
         ));
     }

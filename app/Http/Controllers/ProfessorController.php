@@ -20,11 +20,6 @@ class ProfessorController extends Controller
     public function index(Request $request)
     {
 
-        $modo = 'normal';
-
-        if ($request->routeIs('professores.alunos')) {
-            $modo = 'alunos';
-        }
         $user = Auth::user();
 
         $professores = Professor::where('id_emp_id', $user->id_emp_id)->get();
@@ -74,6 +69,7 @@ class ProfessorController extends Controller
                     'a.aluno_nome',
                     'a.aluno_nascimento',
                     'a.aluno_bolsista',
+                    'a.aluno_foto',
 
                     'g.id_grade',
                     'g.grade_modalidade',
@@ -107,7 +103,7 @@ class ProfessorController extends Controller
             ->get();
         return view(
             'view_admin.view_professores.index',
-            compact('professores', 'professoresEmpresa', 'graduacoes', 'detalhes', 'modalidades', 'modo')
+            compact('professores', 'professoresEmpresa', 'graduacoes', 'detalhes', 'modalidades')
         );
     }
 

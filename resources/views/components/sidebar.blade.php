@@ -180,7 +180,7 @@
     'type' => 'link',
     'label' => 'Dashboard',
     'route' => 'dashboard',
-    'active' => ['dashboard', 'dashboard.admin', 'dashboard.mensalidadesAtrasadas', 'dashboard.graduacoes'],
+    'active' => ['dashboard', 'dashboard.mensalidadesAtrasadas', 'dashboard.graduacoes'],
     ],
     [
     'type' => 'link',
@@ -216,11 +216,7 @@
     'type' => 'submenu',
     'label' => 'Administração',
     'items' => [
-    [
-    'label' => 'Dashboard Admin',
-    'route' => 'dashboard.admin',
-    'active' => ['dashboard.admin', 'dashboard.mensalidadesAtrasadas', 'dashboard.graduacoes'],
-    ],
+    
     [
     'label' => 'Professores',
     'route' => 'professores',
