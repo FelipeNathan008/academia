@@ -106,7 +106,7 @@
 
                 @if($professor->prof_foto)
                 <img src="{{ asset('images/professores/' . $professor->prof_foto) }}"
-                    class="w-32 h-32 object-cover rounded-xl shadow">
+                    style="width:120px; height:120px; object-fit:cover; border-radius:10px;">
                 @else
                 <p class="text-gray-500">Sem foto</p>
                 @endif

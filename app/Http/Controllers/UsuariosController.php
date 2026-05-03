@@ -100,8 +100,8 @@ class UsuariosController extends Controller
             'id_emp_id' => 'required|exists:empresas,id_empresa',
             'id_filial_id' => 'nullable|exists:filiais,id_filial',
 
-            'id_professor_id' => 'nullable|exists:professor,id_professor',
-            'id_responsavel_id' => 'nullable|exists:responsavel,id_responsavel',
+            'professor_id' => 'nullable|exists:professor,id_professor',
+            'responsavel_id' => 'nullable|exists:responsavel,id_responsavel',
         ], [
             'email.unique' => 'Este e-mail já está cadastrado.',
             'password.min' => 'A senha deve ter no mínimo 8 caracteres.'
@@ -111,21 +111,21 @@ class UsuariosController extends Controller
         $responsavelId = null;
 
         if ($request->role === 'professor') {
-            $professorId = $request->id_professor_id;
+            $professorId = $request->professor_id;
         }
 
         if ($request->role === 'aluno') {
-            $responsavelId = $request->id_responsavel_id;
+            $responsavelId = $request->responsavel_id;
         }
 
-        if ($request->role === 'professor' && $request->id_professor_id) {
-            if (User::where('professor_id', $request->id_professor_id)->exists()) {
+        if ($request->role === 'professor' && $request->professor_id) {
+            if (User::where('professor_id', $request->professor_id)->exists()) {
                 return back()->withErrors(['Professor já vinculado a outro usuário.']);
             }
         }
 
-        if ($request->role === 'aluno' && $request->id_responsavel_id) {
-            if (User::where('responsavel_id', $request->id_responsavel_id)->exists()) {
+        if ($request->role === 'aluno' && $request->responsavel_id) {
+            if (User::where('responsavel_id', $request->responsavel_id)->exists()) {
                 return back()->withErrors(['Responsável já vinculado a outro usuário.']);
             }
         }

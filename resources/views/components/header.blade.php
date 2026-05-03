@@ -19,30 +19,33 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
-    /* ÁREAS */
+    /* sobrescreve o azul quando for professor */
+    .bg-professor {
+        background: #000000 !important;
+    }
+
+    /* sobrescreve o azul quando for aluno */
+    .bg-aluno {
+        background: #FFA500 !important;
+    }
+
     .header-left,
-    .header-center,
-    .header-right {
+    .header-center {
         display: flex;
         align-items: center;
         gap: 16px;
     }
 
-    /* TÍTULO */
     .header-title {
-        padding: 12px 0;
         font-size: 18px;
         font-weight: 600;
         color: #ffffff;
     }
 
-    /* BOTÃO LOGOUT */
-    /* BOTÃO LOGOUT */
     .btn-logout {
         padding: 8px 16px;
         background-color: #8E251F;
         color: #ffffff;
-        /* texto branco para contraste correto */
         border-radius: 8px;
         border: none;
         cursor: pointer;
@@ -50,27 +53,26 @@
         transition: all 0.3s ease;
     }
 
-    /* HOVER */
     .btn-logout:hover {
         background-color: #73201A;
-        /* vermelho mais escuro baseado no original */
         transform: translateY(-1px);
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     }
 
-    /* MENU ICON (opcional melhoria) */
     .menu-icon span {
         display: block;
         width: 22px;
         height: 2px;
         background-color: white;
         margin: 4px 0;
-        transition: 0.3s;
     }
 </style>
-<header class="header">
+
+<header class="header 
+    {{ auth()->user()->role === 'professor' ? 'bg-professor' : (auth()->user()->role === 'aluno' ? 'bg-aluno' : '') }}">
+    
     <div class="header-left">
-        <div onclick="toggleSidebar()" class="menu-icon" id="menuIcon">
+        <div onclick="toggleSidebar()" class="menu-icon">
             <span></span>
             <span></span>
             <span></span>
@@ -79,24 +81,17 @@
 
     <div class="header-center">
         @auth
-        @if(auth()->user()->role === 'admin')
         <h1 class="header-title">
-            Olá, {{ auth()->user()->name }} (Admin)
+            Olá, {{ auth()->user()->name }}
+            ({{ auth()->user()->role === 'admin' ? 'Admin' : auth()->user()->role }})
         </h1>
-        @else
-        <h1 class="header-title">
-            Olá, {{ auth()->user()->name }} (User)
-        </h1>
-        @endif
         @endauth
     </div>
 
-    <div class="header-right">
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="btn-logout">
-                Logout
-            </button>
-        </form>
-    </div>
+    <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit" class="btn-logout">
+            Logout
+        </button>
+    </form>
 </header>

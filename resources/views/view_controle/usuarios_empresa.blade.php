@@ -109,8 +109,8 @@
 
 
 
-                        <input type="hidden" name="id_professor_id" id="id_professor_id">
-                        <input type="hidden" name="id_responsavel_id" id="id_responsavel_id">
+                        <input type="hidden" name="professor_id" id="professor_id">
+                        <input type="hidden" name="responsavel_id" id="responsavel_id">
                     </div>
                 </div>
 
@@ -322,8 +322,8 @@
             // =========================
             select.addEventListener("change", function() {
 
-                document.getElementById("id_professor_id").value = "";
-                document.getElementById("id_responsavel_id").value = "";
+                document.getElementById("professor_id").value = "";
+                document.getElementById("responsavel_id").value = "";
 
                 const valor = this.value;
 
@@ -377,7 +377,7 @@
             btn.classList.add("bg-green-700");
             btn.innerText = "Selecionado";
 
-            document.getElementById("id_professor_id").value = id;
+            document.getElementById("professor_id").value = id;
         }
 
         function selecionarResponsavel(id, nome, btn) {
@@ -390,7 +390,7 @@
             btn.classList.add("bg-green-700");
             btn.innerText = "Selecionado";
 
-            document.getElementById("id_responsavel_id").value = id;
+            document.getElementById("responsavel_id").value = id;
         }
 
 

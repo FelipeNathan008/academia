@@ -151,6 +151,28 @@
     .link-hover:hover {
         background-color: var(--vermelho-hover);
     }
+
+    .empresa-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 16px;
+        margin-top: auto;
+    }
+
+    .empresa-img {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 3px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+        transition: transform 0.3s ease;
+    }
+
+    .empresa-img:hover {
+        transform: scale(1.05);
+    }
 </style>
 <script>
     (function() {
@@ -194,12 +216,7 @@
     'route' => 'matricula.index',
     'active' => ['alunos.show', 'matricula.index'],
     ],
-    [
-    'type' => 'link',
-    'label' => 'Agenda Mensal',
-    'route' => 'grade_horarios.visualizar',
-    'active' => ['grade_horarios.visualizar'],
-    ],
+  
     [
     'type' => 'link',
     'label' => 'Professores / Alunos',
@@ -216,7 +233,7 @@
     'type' => 'submenu',
     'label' => 'Administração',
     'items' => [
-    
+
     [
     'label' => 'Professores',
     'route' => 'professores',
@@ -268,21 +285,32 @@
     'route' => 'usuarios.empresa',
     'active' => ['usuarios.empresa', 'usuarios.edit','usuarios.index'],
     ],
+    [
+    'label' => 'Empresa',
+    'route' => 'empresa',
+    'active' => ['empresa'],
+    ],
     ],
     ],
     ]
     : [
     [
     'type' => 'link',
-    'label' => 'Painel',
-    'route' => 'painel',
-    'active' => ['painel'],
+    'label' => 'Dashboard',
+    'route' => 'dashboard-professor',
+    'active' => ['dashboard-professor'],
     ],
     [
     'type' => 'link',
-    'label' => 'Matrícula',
-    'route' => 'responsaveis',
-    'active' => ['responsaveis', 'responsaveis.edit', 'alunos', 'alunos.edit', 'detalhes-aluno.index', 'detalhes-aluno.edit', 'mensalidade', 'matricula', 'matricula.show', 'matricula.edit', 'matriculas'],
+    'label' => 'Professor / Alunos',
+    'route' => 'professor-alunos',
+    'active' => ['professor-alunos','professor.show','professor-aluno.show'],
+    ],
+    [
+    'type' => 'link',
+    'label' => 'Grade de Horários',
+    'route' => 'professor-agenda',
+    'active' => ['professor-agenda', 'professor-agenda.show'],
     ],
     [
     'type' => 'link',
@@ -355,6 +383,18 @@
         @endif
         @endforeach
     </nav>
+
+    @auth
+    @if(auth()->user()->empresa && auth()->user()->empresa->emp_foto)
+    <div class="empresa-container">
+        <img
+            src="{{ asset('images/empresas/' . auth()->user()->empresa->emp_foto) }}"
+            alt="Logo da empresa"
+            class="empresa-img">
+    </div>
+    @endif
+    @endauth
+
 </aside>
 
 <script>

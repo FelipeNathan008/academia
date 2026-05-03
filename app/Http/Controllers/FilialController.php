@@ -55,7 +55,7 @@ class FilialController extends Controller
             ->with('success', 'Filial cadastrada com sucesso!');
     }
 
-    public function edit($id)
+    public function edit(string $id)
     {
         try {
             $id = Crypt::decrypt($id);
@@ -69,7 +69,7 @@ class FilialController extends Controller
         return view('view_controle.filiais_edit', compact('filial', 'empresas'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
         try {
             $id = Crypt::decrypt($id);

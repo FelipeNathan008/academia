@@ -20,6 +20,7 @@ use App\Http\Controllers\{
     GradeHorarioController,
     MensalidadeController,
     PrecoModalidadeController,
+    ProfessorUserController,
     TurmaController,
     UsuariosController,
 };
@@ -48,10 +49,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // DASHBOARD
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/mensalidades-atrasadas', [DashboardController::class, 'mensalidadesAtrasadas'])
-        ->name('dashboard.mensalidadesAtrasadas');
-    Route::get('/dashboard/graduacoes', [DashboardController::class, 'graduacoes'])
-        ->name('dashboard.graduacoes');
+    Route::get('/dashboard/mensalidades-atrasadas', [DashboardController::class, 'mensalidadesAtrasadas'])->name('dashboard.mensalidadesAtrasadas');
+    Route::get('/dashboard/graduacoes', [DashboardController::class, 'graduacoes'])->name('dashboard.graduacoes');
 
     // RESPONSÁVEIS
     Route::get('/responsaveis', [ResponsavelController::class, 'index'])->name('responsaveis');
@@ -140,6 +139,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/usuarios-empresa/{id}/edit', [UsuariosController::class, 'editEmpresa'])->name('usuarios.empresa.edit');
     Route::put('/usuarios-empresa/{id}', [UsuariosController::class, 'updateEmpresa'])->name('usuarios.empresa.update');
 
+    //EMPRESA
+    Route::get('/empresa', [EmpresaController::class, 'index'])->name('empresa');
+    Route::put('/empresa/{id}', [EmpresaController::class, 'update'])->name('empresa.update');
+    Route::post('/empresa', [EmpresaController::class, 'store'])->name('empresa.store');
+    Route::delete('/empresa/{id}', [EmpresaController::class, 'destroy'])->name('empresa.destroy');
+
     //FILIAIS
     Route::get('/filiais', [FilialController::class, 'index'])->name('filiais');
     Route::get('/filiais/{id}/edit', [FilialController::class, 'edit'])->name('filiais.edit');
@@ -194,12 +199,22 @@ Route::middleware(['auth', 'admin'])->group(function () {
 Route::middleware(['auth', 'professor'])->group(function () {
 
     //DASHBOARD PROFESSOR
-    Route::get('/painel', fn() => view('view_professor_user.painel'))
-        ->middleware('auth')
-        ->name('painel');
+    Route::get('/dashboard-professor', [ProfessorUserController::class, 'index'])->name('dashboard-professor');
+    Route::get('/dashboard/mensalidades-atrasadas', [DashboardController::class, 'mensalidadesAtrasadas'])->name('dashboard.mensalidadesAtrasadas');
+
+    Route::get('/professor/alunos', [ProfessorUserController::class, 'alunos'])->name('professor-alunos');
+    Route::get('/professor/show/{id}', [ProfessorUserController::class, 'show'])->name('professor.show');
+
+    Route::get('/professor/aluno/{id}', [ProfessorUserController::class, 'showAluno'])->name('professor-aluno.show');
+
+    Route::get('/professor/aluno/{id}/financeiro', [ProfessorUserController::class, 'financeiro'])->name('professor.financeiro');
+    Route::put('/mensalidade/baixar/{id}', [MensalidadeController::class, 'darBaixa'])->name('professor.mensalidade.darBaixa');
+    Route::put('/mensalidade/desfazer/{id}', [MensalidadeController::class, 'desfazerBaixa'])->name('professor.mensalidade.desfazerBaixa');
+    Route::put('/mensalidade/editar-forma', [MensalidadeController::class, 'editarForma'])->name('professor.mensalidade.editarForma');
 
     // Agenda
-    Route::get('/agenda', [GradeHorarioController::class, 'index'])->name('grade_horarios.visualizar');
+    Route::get('/professor/agenda', [ProfessorUserController::class, 'agenda'])->name('professor-agenda');
+    Route::get('/professor/agenda/{id}', [ProfessorUserController::class, 'showAgenda'])->name('professor-agenda.show');
 
     // Frequência
     Route::get('/professor/frequencia', [FrequenciaAlunoController::class, 'listagemGrades'])->name('professor.frequencia');

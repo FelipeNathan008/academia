@@ -4,15 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\Empresa;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Contracts\Encryption\DecryptException;
+
 
 class EmpresaController extends Controller
 {
 
     public function index()
     {
-        $empresas = Empresa::all();
+        $user = Auth::user();
 
-        return view('view_empresas.index', compact('empresas'));
+        $empresa = Empresa::where('id_empresa', $user->id_emp_id)
+            ->firstOrFail();
+
+        return view('view_empresa.index', compact('empresa'));
     }
 
     public function store(Request $request)
@@ -51,7 +58,7 @@ class EmpresaController extends Controller
         return redirect()->route('register', ['empresa_id' => $empresa->id_empresa]);
     }
 
-    public function edit($id)
+    public function edit(string $id)
     {
         $empresa = Empresa::findOrFail($id);
 
@@ -60,6 +67,11 @@ class EmpresaController extends Controller
 
     public function update(Request $request, $id)
     {
+        try {
+            $id = Crypt::decrypt(urldecode($id));;
+        } catch (DecryptException $e) {
+            abort(404);
+        }
         $empresa = Empresa::findOrFail($id);
 
         $request->validate([
@@ -73,6 +85,7 @@ class EmpresaController extends Controller
             'emp_foto' => 'nullable|image|max:2048'
         ]);
 
+        //dd($request->all(), $request->file('emp_foto'));
         if ($request->hasFile('emp_foto')) {
 
             if ($empresa->emp_foto && file_exists(public_path('images/empresas/' . $empresa->emp_foto))) {
@@ -96,13 +109,13 @@ class EmpresaController extends Controller
 
         $empresa->save();
 
-        return redirect()->route('empresas')
+        return redirect()->route('empresa')
             ->with('success', 'Empresa atualizada com sucesso!');
     }
 
-    public function destroy($id)
+    public function destroy(string $id)
     {
-        $empresa = Empresa::findOrFail($id);
+        $empresa = Empresa::where('id_empresa', Auth::user()->id_emp_id)->firstOrFail();
 
         if ($empresa->emp_foto && file_exists(public_path('images/empresas/' . $empresa->emp_foto))) {
             unlink(public_path('images/empresas/' . $empresa->emp_foto));
