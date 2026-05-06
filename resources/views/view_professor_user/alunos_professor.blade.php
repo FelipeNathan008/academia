@@ -194,7 +194,7 @@
 
                                 {{-- FINANCEIRO --}}
                                 @if(strtolower($aluno->aluno_bolsista) !== 'sim' && $matriculaAtiva)
-                                <a href="{{ route('professor.financeiro', Crypt::encrypt($aluno->id_aluno)) }}"
+                                <a href="{{ route('professor-financeiro', Crypt::encrypt($aluno->id_aluno)) }}"
                                     style="background-color: #15803d; color: white;"
                                     class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center">
                                     Financeiro
@@ -202,7 +202,7 @@
                                 @endif
 
                                 {{-- MATRÍCULA --}}
-                                <a href="{{ route('matricula', Crypt::encrypt($aluno->id_aluno)) }}"
+                                <a href="{{ route('professor-matricula', Crypt::encrypt($aluno->id_aluno)) }}"
                                     style="background-color: #8E251F; color: white;"
                                     class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                                     Ver Matrícula
@@ -214,7 +214,7 @@
 
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center text-gray-400 py-4">
+                            <td colspan="8" class="text-center text-gray-400 py-4">
                                 Nenhum aluno encontrado
                             </td>
                         </tr>

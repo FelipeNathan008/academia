@@ -7,13 +7,7 @@
 <!-- BREADCRUMB -->
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
-        <li>
-            <a href="{{ route('dashboard-professor') }}"
-                class="hover:text-[#8E251F] transition">
-                Dashboard
-            </a>
-        </li>
-        <li>/</li>
+
         <li>
             <a href="{{ route('professor-alunos') }}"
                 class="hover:text-[#8E251F] transition">

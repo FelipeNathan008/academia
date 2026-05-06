@@ -127,7 +127,9 @@
             <tr id="editar-forma-{{ $mensalidade->id_mensalidade }}" class="hidden bg-yellow-50">
                 <td colspan="7" class="px-6 py-6">
 
-                    <form action="{{ route('professor.mensalidade.editarForma') }}" method="POST">
+                    <form action="{{ route('mensalidade.editarForma') }}" method="POST"
+                        onsubmit="return confirm('Confirmar alteração da forma de pagamento para TODAS as parcelas?')">
+
                         @csrf
                         @method('PUT')
 
@@ -254,7 +256,7 @@
                                             @if($detalhe->det_mensa_status != 'Pago')
 
                                             <!-- DAR BAIXA -->
-                                            <form action="{{ route('professor.mensalidade.darBaixa', Crypt::encrypt($detalhe->id_detalhes_mensalidade)) }}"
+                                            <form action="{{ route('mensalidade.darBaixa', Crypt::encrypt($detalhe->id_detalhes_mensalidade)) }}"
                                                 method="POST"
                                                 onsubmit="return confirm('Confirmar baixa da parcela?')">
                                                 @csrf
@@ -270,7 +272,7 @@
                                             @else
 
                                             <!-- DESFAZER -->
-                                            <form action="{{ route('professor.mensalidade.desfazerBaixa', Crypt::encrypt($detalhe->id_detalhes_mensalidade)) }}"
+                                            <form action="{{ route('mensalidade.desfazerBaixa', Crypt::encrypt($detalhe->id_detalhes_mensalidade)) }}"
                                                 method="POST"
                                                 onsubmit="return confirm('Deseja desfazer a baixa?')">
 

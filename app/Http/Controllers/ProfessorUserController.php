@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Aluno;
 use App\Models\Mensalidade;
 use App\Models\DetalhesMensalidade;
+use App\Models\FrequenciaAluno;
+use App\Models\GradeHorario;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -184,6 +186,125 @@ class ProfessorUserController extends Controller
         return view('view_professor_user.financeiro_professor', compact('aluno', 'mensalidades'));
     }
 
+    public function matricula(string $id)
+    {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+        $professor = $user->professor;
+
+        if (!$professor) {
+            abort(403);
+        }
+
+        // ALUNO (somente se for do professor)
+        $aluno = Aluno::whereHas('matriculas.grade', function ($q) use ($professor) {
+            $q->where('professor_id_professor', $professor->id_professor);
+        })
+            ->with(['responsavel', 'matriculas.grade.professor'])
+            ->findOrFail($id);
+
+        // MATRÍCULAS DO ALUNO (SÓ DO PROFESSOR)
+        $matriculas = $aluno->matriculas()
+            ->whereHas('grade', function ($q) use ($professor) {
+                $q->where('professor_id_professor', $professor->id_professor);
+            })
+            ->with('grade.professor')
+            ->get();
+
+        // GRADES DO PROFESSOR (para cadastro)
+        $grades = \App\Models\GradeHorario::where('professor_id_professor', $professor->id_professor)
+            ->with('professor')
+            ->get();
+
+        return view('view_professor_user.matricula_professor', compact(
+            'aluno',
+            'matriculas',
+            'grades'
+        ));
+    }
+
+    public function indexSidebar(Request $request)
+    {
+        $professor = Auth::user()->professor;
+
+        if (!$professor) {
+            abort(403);
+        }
+
+        // QUERY BASE (apenas alunos do professor)
+        $query = Aluno::whereHas('matriculas.grade', function ($q) use ($professor) {
+            $q->where('professor_id_professor', $professor->id_professor);
+        })->with([
+            'responsavel',
+            'matriculas.grade',
+            'matriculas.mensalidades.detalhes'
+        ]);
+
+        // FILTROS
+
+        if ($request->filled('nome')) {
+            $query->where('aluno_nome', 'like', '%' . $request->nome . '%');
+        }
+
+        if ($request->filled('responsavel')) {
+            $query->whereHas('responsavel', function ($q) use ($request) {
+                $q->where('resp_nome', 'like', '%' . $request->responsavel . '%');
+            });
+        }
+
+        if ($request->filled('bolsista')) {
+            $query->where('aluno_bolsista', $request->bolsista);
+        }
+
+        if ($request->filled('matricula')) {
+            if ($request->matricula == 'Matriculado') {
+                $query->whereHas('matriculas');
+            } else {
+                $query->doesntHave('matriculas');
+            }
+        }
+
+        $totalAlunos = Aluno::whereHas('matriculas.grade', function ($q) use ($professor) {
+            $q->where('professor_id_professor', $professor->id_professor);
+        })->count();
+
+        $alunos = $query->paginate(10);
+
+        return view('view_professor_user.matricula_professor_index', compact(
+            'alunos',
+            'totalAlunos'
+        ));
+    }
+
+    public function showMatricula(string $id)
+    {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $professor = Auth::user()->professor;
+
+        if (!$professor) {
+            abort(403);
+        }
+
+        $matricula = \App\Models\Matricula::where('id_matricula', $id)
+            ->whereHas('grade', function ($q) use ($professor) {
+                $q->where('professor_id_professor', $professor->id_professor);
+            })
+            ->with(['aluno', 'grade.professor'])
+            ->firstOrFail();
+
+        return view('view_professor_user.show_matricula_professor', compact('matricula'));
+    }
+
     public function darBaixa(string $id)
     {
         try {
@@ -306,5 +427,63 @@ class ProfessorUserController extends Controller
             ->firstOrFail();
 
         return view('view_professor_user.show_agenda_professor', compact('grade'));
+    }
+
+    public function listagemGrades()
+    {
+        $professor = Auth::user()->professor;
+
+        if (!$professor) {
+            abort(403);
+        }
+
+        $grades = \App\Models\GradeHorario::with(['professor', 'matriculas'])
+            ->where('professor_id_professor', $professor->id_professor)
+            ->get();
+
+        return view('view_professor_user.frequencia_aluno.listagem_professor', compact('grades'));
+    }
+
+    public function listagemDias(string $gradeId)
+    {
+        try {
+            $gradeId = Crypt::decrypt($gradeId);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+        $professor = $user->professor;
+
+        if (!$professor) {
+            abort(403);
+        }
+
+        // GRADE (SOMENTE DO PROFESSOR)
+        $grade = GradeHorario::with([
+            'matriculas' => function ($query) {
+                $query->where('matri_status', 'Matriculado');
+            },
+            'matriculas.aluno',
+            'professor'
+        ])
+            ->where('id_grade', $gradeId)
+            ->where('professor_id_professor', $professor->id_professor)
+            ->firstOrFail();
+
+        // Ordena alunos
+        $grade->matriculas = $grade->matriculas->sortBy(function ($matricula) {
+            return $matricula->aluno->aluno_nome ?? '';
+        });
+
+        // DIAS
+        $dias = FrequenciaAluno::with('matricula.aluno')
+            ->where('grade_horario_id_grade', $gradeId)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->orderBy('freq_data_aula', 'desc')
+            ->get()
+            ->groupBy('freq_data_aula');
+
+        return view('view_professor_user.frequencia_aluno.frequencia_dias_professor', compact('dias', 'grade'));
     }
 }

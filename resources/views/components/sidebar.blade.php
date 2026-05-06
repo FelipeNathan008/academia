@@ -216,7 +216,7 @@
     'route' => 'matricula.index',
     'active' => ['alunos.show', 'matricula.index'],
     ],
-  
+   
     [
     'type' => 'link',
     'label' => 'Professores / Alunos',
@@ -304,7 +304,7 @@
     'type' => 'link',
     'label' => 'Professor / Alunos',
     'route' => 'professor-alunos',
-    'active' => ['professor-alunos','professor.show','professor-aluno.show'],
+    'active' => ['professor-alunos','professor.show','professor-aluno.show','professor-financeiro','professor-matricula.show','professor-matricula'],
     ],
     [
     'type' => 'link',
@@ -315,14 +315,14 @@
     [
     'type' => 'link',
     'label' => 'Alunos',
-    'route' => 'matricula.index',
-    'active' => ['alunos.show', 'matricula.index'],
+    'route' => 'professor-matricula.index',
+    'active' => ['professor-alunos.show', 'professor-matricula.index'],
     ],
     [
     'type' => 'link',
     'label' => 'Frequência do Aluno',
-    'route' => 'grade_horarios',
-    'active' => ['grade_horarios', 'grade_horarios.index', 'grade_horarios.edit'],
+    'route' => 'professor-frequencia',
+    'active' => ['professor-frequencia'],
     ],
     ];
 

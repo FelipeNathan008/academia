@@ -68,4 +68,14 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Responsavel::class, 'esponsavel_id', 'id_responsavel');
     }
+
+    public function isAdmin()
+    {
+        return $this->tipo_usuario === 'admin';
+    }
+
+    public function isProfessor()
+    {
+        return $this->tipo_usuario === 'professor';
+    }
 }
