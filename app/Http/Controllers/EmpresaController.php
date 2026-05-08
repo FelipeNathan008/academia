@@ -55,7 +55,9 @@ class EmpresaController extends Controller
             'emp_tipo' => $request->emp_tipo,
             'emp_foto' => $filename
         ]);
-        return redirect()->route('register', ['empresa_id' => $empresa->id_empresa]);
+        return redirect()->route('register', [
+            'empresa_id' => Crypt::encryptString($empresa->id_empresa)
+        ]);
     }
 
     public function edit(string $id)
@@ -85,7 +87,6 @@ class EmpresaController extends Controller
             'emp_foto' => 'nullable|image|max:2048'
         ]);
 
-        //dd($request->all(), $request->file('emp_foto'));
         if ($request->hasFile('emp_foto')) {
 
             if ($empresa->emp_foto && file_exists(public_path('images/empresas/' . $empresa->emp_foto))) {

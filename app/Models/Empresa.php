@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Empresa extends Model
 {
+    protected $table = 'empresas';
     protected $primaryKey = 'id_empresa';
 
     protected $fillable = [
@@ -21,6 +22,6 @@ class Empresa extends Model
 
     public function filiais()
     {
-        return $this->hasMany(Filial::class,'id_emp_id','id_empresa');
+        return $this->hasMany(Filial::class, 'id_emp_id', 'id_empresa');
     }
 }

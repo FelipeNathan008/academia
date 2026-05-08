@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Crypt;
 
 class RegisteredUserController extends Controller
 {
@@ -19,6 +20,8 @@ class RegisteredUserController extends Controller
      */
     public function create($empresa_id): View
     {
+        $empresa_id = Crypt::decryptString($empresa_id);
+
         return view('auth.register', compact('empresa_id'));
     }
 

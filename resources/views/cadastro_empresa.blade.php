@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Cadastro de Empresa</title>
 
     <style>
@@ -20,6 +19,7 @@
             background:
                 linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)),
                 url('/images/tela_inicial.jpg');
+
             background-size: cover;
             background-position: center;
             display: flex;
@@ -65,7 +65,8 @@
             color: #ddd;
         }
 
-        input {
+        input,
+        select {
             padding: 10px;
             border-radius: 8px;
             border: none;
@@ -74,7 +75,8 @@
             transition: 0.2s;
         }
 
-        input:focus {
+        input:focus,
+        select:focus {
             background: white;
             box-shadow: 0 0 0 2px #8E251F;
         }
@@ -122,14 +124,8 @@
             transform: scale(1.03);
         }
 
-        .erro {
-            color: #ff6b6b;
-            font-size: 12px;
-            margin-top: 2px;
-        }
-
-
         @media(max-width:650px) {
+
             .form-grid {
                 grid-template-columns: 1fr;
             }
@@ -137,20 +133,7 @@
             .form-group.full {
                 grid-column: auto;
             }
-        }
 
-        select {
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-            outline: none;
-            background: #f2f2f2;
-            transition: 0.2s;
-        }
-
-        select:focus {
-            background: white;
-            box-shadow: 0 0 0 2px #8E251F;
         }
     </style>
 </head>
@@ -158,65 +141,101 @@
 <body>
 
     <div class="container">
+
         <a href="{{ route('apresentacao') }}" class="btn-login">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="white" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H3.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L3.707 7.5H14.5A.5.5 0 0 1 15 8z" />
-            </svg>
+            Voltar
         </a>
+
         <h1>Cadastro de Empresa</h1>
 
-        <form action="{{ route('empresa.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('cadastro_empresa.store') }}" method="POST" enctype="multipart/form-data">
+
             @csrf
 
             <div class="form-grid">
 
                 <div class="form-group">
                     <label>Nome da Empresa *</label>
-                    <input type="text" name="emp_nome" placeholder="Ex: Academia Gracie Barra" required>
+
+                    <input type="text"
+                        id="emp_nome"
+                        name="emp_nome"
+                        maxlength="255"
+                        placeholder="Ex: Academia Gracie Barra"
+                        required>
                 </div>
 
                 <div class="form-group">
                     <label>Apelido *</label>
-                    <input type="text" name="emp_apelido" placeholder="Ex: Gracie Centro" required>
+
+                    <input type="text"
+                        id="emp_apelido"
+                        name="emp_apelido"
+                        maxlength="255"
+                        placeholder="Ex: Gracie Centro"
+                        required>
                 </div>
 
                 <div class="form-group">
                     <label>Nome do Responsável *</label>
-                    <input type="text" name="emp_nome_responsavel" placeholder="Ex: João Silva" required>
+
+                    <input type="text"
+                        id="emp_nome_responsavel"
+                        name="emp_nome_responsavel"
+                        maxlength="255"
+                        placeholder="Ex: João Silva"
+                        required>
                 </div>
 
                 <div class="form-group">
                     <label>Email do Responsável *</label>
-                    <input type="email" name="emp_email_responsavel" placeholder="Ex: joao@email.com" required>
+
+                    <input type="email"
+                        id="emp_email_responsavel"
+                        name="emp_email_responsavel"
+                        maxlength="255"
+                        placeholder="Ex: joao@email.com"
+                        required>
                 </div>
 
                 <div class="form-group">
                     <label>Telefone *</label>
-                    <input type="text" name="emp_telefone_responsavel" placeholder="Ex: (47) 99999-9999" required>
+
+                    <input type="text"
+                        id="emp_telefone_responsavel"
+                        name="emp_telefone_responsavel"
+                        maxlength="15"
+                        placeholder="(47) 99999-9999"
+                        required>
                 </div>
 
                 <div class="form-group">
                     <label>CPF *</label>
-                    <input type="text" name="emp_cpf" placeholder="Ex: 000.000.000-00" required>
+
+                    <input type="text"
+                        id="emp_cpf"
+                        name="emp_cpf"
+                        maxlength="14"
+                        placeholder="000.000.000-00"
+                        required>
                 </div>
 
-                <div class="form-group full">
-                    <label>Tipo de Empresa *</label>
-                    <select name="emp_tipo" required>
-                        <option value="">Selecione o tipo</option>
-                        <option value="matriz">Matriz</option>
-                        <option value="filial">Filial</option>
-                    </select>
-                </div>
+                <input type="hidden" name="emp_tipo" value="matriz">
 
                 <div class="form-group full">
                     <label>Logo da Empresa</label>
-                    <input type="file" name="emp_foto" id="logoInput" accept="image/*">
+
+                    <input type="file"
+                        name="emp_foto"
+                        id="logoInput"
+                        accept="image/*">
 
                     <div style="margin-top:10px;">
-                        <img id="previewLogo" style="display:none;max-height:120px;border-radius:8px;">
+                        <img id="previewLogo"
+                            style="display:none;max-height:120px;border-radius:8px;">
                     </div>
                 </div>
+
             </div>
 
             <button type="submit" class="btn">
@@ -225,10 +244,13 @@
 
         </form>
 
-
     </div>
+
     <script>
-        document.getElementById("logoInput").addEventListener("change", function(event) {
+        // PREVIEW DA IMAGEM
+        const logoInput = document.getElementById("logoInput");
+
+        logoInput.addEventListener("change", function(event) {
 
             const file = event.target.files[0];
             const preview = document.getElementById("previewLogo");
@@ -238,16 +260,104 @@
                 const reader = new FileReader();
 
                 reader.onload = function(e) {
+
                     preview.src = e.target.result;
                     preview.style.display = "block";
-                }
+
+                };
 
                 reader.readAsDataURL(file);
 
             }
 
         });
+
+        // SOMENTE LETRAS
+        function apenasLetras(input) {
+
+            input.addEventListener("input", function() {
+
+                this.value = this.value.replace(/[^A-Za-zÀ-ÿ\s]/g, '');
+
+            });
+
+        }
+
+        apenasLetras(document.getElementById("emp_nome"));
+        apenasLetras(document.getElementById("emp_apelido"));
+        apenasLetras(document.getElementById("emp_nome_responsavel"));
+
+        // CPF
+        const cpfInput = document.getElementById("emp_cpf");
+
+        cpfInput.addEventListener("input", function() {
+
+            let value = this.value.replace(/\D/g, '');
+
+            value = value.substring(0, 11);
+
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+
+            this.value = value;
+
+        });
+
+        // TELEFONE
+        const telefoneInput = document.getElementById("emp_telefone_responsavel");
+
+        telefoneInput.addEventListener("input", function() {
+
+            let value = this.value.replace(/\D/g, '');
+
+            value = value.substring(0, 11);
+
+            if (value.length > 10) {
+
+                value = value.replace(
+                    /^(\d{2})(\d{5})(\d{4}).*/,
+                    '($1) $2-$3'
+                );
+
+            } else {
+
+                value = value.replace(
+                    /^(\d{2})(\d{4})(\d{4}).*/,
+                    '($1) $2-$3'
+                );
+
+            }
+
+            this.value = value;
+
+        });
+
+        // VALIDAÇÃO FINAL
+        document.querySelector("form").addEventListener("submit", function(event) {
+
+            const cpf = cpfInput.value;
+            const telefone = telefoneInput.value;
+
+            if (cpf.length < 14) {
+
+                alert("CPF inválido!");
+                event.preventDefault();
+                return;
+
+            }
+
+            if (telefone.length < 14) {
+
+                alert("Telefone inválido!");
+                event.preventDefault();
+                return;
+
+            }
+
+        });
     </script>
+
 </body>
 
 </html>

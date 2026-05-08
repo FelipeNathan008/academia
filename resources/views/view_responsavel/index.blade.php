@@ -13,6 +13,14 @@
         background-color: #fecaca;
         /* equivalente ao red-200 */
     }
+
+    .btn-acoes {
+        min-width: 120px;
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
 </style>
 
 <x-alert-error />
@@ -44,7 +52,7 @@
     </div>
 
     <button onclick="toggleCadastro()"
-        class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow-md
+        class="btn-acoes px-6 bg-[#8E251F] text-white rounded-xl shadow-md
                hover:bg-[#732920] hover:shadow-lg transition-all">
         + Cadastrar Responsável
     </button>
@@ -162,10 +170,10 @@
 
             <div class="flex justify-end gap-4 border-t pt-6 mt-8">
                 <button type="button" onclick="fecharCadastro()"
-                    class="px-4 py-2 border rounded-lg hover:bg-gray-100">Cancelar</button>
+                    class="btn-acoes px-4 border rounded-lg hover:bg-gray-100">Cancelar</button>
 
                 <button type="submit"
-                    class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920]">Salvar</button>
+                    class="btn-acoes px-5 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920]">Salvar</button>
             </div>
         </div>
     </form>
@@ -189,14 +197,13 @@
                focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
 
                 <button type="submit"
-                    class="h-[48px] px-6 rounded-xl bg-[#8E251F] text-white
+                    class="btn-acoes px-6 rounded-xl bg-[#8E251F] text-white
                hover:bg-[#732920] transition shadow-md">
                     Buscar
                 </button>
 
                 <a href="{{ route('responsaveis') }}"
-                    class="h-[48px] px-6 rounded-xl bg-gray-300 text-gray-800
-           flex items-center justify-center
+                    class="btn-acoes px-6 rounded-xl bg-gray-300 text-gray-800
            hover:bg-gray-400 transition shadow-md">
                     Limpar
                 </a>
@@ -259,12 +266,13 @@
 
                         <a href="{{ route('alunos', Crypt::encrypt($resp->id_responsavel)) }}"
                             style="background-color: #174ab9; color: white;"
-                            class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
+                            class="btn-acoes px-4 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                             Alunos
                         </a>
 
+
                         <a href="{{ route('responsaveis.edit', Crypt::encrypt($resp->id_responsavel)) }}"
-                            class="px-4 py-2 rounded-lg shadow text-white bg-[#8E251F] hover:bg-[#732920] transition">
+                            class="btn-acoes px-4 rounded-lg shadow text-white bg-[#8E251F] hover:bg-[#732920] transition">
                             Editar
                         </a>
 
@@ -275,7 +283,7 @@
                             @method('DELETE')
 
                             <button type="submit"
-                                class="px-4 py-2 rounded-lg shadow text-white bg-red-600 hover:bg-red-700 transition">
+                                class="btn-acoes px-4 rounded-lg shadow text-white bg-red-600 hover:bg-red-700 transition">
                                 Excluir
                             </button>
                         </form>

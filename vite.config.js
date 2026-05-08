@@ -9,3 +9,14 @@ export default defineConfig({
         }),
     ],
 });
+
+
+export default defineConfig({
+    plugins: [
+        laravel({
+            input: ['resources/css/app.css', 'resources/js/app.js'],
+            refresh: true,
+            buildDirectory: 'build', // Verifique se isso coincide com a pasta real
+        }),
+    ],
+}); 

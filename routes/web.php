@@ -30,7 +30,8 @@ use App\Http\Controllers\{
 Route::get('/', fn() => view('apresentacao'))->name('apresentacao');
 
 Route::get('/cadastro-empresa', fn() => view('cadastro_empresa'))->name('cadastro_empresa');
-Route::post('/empresa/store', [EmpresaController::class, 'store'])->name('empresa.store');
+Route::post('/cadastro-empresa/store', [EmpresaController::class, 'store'])
+    ->name('cadastro_empresa.store');
 
 // ROTAS COMUNS
 

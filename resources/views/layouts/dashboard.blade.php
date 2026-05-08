@@ -12,6 +12,32 @@
     .body-bg {
         background-color: var(--cinza-fundo);
     }
+
+    /* PADRONIZAÇÃO DE BOTÕES EM TD DAS VIEWS */
+    main td a,
+    main td button {
+        min-width: 120px;
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    main td a {
+        text-decoration: none;
+    }
+
+    .btn-acoes,
+    .btn-ver,
+    .btn-editar,
+    .btn-danger,
+    .btn-primary {
+        min-width: 120px;
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
 </style>
 <!DOCTYPE html>
 <html lang="pt-BR">

@@ -52,12 +52,12 @@
         transform: translateX(-50%);
         z-index: 100;
         /* z-index maior para sobrepor outros eventos */
-        width: 260px;
+        width: 320px;
         background-color: white;
         color: #1f2937;
         border: 1px solid #ddd;
         border-radius: 0.5rem;
-        padding: 0.5rem 0.75rem;
+        padding: 0.75rem;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         font-size: 0.75rem;
     }
@@ -93,10 +93,18 @@
 
     /* Botões no popover */
     .popover .btn {
-        padding: 0.25rem 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.4rem 0.5rem;
         font-size: 0.7rem;
         border-radius: 0.25rem;
         transition: background 0.2s;
+        border: none;
+        cursor: pointer;
+        min-width: 75px;
+        height: 28px;
+        flex: 1;
     }
 
     .popover .btn-edit {
@@ -134,6 +142,16 @@
 
     .popover .btn-delete:hover {
         background-color: #b71c1c;
+    }
+
+    .popover form {
+        display: inline-flex;
+        flex: 1;
+        min-width: 75px;
+    }
+
+    .popover form button {
+        width: 100%;
     }
 </style>
 
