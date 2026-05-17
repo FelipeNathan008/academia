@@ -1,0 +1,299 @@
+@extends('layouts.dashboard')
+
+@section('title', 'Relatório de Frequência')
+
+@section('content')
+
+@php
+$totalPresencasGeral = 0;
+$totalFaltasGeral = 0;
+@endphp
+
+@foreach($grade->matriculas as $matricula)
+@php
+$totalPresencasGeral += $matricula->frequencias->where('freq_presenca','Presente')->count();
+$totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->count();
+@endphp
+@endforeach
+
+<!-- BREADCRUMB -->
+<nav class="mb-6 text-sm text-gray-500">
+    <ol class="flex items-center gap-2">
+
+        <li>
+            <a href="{{ route('professor-frequencia.dias', Crypt::encrypt($grade->id_grade)) }}"
+                class="hover:text-[#8E251F] transition">
+                Frequência
+            </a>
+        </li>
+
+        <li>/</li>
+
+        <li class="text-gray-400">
+            {{ $grade->professor->prof_nome }}
+        </li>
+
+        <li>/</li>
+
+        <li class="font-semibold text-gray-700">
+            Relatório
+        </li>
+
+    </ol>
+</nav>
+
+<!-- TOPO -->
+<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+
+    <div class="flex items-center gap-4">
+
+        <a href="{{ route('professor-frequencia', Crypt::encrypt($grade->id_grade)) }}"
+            class="flex items-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
+            ← Voltar
+        </a>
+
+        <h2 class="text-3xl font-extrabold text-gray-800">
+            Relatório da Frequência
+        </h2>
+
+    </div>
+
+    <!-- GRÁFICO -->
+    <div class="mb-6">
+
+        <div class="mb-2 text-center">
+
+            <h3 class="text-lg font-bold text-gray-700">
+                Resumo Geral de Frequência
+            </h3>
+
+            <p class="text-sm text-gray-500">
+                Distribuição total de presenças e faltas da turma
+            </p>
+
+        </div>
+
+        <canvas
+            id="graficoFrequencia"
+            style="max-height: 250px;"
+            data-presencas="{{ $totalPresencasGeral }}"
+            data-faltas="{{ $totalFaltasGeral }}">
+        </canvas>
+
+    </div>
+
+</div>
+
+<!-- CARD DA GRADE -->
+<div class="mb-8">
+
+    <div class="bg-white border-l-8 border-[#8E251F] rounded-2xl shadow-lg p-6">
+
+        <p class="text-xs uppercase tracking-widest text-gray-500">
+            Grade selecionada
+        </p>
+
+        <h3 class="text-2xl font-extrabold text-gray-800 mt-1">
+            {{ $grade->grade_modalidade }}
+        </h3>
+
+        <div class="mt-4 space-y-3 text-sm text-gray-600">
+
+            <div>
+                <span class="font-semibold text-gray-800">Professor:</span><br>
+                {{ $grade->professor->prof_nome ?? '-' }}
+            </div>
+
+            <div>
+                <span class="font-semibold text-gray-800">Horário:</span><br>
+
+                {{ ucfirst($grade->grade_turma) }}
+
+                <span class="text-xs text-gray-500 block">
+
+                    {{ \Carbon\Carbon::parse($grade->grade_inicio)->format('H:i') }}
+                    às
+                    {{ \Carbon\Carbon::parse($grade->grade_fim)->format('H:i') }}
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- TABELA -->
+
+<div class="bg-white rounded-2xl shadow-md p-6">
+
+    <table class="w-full text-left border-collapse">
+
+        <thead>
+            <tr class="border-b text-gray-600 text-sm">
+                <th class="py-3 px-4">Aluno</th>
+                <th class="py-3 px-4">Total Aulas</th>
+                <th class="py-3 px-4">Presenças</th>
+                <th class="py-3 px-4">Faltas</th>
+                <th class="py-3 px-4">Presença (%)</th>
+                <th class="py-3 px-4">Meta</th>
+                <th class="py-3 px-4">Ações</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach($grade->matriculas as $matricula)
+
+            @php
+            $totalAulas = $matricula->frequencias->count();
+
+            $presencas = $matricula->frequencias
+            ->where('freq_presenca', 'Presente')
+            ->count();
+
+            $faltas = $matricula->frequencias
+            ->where('freq_presenca', 'Falta')
+            ->count();
+
+            $percentual = $totalAulas > 0
+            ? round(($presencas / $totalAulas) * 100)
+            : 0;
+
+            $detalhes = \App\Models\DetalhesAluno::where('aluno_id_aluno', $matricula->aluno->id_aluno)
+            ->where('det_modalidade', $grade->grade_modalidade)
+            ->ordenarPorFaixaInverso()
+            ->orderByDesc('det_grau')
+            ->first();
+
+            $meta = 0;
+
+            if ($detalhes) {
+            $metaGraduacao = \App\Models\Graduacao::where('gradu_nome_cor', $detalhes->det_gradu_nome_cor)
+            ->where('gradu_grau', $detalhes->det_grau)
+            ->first();
+
+            $meta = $metaGraduacao->gradu_meta ?? 0;
+            }
+
+            $barra = $meta > 0
+            ? min(100, round(($presencas / $meta) * 100))
+            : 0;
+            @endphp
+
+            <tr class="border-b hover:bg-gray-50 transition">
+
+                <td class="py-3 px-4 font-semibold">
+                    {{ $matricula->aluno->aluno_nome ?? '-' }}
+                </td>
+
+                <td class="py-3 px-4">
+                    {{ $totalAulas }}
+                </td>
+
+                <td class="py-3 px-4">
+                    <span class="px-2 py-1 rounded-full text-xs font-semibold"
+                        style="background-color: #dcfce7; color: #166534;">
+                        {{ $presencas }}
+                    </span>
+                </td>
+
+                <td class="py-3 px-4">
+                    <span class="px-2 py-1 rounded-full text-xs font-semibold"
+                        style="background-color: #fee2e2; color: #991b1b;">
+                        {{ $faltas }}
+                    </span>
+                </td>
+
+                <td class="py-3 px-4 font-semibold">
+                    {{ $percentual }}%
+                </td>
+
+                <!-- META (igual módulo principal) -->
+                <td class="py-3 px-4">
+
+                    <div class="mb-2">
+
+                        @if($barra >= 100)
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold"
+                            style="background-color: #dcfce7; color: #166534;">
+                            {{ $presencas }}/{{ $meta }} ({{ $barra }}%)
+                        </span>
+                        @else
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold"
+                            style="background-color: #fef9c3; color: #854d0e;">
+                            {{ $presencas }}/{{ $meta }} ({{ $barra }}%)
+                        </span>
+                        @endif
+                    </div>
+
+                    <div class="w-full bg-gray-200 rounded-full h-3"
+                        data-barra="{{ $barra }}">
+                        <div class="h-3 rounded-full transition-all duration-500 progress-bar"></div>
+                    </div>
+                </td>
+                <td class="py-3 px-4 text-center">
+                    @if($matricula->aluno)
+                    <a href="{{ route('professor-detalhes-aluno.index', Crypt::encrypt($matricula->aluno->id_aluno)) }}"
+                        class="px-4 py-2 rounded-lg shadow text-white"
+                        style="background-color: #174ab9;">
+                        Graduações
+                    </a>
+                    @endif
+                </td>
+            </tr>
+
+            @endforeach
+
+        </tbody>
+
+    </table>
+
+
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const canvas = document.getElementById('graficoFrequencia');
+
+        if (canvas) {
+
+            new Chart(canvas, {
+
+                type: 'pie',
+
+                data: {
+                    labels: ['Presenças', 'Faltas'],
+                    datasets: [{
+                        data: [
+                            canvas.dataset.presencas,
+                            canvas.dataset.faltas
+                        ],
+                        backgroundColor: ['#16a34a', '#dc2626']
+                    }]
+                },
+
+                options: {
+                    responsive: true,
+
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+
+            });
+
+        }
+
+    });
+</script>
+
+@endsection

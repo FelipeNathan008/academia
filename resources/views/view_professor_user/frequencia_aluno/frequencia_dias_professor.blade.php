@@ -25,7 +25,9 @@
 
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+
     <div class="flex items-center gap-4">
+
         <a href="{{ route('professor-frequencia') }}"
             class="flex items-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
             ← Voltar
@@ -34,10 +36,131 @@
         <h2 class="text-3xl font-extrabold text-gray-800">
             Frequência - Dias
         </h2>
+
     </div>
 
-    <!-- PROFESSOR NÃO CADASTRA (segurança) -->
+    <!-- BOTÃO CADASTRAR -->
+    <button onclick="toggleCadastro()"
+        class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow-md hover:bg-[#732920] transition">
+        + Cadastrar Frequência
+    </button>
+
 </div>
+
+
+<!-- ABA DE CADASTRO -->
+<div id="cadastroForm" class="hidden mb-10">
+
+    <div class="bg-white rounded-2xl shadow-md p-6">
+
+        <h3 class="text-xl font-bold mb-6 text-gray-700">
+            Registrar Frequência
+        </h3>
+
+        <form action="{{ route('professor-frequencia.store') }}" method="POST" onsubmit="bloquearSubmit(event, this)">
+
+            @csrf
+
+            <input type="hidden" name="grade_id" value="{{ $grade->id_grade }}">
+
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700">
+                    Data da Aula
+                </label>
+
+                <input type="date"
+                    name="data_aula"
+                    class="w-full border rounded-lg p-2"
+                    max="{{ date('Y-m-d') }}"
+                    required>
+            </div>
+
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
+                    <tr>
+                        <th class="px-4 py-3">Aluno</th>
+                        <th class="px-4 py-3">Presença</th>
+                        <th class="px-4 py-3">Observação</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @forelse($grade->matriculas as $matricula)
+
+                    <tr class="border-b hover:bg-red-50 transition">
+
+                        <td class="py-3 px-4 font-semibold">
+                            {{ $matricula->aluno->aluno_nome ?? '-' }}
+                        </td>
+
+                        <td class="py-3 px-4 text-center">
+
+                            <input type="hidden"
+                                name="presenca[{{ $matricula->id_matricula }}]"
+                                value="Falta">
+
+                            <label class="inline-flex items-center gap-2">
+
+                                <input type="checkbox"
+                                    name="presenca[{{ $matricula->id_matricula }}]"
+                                    value="Presente"
+                                    checked
+                                    class="w-5 h-5 text-green-600 border-gray-300 rounded">
+
+                                <span class="text-sm text-gray-700">
+                                    Presente
+                                </span>
+
+                            </label>
+
+                        </td>
+
+                        <td class="py-3 px-4">
+
+                            <input type="text"
+                                name="observacao[{{ $matricula->id_matricula }}]"
+                                class="border rounded-lg p-2 w-full"
+                                placeholder="Observação (opcional)">
+
+                        </td>
+
+                    </tr>
+
+                    @empty
+
+                    <tr>
+                        <td colspan="3" class="text-center py-6 text-gray-500">
+                            Nenhum aluno matriculado.
+                        </td>
+                    </tr>
+
+                    @endforelse
+
+                </tbody>
+            </table>
+
+            <div class="flex justify-end gap-4 border-t pt-6 mt-8">
+
+                <button type="button"
+                    onclick="fecharCadastro()"
+                    class="px-4 py-2 border rounded-lg hover:bg-gray-100">
+                    Cancelar
+                </button>
+
+                <button type="submit"
+                    class="px-5 py-2 bg-[#8E251F] text-white rounded-lg">
+                    Salvar
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
 
 <!-- CARD DA GRADE -->
 <div class="mb-8">
@@ -74,7 +197,7 @@
 </div>
 
 <!-- LISTAGEM -->
-@if ($dias->isEmpty())
+@if (empty($dias) || $dias->isEmpty())
 <div class="bg-white rounded-2xl shadow-md p-6 text-center text-gray-500">
     Nenhuma frequência registrada ainda.
 </div>
@@ -95,7 +218,9 @@
             </div>
 
             <button id="limparFiltroDia"
-                class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
+                class="h-[40px] px-6 rounded-lg bg-gray-300
+                       text-gray-800 font-semibold hover:bg-gray-400
+                       transition shadow-md">
                 Limpar
             </button>
         </div>
@@ -123,51 +248,152 @@
                 </td>
 
                 <td class="py-3 px-4 text-center">
+
                     <button type="button"
                         data-id="{{ $data }}"
-                        class="btn-ver px-4 py-2 rounded-lg text-white bg-blue-600">
-                        Ver
+                        class="btn-ver px-4 py-2 rounded-lg shadow text-white"
+                        style="background-color: #174ab9;">
+                        Abrir
                     </button>
+
+                    <button type="button"
+                        data-edit="{{ $data }}"
+                        class="btn-editar px-4 py-2 rounded-lg shadow text-white"
+                        style="background-color: #ca8a04;">
+                        Editar
+                    </button>
+
                 </td>
             </tr>
 
+            <tr id="editar-dia-{{ $data }}" class="hidden bg-yellow-50">
+
+                <td colspan="3" class="px-6 py-6">
+
+                    <form action="{{ route('professor-frequencia.alterarData') }}" method="POST"
+                        onsubmit="return confirm('Alterar a data de TODOS os registros deste dia?')">
+
+                        @csrf
+                        @method('PUT')
+
+                        <input type="hidden" name="grade_id" value="{{ $grade->id_grade }}">
+                        <input type="hidden" name="data_atual" value="{{ $data }}">
+
+                        <div class="flex flex-col md:flex-row md:items-end gap-4">
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Data Atual
+                                </label>
+
+                                <div class="px-3 py-2 border rounded-md bg-gray-50 text-gray-700 text-sm">
+                                    {{ \Carbon\Carbon::parse($data)->format('d/m/Y') }}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Nova Data
+                                </label>
+
+                                <input type="date"
+                                    name="nova_data"
+                                    max="{{ date('Y-m-d') }}"
+                                    class="px-3 py-2 border rounded-md text-sm"
+                                    required>
+                            </div>
+
+                            <div>
+                                <button type="submit"
+                                    class="px-4 py-2 text-xs font-semibold text-white rounded-lg shadow"
+                                    style="background-color: #15803d;">
+                                    Confirmar
+                                </button>
+                            </div>
+
+                        </div>
+
+                    </form>
+
+                </td>
+            </tr>
+            </td>
+            </tr>
+
             <!-- DETALHES -->
+            <!-- ABA OCULTA COM DETALHES -->
             <tr id="detalhe-{{ $data }}" class="hidden bg-gray-50">
                 <td colspan="3" class="px-6 py-6">
 
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-100 text-xs uppercase">
-                            <tr>
-                                <th class="px-4 py-2">Aluno</th>
-                                <th class="px-4 py-2">Presença</th>
-                                <th class="px-4 py-2">Observação</th>
-                            </tr>
-                        </thead>
+                    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
 
-                        <tbody>
-                            @foreach($registros as $registro)
-                            <tr class="border-b">
+                        <div class="px-4 py-3 bg-gray-100 border-b">
+                            <h4 class="text-sm font-semibold text-gray-700">
+                                Presenças do dia {{ \Carbon\Carbon::parse($data)->format('d/m/Y') }}
+                            </h4>
+                        </div>
 
-                                <td class="px-4 py-2">
-                                    {{ $registro->matricula->aluno->aluno_nome ?? '-' }}
-                                </td>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
+                                    <tr>
+                                        <th class="px-4 py-3">Aluno</th>
+                                        <th class="px-4 py-3">Presença</th>
+                                        <th class="px-4 py-3">Observação</th>
+                                        <th class="py-3 px-4 text-center">Ações</th>
+                                    </tr>
+                                </thead>
 
-                                <td class="px-4 py-2">
-                                    @if($registro->freq_presenca == 'Presente')
-                                    <span class="text-green-600 font-semibold">Presente</span>
-                                    @else
-                                    <span class="text-red-600 font-semibold">Falta</span>
-                                    @endif
-                                </td>
+                                <tbody class="divide-y divide-gray-100">
 
-                                <td class="px-4 py-2">
-                                    {{ $registro->freq_observacao ?? '-' }}
-                                </td>
+                                    @foreach($registros as $registro)
 
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                                    <tr>
+
+                                        <td class="px-4 py-3">
+                                            {{ $registro->matricula->aluno->aluno_nome ?? '-' }}
+                                        </td>
+
+
+
+                                        <td class="px-4 py-2">
+                                            @if($registro->freq_presenca == 'Presente')
+                                            <span style="padding:2px 8px; font-size:0.75rem;
+                                                font-weight:600; border-radius:9999px;
+                                                color:#166534; background-color:#bbf7d0;">
+                                                Presente
+                                            </span>
+                                            @else
+                                            <span style="padding:2px 8px; font-size:0.75rem;
+                                                font-weight:600; border-radius:9999px;
+                                                color:#b91c1c; background-color:#fee2e2;">
+                                                Falta
+                                            </span>
+                                            @endif
+                                        </td>
+
+                                        <td class="px-4 py-2">
+                                            {{ $registro->freq_observacao ?? '-' }}
+                                        </td>
+
+                                        <td class="px-4 py-3 text-center">
+                                            <a href="{{ route('professor-frequencia.edit', Crypt::encrypt($registro->id_frequencia_aluno)) }}"
+                                                style="background-color: #8E251F; color: white;"
+                                                class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
+                                                Editar
+                                            </a>
+                                        </td>
+
+                                    </tr>
+
+                                    @endforeach
+
+                                </tbody>
+
+                            </table>
+                        </div>
+
+                    </div>
 
                 </td>
             </tr>
@@ -185,6 +411,41 @@
 </div>
 
 <script>
+    document.querySelectorAll(".btn-editar").forEach(btn => {
+        btn.addEventListener("click", function() {
+
+            const id = this.dataset.edit;
+            const linha = document.getElementById("editar-dia-" + id);
+
+            linha.classList.toggle("hidden");
+        });
+    });
+
+    function toggleCadastro() {
+        document.getElementById('cadastroForm').classList.toggle('hidden');
+
+        document.getElementById('cadastroForm').scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+
+    function fecharCadastro() {
+        document.getElementById('cadastroForm').classList.add('hidden');
+    }
+
+    function bloquearSubmit(event, form) {
+
+        if (!form.checkValidity()) {
+            return;
+        }
+
+        const btn = form.querySelector('button[type="submit"]');
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Salvando...';
+        }
+    }
     document.addEventListener("DOMContentLoaded", function() {
 
         const filtroDia = document.getElementById('filtroDia');

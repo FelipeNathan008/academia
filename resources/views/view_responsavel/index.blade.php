@@ -172,8 +172,10 @@
                 <button type="button" onclick="fecharCadastro()"
                     class="btn-acoes px-4 border rounded-lg hover:bg-gray-100">Cancelar</button>
 
-                <button type="submit"
-                    class="btn-acoes px-5 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920]">Salvar</button>
+                <x-button color="primary">
+                    Salvar
+                </x-button>
+
             </div>
         </div>
     </form>
@@ -307,120 +309,9 @@
     </div>
 </div>
 
-<script>
-    function bloquearSubmit(event, form) {
-
-        if (!form.checkValidity()) {
-            return; // deixa validação normal do HTML
-        }
-
-        const btn = form.querySelector('button[type="submit"]');
-
-        if (btn) {
-            btn.disabled = true;
-            btn.innerText = 'Salvando...';
-        }
-    }
-
-    function toggleCadastro() {
-        const form = document.getElementById('cadastroForm');
-        form.classList.toggle('hidden');
-        form.scrollIntoView({
-            behavior: 'smooth'
-        });
-    }
-
-    function fecharCadastro() {
-        document.getElementById('cadastroForm').classList.add('hidden');
-    }
-
-    function validarNome(input) {
-        input.value = input.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
-    }
-
-    function validarTexto(input) {
-        input.value = input.value.replace(/[^a-zA-ZÀ-ÿ0-9\s]/g, '');
-    }
-
-    function mascaraCPF(input) {
-        let value = input.value.replace(/\D/g, '').slice(0, 11);
-        value = value.replace(/(\d{3})(\d)/, '$1.$2');
-        value = value.replace(/(\d{3})(\d)/, '$1.$2');
-        value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-        input.value = value;
-    }
-
-    function mascaraCEP(input) {
-        let value = input.value.replace(/\D/g, '').slice(0, 8);
-        if (value.length > 5) value = value.replace(/^(\d{5})(\d)/, '$1-$2');
-        input.value = value;
-    }
-
-    const tel = document.getElementById('resp_telefone');
-
-    tel.addEventListener('input', () => {
-        let v = tel.value.replace(/\D/g, '');
-
-        if (v.length > 11) v = v.slice(0, 11);
-
-        let formatado = '';
-
-        if (v.length > 0) formatado = '(' + v.slice(0, 2);
-        if (v.length >= 3) formatado += ') ' + v.slice(2, 7);
-        if (v.length >= 8) formatado += '-' + v.slice(7, 11);
-
-        tel.value = formatado;
-    });
-
-    function buscarCEP() {
-        const cepInput = document.getElementById('resp_cep');
-        const cep = cepInput.value.replace(/\D/g, '');
-        if (cep.length !== 8) return;
-
-        fetch(`https://viacep.com.br/ws/${cep}/json/`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.erro) {
-                    alert('CEP não encontrado');
-                    return;
-                }
-                document.querySelector('input[name="resp_logradouro"]').value = data.logradouro || '';
-                document.querySelector('input[name="resp_bairro"]').value = data.bairro || '';
-                document.querySelector('input[name="resp_cidade"]').value = data.localidade || '';
-            })
-            .catch(() => alert('Erro ao buscar o CEP'));
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-
-        const filtroNome = document.getElementById('filtroNomeResponsavel');
-        const limparBtn = document.getElementById('limparFiltroResponsavel');
-        const linhas = document.querySelectorAll('.linha-responsavel');
-
-        function aplicarFiltro() {
-            const nome = filtroNome.value.toLowerCase();
-
-            linhas.forEach(linha => {
-                const nomeResponsavel = linha.dataset.nome || '';
-
-                let mostrar = true;
-
-                if (nome && !nomeResponsavel.includes(nome)) {
-                    mostrar = false;
-                }
-
-                linha.style.display = mostrar ? '' : 'none';
-            });
-        }
-
-        filtroNome.addEventListener('input', aplicarFiltro);
-
-        limparBtn.addEventListener('click', function() {
-            filtroNome.value = '';
-            aplicarFiltro();
-        });
-
-    });
-</script>
+<script src="{{ asset('js/utils/buscarCep.js') }}"></script>
+<script src="{{ asset('js/utils/mascaras.js') }}"></script>
+<script src="{{ asset('js/utils/validacoes.js') }}"></script>
+<script src="{{ asset('js/responsaveis/index.js') }}"></script>
 
 @endsection

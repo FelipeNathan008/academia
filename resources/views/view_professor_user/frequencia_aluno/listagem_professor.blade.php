@@ -112,8 +112,8 @@
                             style="background-color: #174ab9;">
                             Frequência
                         </a>
-                        
-                        <a href="{{ route('frequencia.visualizar', Crypt::encrypt($grade->id_grade)) }}"
+
+                        <a href="{{ route('professor-frequencia.relatorio', Crypt::encrypt($grade->id_grade)) }}"
                             class="px-4 py-2 rounded-lg shadow text-white"
                             style="background-color: #8E251F;">
                             Relatório

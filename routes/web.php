@@ -20,9 +20,22 @@ use App\Http\Controllers\{
     GradeHorarioController,
     MensalidadeController,
     PrecoModalidadeController,
-    ProfessorUserController,
     TurmaController,
     UsuariosController,
+};
+
+use App\Http\Controllers\ProfessorUser\{
+    ProfessorUserController,
+    ProfessorUserDashboardController,
+    ProfessorUserProfessorController,
+    ProfessorUserAgendaController,
+    ProfessorUserAlunoController,
+    ProfessorUserHubController,
+    ProfessorUserResponsavelController,
+    ProfessorUserMatriculaController,
+    ProfessorUserFinanceiroController,
+    ProfessorUserDetalhesAlunoController,
+    ProfessorUserFrequenciaController,
 };
 
 // ROTAS PÚBLICAS
@@ -207,30 +220,51 @@ Route::middleware(['auth', 'admin'])->group(function () {
 Route::middleware(['auth', 'professor'])->group(function () {
 
     //DASHBOARD PROFESSOR
-    Route::get('/dashboard-professor', [ProfessorUserController::class, 'index'])->name('dashboard-professor');
-    Route::get('/dashboard/mensalidades-atrasadas', [DashboardController::class, 'mensalidadesAtrasadas'])->name('dashboard.mensalidadesAtrasadas');
+    Route::get('/professor/dashboard', [ProfessorUserDashboardController::class, 'index'])->name('dashboard-professor');
 
-    Route::get('/professor/alunos', [ProfessorUserController::class, 'alunos'])->name('professor-alunos');
-    Route::get('/professor/show/{id}', [ProfessorUserController::class, 'show'])->name('professor.show');
+    //PROFESSOR
+    Route::get('/professor', [ProfessorUserProfessorController::class, 'index'])->name('professor-index');
+    Route::get('/professor/show/{id}', [ProfessorUserProfessorController::class, 'show'])->name('professor.show');
 
-    Route::get('/professor/aluno/{id}', [ProfessorUserController::class, 'showAluno'])->name('professor-aluno.show');
+    // AGENDA
+    Route::get('/professor/agenda', [ProfessorUserAgendaController::class, 'agenda'])->name('professor-agenda');
+    Route::get('/professor/agenda/{id}', [ProfessorUserAgendaController::class, 'showAgenda'])->name('professor-agenda.show');
 
-    Route::get('/professor/matricula/{id}', [ProfessorUserController::class, 'matricula'])->name('professor-matricula');
-    Route::get('/professor/matricula/show/{id}', [ProfessorUserController::class, 'showMatricula'])->name('professor-matricula.show');
+    //ALUNOS
+    Route::get('/professor/aluno/hub/{id}', [ProfessorUserHubController::class, 'hub'])->name('professor-aluno.hub');
+    Route::get('/professor/alunos', [ProfessorUserAlunoController::class, 'index'])->name('professor-aluno.index');
+    Route::get('/professor/aluno/{id}', [ProfessorUserAlunoController::class, 'show'])->name('professor-aluno.show');
+    Route::get('/professor/aluno/{id}/edit', [ProfessorUserAlunoController::class, 'editAluno'])->name('professor-aluno.edit');
+    Route::put('/professor/aluno/{id}', [ProfessorUserAlunoController::class, 'updateAluno'])->name('professor-aluno.update');
 
-    Route::get('/professor/matricula', [ProfessorUserController::class, 'indexSidebar'])->name('professor-matricula.index');
+    //DETALHES ALUNO
+    Route::get('/professor/{id}/detalhes', [ProfessorUserDetalhesAlunoController::class, 'index'])->name('professor-detalhes-aluno.index');
+    Route::get('/professor/aluno/{id}/graduacoes', [ProfessorUserDetalhesAlunoController::class, 'index'])->name('professor-detalhes-aluno.index');
+    Route::post('/professor/aluno/{id}/graduacoes', [ProfessorUserDetalhesAlunoController::class, 'store'])->name('professor-detalhes-aluno.store');
+    Route::get('/professor/graduacoes/{id}/edit', [ProfessorUserDetalhesAlunoController::class, 'edit'])->name('professor-detalhes-aluno.edit');
+    Route::put('/professor/graduacoes/{id}', [ProfessorUserDetalhesAlunoController::class, 'update'])->name('professor-detalhes-aluno.update');
+    Route::delete('/professor/graduacoes/{id}', [ProfessorUserDetalhesAlunoController::class, 'destroy'])->name('professor-detalhes-aluno.destroy');
+    Route::get('/professor/certificado-aluno/{path}', [ProfessorUserDetalhesAlunoController::class, 'showCertificado'])->name('professor-detalhes-aluno.certificado');
+
+    // RESPONSAVEIS DOS ALUNOS
+    Route::get('/professor/responsavel/{id}', [ProfessorUserResponsavelController::class, 'show'])->name('professor-responsavel.show');
+    Route::put('/professor/responsavel/{id}', [ProfessorUserResponsavelController::class, 'update'])->name('professor-responsavel.update');
+
+    //MATRICULA
+    Route::get('/professor/matricula/{id}', [ProfessorUserMatriculaController::class, 'index'])->name('professor-matricula');
+    Route::get('/professor/matricula/show/{id}', [ProfessorUserMatriculaController::class, 'show'])->name('professor-matricula.show');
 
     //Financeiro
-    Route::get('/professor/aluno/{id}/financeiro', [ProfessorUserController::class, 'financeiro'])->name('professor-financeiro');
+    Route::get('/professor/aluno/{id}/financeiro', [ProfessorUserFinanceiroController::class, 'index'])->name('professor-financeiro');
 
-    // Agenda
-    Route::get('/professor/agenda', [ProfessorUserController::class, 'agenda'])->name('professor-agenda');
-    Route::get('/professor/agenda/{id}', [ProfessorUserController::class, 'showAgenda'])->name('professor-agenda.show');
-
-    // Frequência
-    Route::get('/professor/frequencia', [ProfessorUserController::class, 'listagemGrades'])->name('professor-frequencia');
-    Route::get('/frequencia/{id}/dias', [ProfessorUserController::class, 'listagemDias'])->name('professor-frequencia.dias');
-    Route::get('/professor/frequencia/{id}/dias', [ProfessorUserController::class, 'listagemDias'])->name('professor-frequencia.dias');
+    // FREQUENCIA
+    Route::get('/professor/frequencia', [ProfessorUserFrequenciaController::class, 'listagemGrades'])->name('professor-frequencia');
+    Route::get('/professor/frequencia/{id}/dias', [ProfessorUserFrequenciaController::class, 'listagemDias'])->name('professor-frequencia.dias');
+    Route::post('/professor/frequencia/store', [ProfessorUserFrequenciaController::class, 'store'])->name('professor-frequencia.store');
+    Route::put('/professor/frequencia/alterar-data', [ProfessorUserFrequenciaController::class, 'alterarData'])->name('professor-frequencia.alterarData');
+    Route::get('/professor/frequencia/{id}/edit', [ProfessorUserFrequenciaController::class, 'edit'])->name('professor-frequencia.edit');
+    Route::put('/professor/frequencia/{id}', [ProfessorUserFrequenciaController::class, 'update'])->name('professor-frequencia.update');
+    Route::get('/professor-frequencia/relatorio/{id}', [ProfessorUserFrequenciaController::class, 'relatorio'])->name('professor-frequencia.relatorio');
 });
 
 
