@@ -13,9 +13,7 @@
         <li>
             <a href="{{ route('professor-aluno.index') }}"
                 class="hover:text-[#8E251F] transition">
-
                 Meus Alunos
-
             </a>
         </li>
 

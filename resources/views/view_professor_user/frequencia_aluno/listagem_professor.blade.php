@@ -5,10 +5,11 @@
 @section('content')
 
 <!-- TOPO -->
-<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+<div class="flex justify-between items-center mb-6">
     <h2 class="text-3xl font-extrabold text-gray-800">
         Minhas Turmas para Frequência
     </h2>
+
 </div>
 
 <div class="bg-white rounded-2xl shadow-md p-6">

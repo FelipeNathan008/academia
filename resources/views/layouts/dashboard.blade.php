@@ -49,14 +49,9 @@
 </head>
 
 <body class="body-bg">
-    <div class="flex min-h-screen">
-
-        {{-- Sidebar --}}
-        @include('components.sidebar')
-
+    <div class="min-h-screen">
         {{-- Conteúdo --}}
-        <div class="flex-1 flex flex-col">
-
+        <div class="flex flex-col">
             {{-- Header --}}
             @include('components.header')
 

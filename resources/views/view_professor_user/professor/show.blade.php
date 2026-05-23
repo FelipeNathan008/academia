@@ -4,40 +4,12 @@
 
 @section('content')
 
-<!-- BREADCRUMB -->
-<nav class="mb-6 text-sm text-gray-500">
-    <ol class="flex items-center gap-2">
-
-        <li>
-            <a href="{{ route('professor-index') }}"
-                class="hover:text-[#8E251F] transition">
-                Professor
-            </a>
-        </li>
-        
-        <li>/</li>
-
-        <li class="text-gray-400">
-            {{ $professor->prof_nome }}
-        </li>
-
-        <li>/</li>
-        <li class="font-semibold text-gray-700">
-            Ver Professor
-        </li>
-    </ol>
-</nav>
-
 <!-- TOPO -->
 <div class="flex justify-between items-center mb-8">
     <h2 class="text-3xl font-extrabold text-gray-800">
         INFORMAÇÕES DO PROFESSOR
     </h2>
 
-    <a href="{{ url()->previous() }}"
-        class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
-        ← Voltar
-    </a>
 </div>
 
 <!-- CARD -->

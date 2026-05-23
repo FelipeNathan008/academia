@@ -1,31 +1,34 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{
-    ProfileController,
+use App\Http\Controllers\AdminUser\{
+    DashboardController,
     ResponsavelController,
     AlunoController,
-    DashboardController,
-    MatriculaController,
     DetalhesAlunoController,
-    DetalhesFilialController,
+    MatriculaController,
+    MensalidadeController,
     ProfessorController,
     DetalhesProfessorController,
-    EmpresaController,
-    FilialController,
+    GradeHorarioController,
     FrequenciaAlunoController,
     GraduacaoController,
     ModalidadeController,
     HorarioTreinoController,
-    GradeHorarioController,
-    MensalidadeController,
     PrecoModalidadeController,
     TurmaController,
+    FilialController,
     UsuariosController,
+    DetalhesFilialController,
+    EmpresaController,
+};
+
+use App\Http\Controllers\{
+    ProfileController,
+    AulaController,
 };
 
 use App\Http\Controllers\ProfessorUser\{
-    ProfessorUserController,
     ProfessorUserDashboardController,
     ProfessorUserProfessorController,
     ProfessorUserAgendaController,
@@ -36,6 +39,16 @@ use App\Http\Controllers\ProfessorUser\{
     ProfessorUserFinanceiroController,
     ProfessorUserDetalhesAlunoController,
     ProfessorUserFrequenciaController,
+};
+
+use App\Http\Controllers\AlunoUser\{
+    AlunoUserDashboardController,
+    AlunoUserAlunoController,
+    AlunoUserDetalhesAlunoController,
+    AlunoUserResponsavelController,
+    AlunoUserMatriculaController,
+    AlunoUserFinanceiroController,
+    AlunoUserFrequenciaController,
 };
 
 // ROTAS PÚBLICAS
@@ -71,6 +84,18 @@ Route::middleware(['auth'])->group(function () {
 });
 Route::middleware(['auth', 'admin'])->group(function () {
 
+    Route::get('/admin/principal', function () {
+        return view('view_admin_user.principal');
+    })->name('admin.principal');
+
+    Route::get('/admin/administracao', function () {
+        return view('view_admin_user.administracao');
+    })->name('admin.administracao');
+
+    Route::get('/admin/controle', function () {
+        return view('view_admin_user.controle');
+    })->name('admin.controle');
+
     // DASHBOARD
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/mensalidades-atrasadas', [DashboardController::class, 'mensalidadesAtrasadas'])->name('dashboard.mensalidadesAtrasadas');
@@ -99,6 +124,15 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/alunos/{id}/matricula', [MatriculaController::class, 'store'])->name('matricula.store');
     Route::get('/matricula/{id}', [MatriculaController::class, 'show'])->name('matricula.show');
     Route::delete('/matricula/{id}', [MatriculaController::class, 'destroy'])->name('matricula.destroy');
+
+
+    // AULA
+    Route::get('/grades/aulas', [AulaController::class, 'grades'])->name('grades.aulas');
+    Route::get('/grade/{id}/aulas', [AulaController::class, 'index'])->name('aulas');
+    Route::post('/grade/{id}/aulas/store', [AulaController::class, 'store'])->name('aulas.store');
+    Route::get('/aulas/{id}/edit', [AulaController::class, 'edit'])->name('aulas.edit');
+    Route::put('/aulas/{id}', [AulaController::class, 'update'])->name('aulas.update');
+    Route::delete('/aulas/{id}', [AulaController::class, 'destroy'])->name('aulas.destroy');
 
     //MENSALIDADE
     Route::get('/alunos/{id}/mensalidade', [MensalidadeController::class, 'index'])->name('mensalidade');
@@ -150,15 +184,15 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/buscar-pessoas', [UsuariosController::class, 'buscarPessoas'])->name('usuarios.buscarPessoas');
 
-    Route::get('/usuarios/{filial?}', [UsuariosController::class, 'index'])->name('usuarios.index');
+    Route::get('/usuarios/{filial?}', [UsuariosController::class, 'indexFilial'])->name('usuarios.indexFilial');
     Route::post('/usuarios', [UsuariosController::class, 'store'])->name('usuarios.store');
-    Route::get('/usuarios/{id}/edit', [UsuariosController::class, 'edit'])->name('usuarios.edit');
-    Route::put('/usuarios/{id}', [UsuariosController::class, 'update'])->name('usuarios.update');
+    Route::get('/usuarios/{id}/edit', [UsuariosController::class, 'editFilial'])->name('usuarios.editFilial');
+    Route::put('/usuarios/{id}', [UsuariosController::class, 'updateFilial'])->name('usuarios.updateFilial');
     Route::delete('/usuarios/{id}', [UsuariosController::class, 'destroy'])->name('usuarios.destroy');
 
-    Route::get('/usuarios-empresa', [UsuariosController::class, 'empresaIndex'])->name('usuarios.empresa');
-    Route::get('/usuarios-empresa/{id}/edit', [UsuariosController::class, 'editEmpresa'])->name('usuarios.empresa.edit');
-    Route::put('/usuarios-empresa/{id}', [UsuariosController::class, 'updateEmpresa'])->name('usuarios.empresa.update');
+    Route::get('/usuarios-empresa', [UsuariosController::class, 'indexEmpresa'])->name('usuarios.indexEmpresa');
+    Route::get('/usuarios-empresa/{id}/edit', [UsuariosController::class, 'editEmpresa'])->name('usuarios.editEmpresa');
+    Route::put('/usuarios-empresa/{id}', [UsuariosController::class, 'updateEmpresa'])->name('usuarios.updateEmpresa');
 
     //EMPRESA
     Route::get('/empresa', [EmpresaController::class, 'index'])->name('empresa');
@@ -223,8 +257,7 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::get('/professor/dashboard', [ProfessorUserDashboardController::class, 'index'])->name('dashboard-professor');
 
     //PROFESSOR
-    Route::get('/professor', [ProfessorUserProfessorController::class, 'index'])->name('professor-index');
-    Route::get('/professor/show/{id}', [ProfessorUserProfessorController::class, 'show'])->name('professor.show');
+    Route::get('/professor/show', [ProfessorUserProfessorController::class, 'show'])->name('professor.show');
 
     // AGENDA
     Route::get('/professor/agenda', [ProfessorUserAgendaController::class, 'agenda'])->name('professor-agenda');
@@ -254,7 +287,7 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::get('/professor/matricula/{id}', [ProfessorUserMatriculaController::class, 'index'])->name('professor-matricula');
     Route::get('/professor/matricula/show/{id}', [ProfessorUserMatriculaController::class, 'show'])->name('professor-matricula.show');
 
-    //Financeiro
+    //FINANCEIRO
     Route::get('/professor/aluno/{id}/financeiro', [ProfessorUserFinanceiroController::class, 'index'])->name('professor-financeiro');
 
     // FREQUENCIA
@@ -268,17 +301,31 @@ Route::middleware(['auth', 'professor'])->group(function () {
 });
 
 
-//
-// PROFESSOR USER
-//
-
-
 Route::middleware(['auth', 'aluno'])->group(function () {
 
-    // Exemplo futuro:
-    // Route::get('/minhas-aulas', ...);
-    // Route::get('/minha-frequencia', ...);
+    //DASHBOARD ALUNO
+    Route::get('/aluno/dashboard', [AlunoUserDashboardController::class, 'index'])->name('dashboard-aluno');
 
+    // ALUNO
+    Route::get('/aluno/alunos', [AlunoUserAlunoController::class, 'index'])->name('aluno.index');
+    Route::get('/aluno/alunos/{id}', [AlunoUserAlunoController::class, 'show'])->name('aluno.show');
+
+    // DETALHES
+    Route::get('/aluno/detalhes-aluno/{id}', [AlunoUserDetalhesAlunoController::class, 'index'])->name('aluno-detalhes.index');
+    Route::get('/aluno/detalhes-aluno/certificado/{path}', [AlunoUserDetalhesAlunoController::class, 'showCertificado'])->name('aluno-detalhes.showCertificado');
+
+    // RESPONSAVEL
+    Route::get('/aluno/responsavel', [AlunoUserResponsavelController::class, 'index'])->name('responsavel.index');
+
+    // MATRÍCULA
+    Route::get('/aluno/matriculas/{id}', [AlunoUserMatriculaController::class, 'index'])->name('aluno-matricula.index');
+    Route::get('/aluno/matricula/show/{id}', [AlunoUserMatriculaController::class, 'show'])->name('aluno-matricula.show');
+
+    //FINANCEIRO
+    Route::get('/aluno/financeiro/{id}', [AlunoUserFinanceiroController::class, 'index'])->name('aluno-financeiro.index');
+
+    //FREQUENCIA
+    Route::get('/aluno/frequencia/{id}',[AlunoUserFrequenciaController::class, 'visualizar'])->name('aluno-frequencia.visualizar');
 });
 
 require __DIR__ . '/auth.php';

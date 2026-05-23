@@ -5,10 +5,12 @@
 @section('content')
 
 <!-- TOPO -->
-<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+<div class="flex justify-between items-center mb-6">
     <h2 class="text-3xl font-extrabold text-gray-800">
         Meus Alunos / Matrícula / Financeiro
     </h2>
+
+
 </div>
 
 <!-- FILTROS -->
@@ -199,12 +201,7 @@
                         Detalhes
                     </a>
 
-                    <a href="{{ route('professor-matricula', Crypt::encrypt($aluno->id_aluno)) }}"
-                        style="background-color: #8E251F; color: white;"
-                        class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
-                        Matrícula
-                    </a>
-
+            
                 </td>
 
             </tr>

@@ -25,17 +25,19 @@
 </nav>
 
 <!-- TOPO -->
-<div class="flex items-center gap-4 mb-10">
+<div class="flex justify-between items-center mb-6">
+
+    <h2 class="text-3xl font-extrabold text-gray-800">
+        Matrículas do Aluno
+    </h2>
 
     <a href="{{ route('professor-aluno.hub', Crypt::encrypt($aluno->id_aluno)) }}"
         class="flex items-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
         ← Voltar
     </a>
-
-    <h2 class="text-3xl font-extrabold text-gray-800">
-        Matrículas do Aluno
-    </h2>
 </div>
+
+
 
 <!-- CARD DO ALUNO -->
 <div class="mb-8">

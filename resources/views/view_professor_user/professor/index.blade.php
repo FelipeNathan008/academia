@@ -1,87 +1,123 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Meus Alunos')
+@section('title', 'Detalhes do Professor')
 
 @section('content')
 
+<!-- BREADCRUMB -->
+<nav class="mb-6 text-sm text-gray-500">
+    <ol class="flex items-center gap-2">
+
+        <li>
+            <a href="{{ route('professor-index') }}"
+                class="hover:text-[#8E251F] transition">
+                Professor
+            </a>
+        </li>
+        
+        <li>/</li>
+
+        <li class="text-gray-400">
+            {{ $professor->prof_nome }}
+        </li>
+
+        <li>/</li>
+        <li class="font-semibold text-gray-700">
+            Ver Professor
+        </li>
+    </ol>
+</nav>
+
 <!-- TOPO -->
-<div class="flex justify-between items-center mb-10">
+<div class="flex justify-between items-center mb-8">
     <h2 class="text-3xl font-extrabold text-gray-800">
-        Professor / Meus Alunos
+        INFORMAÇÕES DO PROFESSOR
     </h2>
+
+    <a href="{{ url()->previous() }}"
+        class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
+        ← Voltar
+    </a>
 </div>
 
 <!-- CARD -->
-<div class="bg-white rounded-2xl shadow-md p-6">
+<div class="bg-white rounded-2xl shadow-md p-8">
 
-    <h3 class="text-xl font-bold mb-6 text-gray-700">
-        DADOS DO PROFESSOR
-    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
 
-    <table class="w-full text-left border-collapse">
-        <thead>
-            <tr class="border-b text-gray-600 text-sm">
-                <th class="py-3 px-4">Nome</th>
-                <th class="py-3 px-4">Empresa</th>
-                <th class="py-3 px-4">Foto</th>
-                <th class="py-3 px-4">Qtd. Alunos</th>
-                <th class="py-3 px-4">Ações</th>
-            </tr>
-        </thead>
+        <!-- COLUNA 1 -->
+        <div class="space-y-6">
 
-        <tbody>
-            <tr class="border-b">
-
-                <!-- NOME -->
-                <td class="py-3 px-4 font-medium">
+            <div>
+                <p class="text-xs uppercase text-gray-400">Nome</p>
+                <p class="text-lg font-semibold text-gray-800">
                     {{ $professor->prof_nome }}
-                </td>
+                </p>
+            </div>
 
-                <!-- EMPRESA -->
-                <td class="py-3 px-4 font-bold">
+            <div>
+                <p class="text-xs uppercase text-gray-400">Empresa</p>
+                <p class="text-lg font-semibold text-gray-800">
                     {{ $professor->empresas->emp_nome ?? '-' }}
-                </td>
+                </p>
+            </div>
 
-                <!-- FOTO -->
-                <td class="py-3 px-4">
-                    @if($professor->prof_foto)
-                    <div class="w-12 h-12 overflow-hidden rounded-lg">
-                        <img src="{{ asset('images/professores/' . $professor->prof_foto) }}"
-                            alt="Foto"
-                            style="width:48px; height:48px; object-fit:cover;">
-                    </div>
-                    @else
-                    -
-                    @endif
-                </td>
+            <p class="text-lg font-semibold text-gray-800">
+                @if($professor->prof_telefone)
+                {{ preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', preg_replace('/\D/', '', $professor->prof_telefone)) }}
+                @else
+                -
+                @endif
+            </p>
 
-                <!-- QUANTIDADE -->
-                <td class="py-3 px-4 font-bold">
-                    {{ $professor->qtd_aluno ?? '0' }}
-                </td>
+        </div>
 
-                <!-- AÇÕES -->
-                <td class="py-3 px-4 flex gap-2">
+        <!-- COLUNA 2 -->
+        <div class="space-y-6">
 
-                    <!-- VER ALUNOS -->
-                    <a href="{{ route('professor-aluno.index', Crypt::encrypt($professor->id_professor)) }}"
-                        class="px-4 py-2 rounded-lg shadow text-white hover:opacity-90 transition duration-200"
-                        style="background-color: #275cce;">
-                        Ver Alunos
-                    </a>
+            <div>
+                <p class="text-xs uppercase text-gray-400">Data de Nascimento</p>
+                <p class="text-lg font-semibold text-gray-800">
+                    {{ $professor->prof_nascimento 
+                        ? \Carbon\Carbon::parse($professor->prof_nascimento)->format('d/m/Y') 
+                        : '-' }}
+                </p>
+            </div>
 
-                    <!-- VER PROFESSOR -->
-                    <a href="{{ route('professor.show', Crypt::encrypt($professor->id_professor)) }}"
-                        class="px-4 py-2 rounded-lg shadow text-white hover:opacity-90 transition duration-200"
-                        style="background-color: #8E251F;">
-                        Ver Professor
-                    </a>
+            <div>
+                <p class="text-xs uppercase text-gray-400">Idade</p>
+                <p class="text-lg font-semibold text-gray-800">
+                    {{ $professor->prof_nascimento 
+                        ? \Carbon\Carbon::parse($professor->prof_nascimento)->age . ' anos' 
+                        : '-' }}
+                </p>
+            </div>
 
-                </td>
+        </div>
 
-            </tr>
-        </tbody>
-    </table>
+        <!-- FOTO -->
+        <div>
+            <p class="text-xs uppercase text-gray-400">Foto</p>
+
+            @if($professor->prof_foto)
+            <img src="{{ asset('images/professores/' . $professor->prof_foto) }}"
+                style="width:120px; height:120px; object-fit:cover; border-radius:10px;">
+            @else
+            <p class="text-gray-500">Sem foto</p>
+            @endif
+        </div>
+
+    </div>
+
+    <!-- OBSERVAÇÕES -->
+    @if($professor->prof_desc)
+    <div class="mt-10 pt-6 border-t">
+        <p class="text-xs uppercase text-gray-400 mb-2">Observações</p>
+        <p class="text-gray-700 leading-relaxed">
+            {{ $professor->prof_desc }}
+        </p>
+    </div>
+    @endif
 
 </div>
 

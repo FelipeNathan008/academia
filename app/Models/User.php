@@ -66,7 +66,7 @@ class User extends Authenticatable
 
     public function responsavel()
     {
-        return $this->belongsTo(Responsavel::class, 'esponsavel_id', 'id_responsavel');
+        return $this->belongsTo(Responsavel::class, 'responsavel_id', 'id_responsavel');
     }
 
     public function isAdmin()

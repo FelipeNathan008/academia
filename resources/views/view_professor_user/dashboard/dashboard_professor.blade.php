@@ -3,9 +3,12 @@
 @section('title', 'Dashboard Professor')
 
 @section('content')
+<div class="flex justify-between items-center mb-10">
 
-<h2 class="text-2xl font-bold mb-6">Visão Geral</h2>
+    <h2 class="text-2xl font-bold mb-6">Visão Geral</h2>
 
+
+</div>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
 
     <!-- TOTAL ALUNOS -->
