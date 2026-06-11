@@ -255,6 +255,8 @@ Route::middleware(['auth', 'professor'])->group(function () {
 
     //DASHBOARD PROFESSOR
     Route::get('/professor/dashboard', [ProfessorUserDashboardController::class, 'index'])->name('dashboard-professor');
+    Route::get('/professor/mensalidades-atrasadas', [ProfessorUserDashboardController::class, 'mensalidadesAtrasadas'])
+    ->name('dashboard-professor.mensalidadesAtrasadas');
 
     //PROFESSOR
     Route::get('/professor/show', [ProfessorUserProfessorController::class, 'show'])->name('professor.show');
@@ -305,6 +307,8 @@ Route::middleware(['auth', 'aluno'])->group(function () {
 
     //DASHBOARD ALUNO
     Route::get('/aluno/dashboard', [AlunoUserDashboardController::class, 'index'])->name('dashboard-aluno');
+       Route::get('/aluno/mensalidades-atrasadas', [AlunoUserDashboardController::class, 'mensalidadesAtrasadas'])
+        ->name('dashboard-aluno.mensalidadesAtrasadas');
 
     // ALUNO
     Route::get('/aluno/alunos', [AlunoUserAlunoController::class, 'index'])->name('aluno.index');
@@ -325,7 +329,7 @@ Route::middleware(['auth', 'aluno'])->group(function () {
     Route::get('/aluno/financeiro/{id}', [AlunoUserFinanceiroController::class, 'index'])->name('aluno-financeiro.index');
 
     //FREQUENCIA
-    Route::get('/aluno/frequencia/{id}',[AlunoUserFrequenciaController::class, 'visualizar'])->name('aluno-frequencia.visualizar');
+    Route::get('/aluno/frequencia/{id}', [AlunoUserFrequenciaController::class, 'visualizar'])->name('aluno-frequencia.visualizar');
 });
 
 require __DIR__ . '/auth.php';

@@ -83,21 +83,36 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="text-sm font-medium text-gray-600">Graduação</label>
-                    <select name="det_gradu_nome_cor" onchange="preencherGraus(this)" class="w-full border rounded-lg px-3 py-2" required>
-                        <option value="">Selecione uma graduação</option>
-                        @php $cores = []; @endphp
-                        @foreach($graduacoesTotais as $g)
-                        @if(!in_array($g->gradu_nome_cor, $cores))
-                        @php
-                        $cores[] = $g->gradu_nome_cor;
-                        $grausDaCor = $graduacoesTotais->filter(fn($x) => $x->gradu_nome_cor == $g->gradu_nome_cor)->pluck('gradu_grau')->sort()->values()->all();
-                        @endphp
-                        <option value="{{ $g->gradu_nome_cor }}" data-graus="{{ implode(',', $grausDaCor) }}">
-                            {{ $g->gradu_nome_cor }}
+                    <label class="text-sm font-medium text-gray-600">Modalidade</label>
+                    <select id="modalidadeSelect"
+                        name="det_modalidade"
+                        onchange="filtrarGraduacoes(this)"
+                        class="w-full border rounded-lg px-3 py-2"
+                        required>
+
+                        <option value="">Selecione</option>
+
+                        @foreach($modalidades as $modalidade)
+                        <option value="{{ $modalidade->id_modalidade }}">
+                            {{ $modalidade->mod_nome }}
                         </option>
-                        @endif
                         @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium text-gray-600">Graduação</label>
+
+                    <select id="graduacaoSelect"
+                        name="det_gradu_nome_cor"
+                        onchange="preencherGraus(this)"
+                        class="w-full border rounded-lg px-3 py-2"
+                        disabled
+                        required>
+
+                        <option value="">
+                            Primeiro selecione uma modalidade
+                        </option>
                     </select>
                 </div>
 
@@ -105,16 +120,6 @@
                     <label class="text-sm font-medium text-gray-600">Grau</label>
                     <select name="det_grau" class="w-full border rounded-lg px-3 py-2 grau-input" required>
                         <option value="">Selecione primeiro uma graduação</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="text-sm font-medium text-gray-600">Modalidade</label>
-                    <select name="det_modalidade" class="w-full border rounded-lg px-3 py-2" required>
-                        <option value="">Selecione</option>
-                        @foreach($modalidades as $modalidade)
-                        <option value="{{ $modalidade->mod_nome }}">{{ $modalidade->mod_nome }}</option>
-                        @endforeach
                     </select>
                 </div>
 
@@ -260,7 +265,7 @@
                             {{ $det->det_gradu_nome_cor }}
                         </td>
                         <td class="py-3 px-4">{{ $det->det_grau }}</td>
-                        <td class="py-3 px-4">{{ $det->det_modalidade }}</td>
+                        <td class="py-3 px-4">{{ $det->modalidade->id_modalidade }}</td>
                         <td class="py-3 px-4">{{ \Carbon\Carbon::parse($det->det_data)->format('d/m/Y') }}</td>
                         <td class="py-3 px-4 flex gap-2">
 
@@ -294,7 +299,17 @@
                 </tbody>
             </table>
 </div>
+<div id="graduacoesData" class="hidden">
 
+    @foreach($graduacoesTotais as $g)
+    <div
+        data-modalidade="{{ $g->id_modalidade }}"
+        data-nome="{{ $g->gradu_nome_cor }}"
+        data-grau="{{ $g->gradu_grau }}">
+    </div>
+    @endforeach
+
+</div>
 <script>
     function toggleCadastro() {
         const form = document.getElementById('cadastroForm');
@@ -400,6 +415,60 @@
         else if (faixa.includes('preta')) cor = '#000000';
         bolinha.style.backgroundColor = cor;
     });
+
+    const graduacoes = document.querySelectorAll(
+        '#graduacoesData div'
+    );
+
+    function filtrarGraduacoes(selectModalidade) {
+        const modalidade = selectModalidade.value;
+        const graduacaoSelect =
+            document.getElementById('graduacaoSelect');
+        const grauSelect =
+            document.querySelector('.grau-input');
+        graduacaoSelect.innerHTML =
+            '<option value="">Selecione uma graduação</option>';
+        grauSelect.innerHTML =
+            '<option value="">Selecione primeiro uma graduação</option>';
+        if (!modalidade) {
+            graduacaoSelect.disabled = true;
+            return;
+        }
+        graduacaoSelect.disabled = false;
+        const nomesAdicionados = [];
+        graduacoes.forEach(g => {
+            const modalidadeGrad =
+                g.dataset.modalidade;
+            const nomeGrad =
+                g.dataset.nome;
+            if (
+                modalidadeGrad == modalidade &&
+                !nomesAdicionados.includes(nomeGrad)
+            ) {
+                nomesAdicionados.push(nomeGrad);
+                const graus = [];
+                graduacoes.forEach(x => {
+                    if (
+                        x.dataset.modalidade == modalidade &&
+                        x.dataset.nome == nomeGrad
+                    ) {
+                        graus.push(x.dataset.grau);
+                    }
+
+                });
+                graus.sort((a, b) => a - b);
+
+                graduacaoSelect.innerHTML += `
+                <option
+                    value="${nomeGrad}"
+                    data-graus="${graus.join(',')}">
+                    ${nomeGrad}
+                </option>
+            `;
+            }
+
+        });
+    }
 </script>
 
 @endsection

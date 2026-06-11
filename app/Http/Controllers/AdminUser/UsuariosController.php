@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\AdminUser;
 
 use App\Http\Controllers\Controller;
-use App\Models\Aluno;
+use Illuminate\Support\str;
 use App\Models\User;
 use App\Models\Empresa;
 use App\Models\Filial;
@@ -95,7 +95,7 @@ class UsuariosController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:100',
-            'email' => 'required|email|unique:users,email',
+            'login' => 'required|string|max:100',
             'password' => 'required|string|min:8',
             'role' => 'required|in:admin,professor,aluno',
             'id_emp_id' => 'required|exists:empresas,id_empresa',
@@ -104,7 +104,6 @@ class UsuariosController extends Controller
             'professor_id' => 'nullable|exists:professor,id_professor',
             'responsavel_id' => 'nullable|exists:responsavel,id_responsavel',
         ], [
-            'email.unique' => 'Este e-mail já está cadastrado.',
             'password.min' => 'A senha deve ter no mínimo 8 caracteres.'
         ]);
 
@@ -131,10 +130,33 @@ class UsuariosController extends Controller
             }
         }
 
+        $empresa = Empresa::findOrFail($request->id_emp_id);
+
+        $email = Str::lower(
+            $request->login . '@' . $empresa->emp_apelido . '.com'
+        );
+        if (User::where('email', $email)->exists()) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'login' => 'Este login já está cadastrado.'
+                ]);
+        }
+
+        if (
+            str_contains($request->login, '@') ||
+            str_contains(strtolower($request->login), '.com') ||
+            str_contains(strtolower($request->login), '.br')
+
+        ) {
+            return back()->withInput()->withErrors([
+                'login' => 'Digite apenas o login, sem domínio.'
+            ]);
+        }
 
         User::create([
             'name' => $request->name,
-            'email' => $request->email,
+            'email' => $email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'id_emp_id' => $request->id_emp_id,
@@ -143,6 +165,7 @@ class UsuariosController extends Controller
             'professor_id' => $professorId,
             'responsavel_id' => $responsavelId,
         ]);
+
 
         return redirect()->back()->with('success', 'Usuário cadastrado com sucesso!');
     }
@@ -184,32 +207,56 @@ class UsuariosController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:100',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'login' => 'required|string|max:100',
             'password' => 'nullable|string|min:8',
-            'role' => 'required|in:admin,professor,aluno',
 
-            'professor_id' => 'nullable|exists:professor,id_professor',
-            'responsavel_id' => 'nullable|exists:responsavel,id_responsavel',
         ], [
             'email.unique' => 'Este e-mail já está cadastrado.',
             'password.min' => 'A senha deve ter no mínimo 8 caracteres.'
         ]);
 
+        $empresa = Empresa::findOrFail($user->id_emp_id);
+
+        $email = Str::lower(
+            $request->login . '@' . $empresa->emp_apelido . '.com'
+        );
+
+        if (
+            User::where('email', $email)
+            ->where('id', '!=', $user->id)
+            ->exists()
+        ) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'login' => 'Este login já está cadastrado.'
+                ]);
+        }
+        if (
+            str_contains($request->login, '@') ||
+            str_contains(strtolower($request->login), '.com') ||
+            str_contains(strtolower($request->login), '.br')
+        ) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'login' => 'Digite apenas o login, sem domínio.'
+                ]);
+        }
+
         $data = [
             'name' => $request->name,
-            'email' => $request->email,
-            'role' => $request->role,
+            'email' => $email,
             'id_emp_id' => $user->id_emp_id,
             'id_filial_id' => null
         ];
-
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }
 
         $user->update($data);
 
-        return redirect()->route('usuarios.empresa')
+        return redirect()->route('usuarios.indexEmpresa')
             ->with('success', 'Usuário atualizado com sucesso!');
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\AdminUser;
 
 use App\Http\Controllers\Controller;
 use App\Models\Graduacao;
+use App\Models\Modalidade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -14,12 +15,13 @@ class GraduacaoController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $graduacoes = Graduacao::ordenarPorFaixa()
-            ->orderBy('gradu_grau')
+        $graduacoes = Graduacao::orderBy('gradu_ordem')
             ->where('id_emp_id', $user->id_emp_id)
             ->get();
 
-        return view('view_admin_user.view_admin.view_graduacoes.index', compact('graduacoes'));
+        $modalidades = Modalidade::orderBy('mod_nome')->get();
+
+        return view('view_admin_user.view_admin.view_graduacoes.index', compact('graduacoes', 'modalidades'));
     }
 
     public function store(Request $request)
@@ -27,12 +29,26 @@ class GraduacaoController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'gradu_nome_cor' => 'required|string|max:80|regex:/^[\pL\s]+$/u',
-            'gradu_grau'     => 'required|integer',
-            'gradu_meta'     => 'required|string|max:50',
+            'gradu_nome_cor' => 'required|string|max:80',
+            'gradu_grau' => 'required|integer',
+            'gradu_meta' => 'required|string|max:50',
+            'gradu_ordem' => 'required|string|max:60',
+            'id_modalidade' => 'required|exists:modalidade,id_modalidade',
         ]);
+
+        $ordemExiste = Graduacao::where('gradu_ordem', $request->gradu_ordem)
+            ->where('id_modalidade', $request->id_modalidade)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->exists();
+
+        if ($ordemExiste) {
+            return back()->withErrors([
+                'gradu_ordem' => 'Já existe uma graduação com essa ordem nesta modalidade.'
+            ])->withInput();
+        }
         $jaExiste = Graduacao::where('gradu_nome_cor', $request->gradu_nome_cor)
             ->where('gradu_grau', $request->gradu_grau)
+            ->where('id_modalidade', $request->id_modalidade)
             ->where('id_emp_id', $user->id_emp_id)
             ->exists();
 
@@ -44,10 +60,13 @@ class GraduacaoController extends Controller
 
         Graduacao::create([
             'gradu_nome_cor' => $request->gradu_nome_cor,
-            'gradu_grau'     => $request->gradu_grau,
-            'gradu_meta'     => $request->gradu_meta,
-            'id_emp_id'      => $user->id_emp_id
+            'gradu_grau' => $request->gradu_grau,
+            'gradu_meta' => $request->gradu_meta,
+            'gradu_ordem' => $request->gradu_ordem,
+            'id_modalidade' => $request->id_modalidade,
+            'id_emp_id' => $user->id_emp_id
         ]);
+
         return redirect()->route('graduacoes')->with('success', 'Graduação cadastrada com sucesso!');
     }
 
@@ -62,8 +81,12 @@ class GraduacaoController extends Controller
         $graduacao = Graduacao::where('id_graduacao', $id)
             ->where('id_emp_id', $user->id_emp_id)
             ->firstOrFail();
+        $modalidades = Modalidade::orderBy('mod_nome')->get();
 
-        return view('view_admin_user.view_admin.view_graduacoes.edit', compact('graduacao'));
+        return view(
+            'view_admin_user.view_admin.view_graduacoes.edit',
+            compact('graduacao', 'modalidades')
+        );
     }
 
     public function update(Request $request, $id)
@@ -83,15 +106,30 @@ class GraduacaoController extends Controller
 
 
         $request->validate([
-            'gradu_nome_cor' => 'required|string|max:80|regex:/^[\pL\s]+$/u',
-            'gradu_grau'     => 'required|integer',
-            'gradu_meta'     => 'required|string|max:50',
+            'gradu_nome_cor' => 'required|string|max:80',
+            'gradu_grau' => 'required|integer',
+            'gradu_meta' => 'required|string|max:50',
+            'gradu_ordem' => 'required|string|max:60',
+            'id_modalidade' => 'required|exists:modalidade,id_modalidade',
         ]);
+
+        $ordemExiste = Graduacao::where('gradu_ordem', $request->gradu_ordem)
+            ->where('id_modalidade', $request->id_modalidade)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->where('id_graduacao', '!=', $graduacao->id_graduacao)
+            ->exists();
+
+        if ($ordemExiste) {
+            return back()->withErrors([
+                'gradu_ordem' => 'Já existe uma graduação com essa ordem nesta modalidade.'
+            ])->withInput();
+        }
 
         $jaExiste = Graduacao::where('gradu_nome_cor', $request->gradu_nome_cor)
             ->where('gradu_grau', $request->gradu_grau)
+            ->where('id_modalidade', $request->id_modalidade)
             ->where('id_emp_id', $user->id_emp_id)
-            ->where('id_graduacao', '!=', $graduacao->id_graduacao) // ignora o próprio registro
+            ->where('id_graduacao', '!=', $graduacao->id_graduacao)
             ->exists();
 
         if ($jaExiste) {
@@ -104,6 +142,8 @@ class GraduacaoController extends Controller
             'gradu_nome_cor' => $request->gradu_nome_cor,
             'gradu_grau'     => $request->gradu_grau,
             'gradu_meta'     => $request->gradu_meta,
+            'gradu_ordem'    => $request->gradu_ordem,
+            'id_modalidade'  => $request->id_modalidade,
         ]);
 
         return redirect()->route('graduacoes')

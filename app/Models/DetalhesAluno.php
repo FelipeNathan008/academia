@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+
 class DetalhesAluno extends Model
 {
     protected $table = 'detalhes_aluno';
@@ -23,6 +24,11 @@ class DetalhesAluno extends Model
     public function aluno()
     {
         return $this->belongsTo(Aluno::class, 'aluno_id_aluno', 'id_aluno');
+    }
+
+    public function modalidade()
+    {
+        return $this->belongsTo(Modalidade::class, 'id_modalidade');
     }
 
     protected static function booted()

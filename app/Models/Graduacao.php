@@ -15,8 +15,11 @@ class Graduacao extends Model
         'gradu_nome_cor',
         'gradu_grau',
         'gradu_meta',
+        'gradu_ordem',
+        'id_modalidade',
         'id_emp_id'
     ];
+
     protected static function booted()
     {
         static::addGlobalScope('empresa', function (Builder $builder) {
@@ -25,6 +28,12 @@ class Graduacao extends Model
             }
         });
     }
+
+    public function modalidade()
+    {
+        return $this->belongsTo(Modalidade::class, 'id_modalidade', 'id_modalidade');
+    }
+
     public function scopeOrdenarPorFaixa($query)
     {
         return $query->orderByRaw("
@@ -56,4 +65,9 @@ class Graduacao extends Model
         END
     ");
     }
+    public function scopeOrdem($query)
+    {
+        return $query->orderBy('gradu_ordem');
+    }
+
 }

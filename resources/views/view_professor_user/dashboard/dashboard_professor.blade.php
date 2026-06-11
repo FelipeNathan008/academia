@@ -65,7 +65,9 @@
     </div>
 
 
-    <div class="p-6 bg-white rounded-xl shadow-sm">
+    <a href="{{ route('dashboard-professor.mensalidadesAtrasadas') }}"
+        class="block p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition">
+
         <h3 class="font-semibold text-lg mb-2">
             Mensalidades Atrasadas
         </h3>
@@ -74,10 +76,10 @@
             {{ $mensalidadesAtrasadas }}
         </p>
 
-        <span class="text-sm text-gray-500">
-            Total Geral
+        <span class="text-sm text-blue-600 underline hover:text-blue-800 font-medium">
+            Ver mensalidades atrasadas →
         </span>
-    </div>
+    </a>
 
 </div>
 

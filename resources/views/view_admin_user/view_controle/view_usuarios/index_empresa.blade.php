@@ -67,7 +67,7 @@
                 <input type="hidden" name="id_emp_id" value="{{ $empresa->id_empresa }}">
                 <input type="hidden" name="id_filial_id" value="">
 
-                <div class="flex flex-col gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                     <div>
                         <label class="text-sm font-medium text-gray-600">Nome</label>
@@ -77,13 +77,26 @@
                             class="w-full border rounded-lg px-4 py-2 mt-1">
                     </div>
 
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Email</label>
-                        <input type="email" name="email"
-                            placeholder="exemplo@email.com"
-                            required
-                            class="w-full border rounded-lg px-4 py-2 mt-1">
+                    <div style="display: flex; gap: 4%;">
+                        <div style="flex: 1;">
+                            <label class="text-sm font-medium text-gray-600">Login</label>
+                            <input type="text"
+                                id="login"
+                                name="login"
+                                placeholder="Digite o Login"
+                                required
+                                class="w-full border rounded-lg px-4 py-2 mt-1">
+                        </div>
+
+                        <div style="flex: 1;">
+                            <label class="text-sm font-medium text-gray-600">Domínio</label>
+                            <input type="text"
+                                value="{{ Str::lower('@' . $empresa->emp_apelido . '.com') }}"
+                                readonly
+                                class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100">
+                        </div>
                     </div>
+
 
                     <div>
                         <label class="text-sm font-medium text-gray-600">Senha</label>
@@ -423,6 +436,14 @@
             const alerta = document.getElementById('alertErro');
             if (alerta) alerta.style.display = 'none';
         }
-    </script>
 
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const login = document.getElementById('login');
+            login.addEventListener('input', function() {
+                this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');
+            });
+
+        });
+    </script>
     @endsection

@@ -38,8 +38,8 @@ class DetalhesAlunoController extends Controller
             ->get();
 
 
-        $graduacoesTotais = Graduacao::ordenarPorFaixa()
-            ->orderBy('gradu_grau')
+        $graduacoesTotais = Graduacao::ordem()
+            ->where('id_emp_id', $user->id_emp_id)
             ->get();
 
         $responsavel = $aluno->responsavel;

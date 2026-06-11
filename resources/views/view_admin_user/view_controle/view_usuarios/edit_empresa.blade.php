@@ -58,12 +58,34 @@ use Illuminate\Support\Facades\Crypt;
                     class="w-full border rounded-lg px-4 py-2 mt-1">
             </div>
 
-            <div>
-                <label class="text-sm text-gray-600">Email</label>
-                <input type="email" name="email" value="{{ $user->email }}" required
-                    class="w-full border rounded-lg px-4 py-2 mt-1">
-            </div>
+            @php
+            $login = explode('@', $user->email)[0];
+            $dominio = '@' . explode('@', $user->email)[1];
+            @endphp
 
+            <div style="display:flex; gap:4%;">
+
+                <div style="flex:1;">
+                    <label class="text-sm text-gray-600">Login</label>
+                    <input
+                        type="text"
+                        id="login"
+                        name="login"
+                        value="{{ $login }}"
+                        required
+                        class="w-full border rounded-lg px-4 py-2 mt-1">
+                </div>
+
+                <div style="flex:1;">
+                    <label class="text-sm text-gray-600">Domínio</label>
+                    <input
+                        type="text"
+                        value="{{ $dominio }}"
+                        readonly
+                        class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100">
+                </div>
+
+            </div>
             <div>
                 <label class="text-sm text-gray-600">Nova Senha</label>
                 <input type="password" name="password"
@@ -71,22 +93,6 @@ use Illuminate\Support\Facades\Crypt;
                     class="w-full border rounded-lg px-4 py-2 mt-1">
             </div>
 
-            <div>
-                <label class="text-sm text-gray-600">Função</label>
-                <select name="role" class="w-full border rounded-lg px-4 py-2 mt-1">
-                    <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>
-                        Administrador
-                    </option>
-
-                    <option value="professor" {{ $user->role == 'professor' ? 'selected' : '' }}>
-                        Professor
-                    </option>
-
-                    <option value="aluno" {{ $user->role == 'aluno' ? 'selected' : '' }}>
-                        Aluno
-                    </option>
-                </select>
-            </div>
 
         </div>
 
@@ -104,5 +110,15 @@ use Illuminate\Support\Facades\Crypt;
 
     </div>
 </form>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
 
+        const login = document.getElementById('login');
+
+        login.addEventListener('input', function() {
+            this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');
+        });
+
+    });
+</script>
 @endsection

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+
 class Modalidade extends Model
 {
     protected $table = 'modalidade';
@@ -26,5 +27,9 @@ class Modalidade extends Model
     public function valores()
     {
         return $this->hasMany(PrecoModalidade::class, 'modalidade_id', 'id_modalidade');
+    }
+    public function graduacoes()
+    {
+        return $this->hasMany(Graduacao::class,'id_modalidade','id_modalidade');
     }
 }

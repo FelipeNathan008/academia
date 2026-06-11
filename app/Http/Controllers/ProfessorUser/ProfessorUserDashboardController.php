@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 
 use App\Models\Aluno;
 use App\Models\DetalhesMensalidade;
+use App\Models\Mensalidade;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -79,5 +80,51 @@ class ProfessorUserDashboardController extends Controller
             'receitaMensalPago',
             'mensalidadesAtrasadas'
         ));
+    }
+
+    public function mensalidadesAtrasadas()
+    {
+        $user = Auth::user();
+
+        $professor = $user->professor;
+
+        if (!$professor) {
+            abort(403);
+        }
+
+        DetalhesMensalidade::where('det_mensa_status', 'Em aberto')
+            ->whereDate('det_mensa_data_venc', '<', Carbon::today())
+            ->where('id_emp_id', $user->id_emp_id)
+            ->whereHas('mensalidade.matricula.grade', function ($q) use ($professor) {
+                $q->where('professor_id_professor', $professor->id_professor);
+            })
+            ->update([
+                'det_mensa_status' => 'Atrasado'
+            ]);
+
+        $mensalidades = Mensalidade::with([
+            'matricula.aluno.responsavel',
+            'matricula.grade.professor',
+            'detalhes',
+        ])
+            ->whereHas('detalhes', function ($query) {
+                $query->where('det_mensa_status', 'Atrasado');
+            })
+            ->whereHas('matricula.grade', function ($query) use ($professor) {
+                $query->where('professor_id_professor', $professor->id_professor);
+            })
+            ->get();
+
+        $mensalidadesAtrasadas = DetalhesMensalidade::where('det_mensa_status', 'Atrasado')
+            ->where('id_emp_id', $user->id_emp_id)
+            ->whereHas('mensalidade.matricula.grade', function ($q) use ($professor) {
+                $q->where('professor_id_professor', $professor->id_professor);
+            })
+            ->count();
+
+        return view(
+            'view_professor_user.dashboard.mensalidades_atrasadas',
+            compact('mensalidades', 'mensalidadesAtrasadas')
+        );
     }
 }
