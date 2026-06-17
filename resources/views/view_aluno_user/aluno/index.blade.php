@@ -41,7 +41,7 @@
                 <th class="py-3 px-4">Parentesco</th>
                 <th class="py-3 px-4">Idade</th>
                 <th class="py-3 px-4">Foto</th>
-                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4">Bolsista</th>
                 <th class="py-3 px-4">Ações</th>
             </tr>
         </thead>
@@ -79,16 +79,28 @@
 
                 <td class="py-3 px-4">
 
-                    @if($aluno->matriculas->where('matri_status', 'Matriculado')->count() > 0)
+                    @if($aluno->aluno_bolsista === 'sim')
 
-                    <span class="px-3 py-1 rounded-full text-sm bg-green-100 text-green-700">
-                        Matriculado
+                    <span style="
+                        padding:4px 10px;
+                        font-size:0.75rem;
+                        font-weight:600;
+                        border-radius:9999px;
+                        color:#166534;
+                        background-color:#bbf7d0;">
+                        Sim
                     </span>
 
                     @else
 
-                    <span class="px-3 py-1 rounded-full text-sm bg-red-100 text-red-700">
-                        Não matriculado
+                    <span style="
+                        padding:4px 10px;
+                        font-size:0.75rem;
+                        font-weight:600;
+                        border-radius:9999px;
+                        color:#7f1d1d;
+                        background-color:#fecaca;">
+                        Não
                     </span>
 
                     @endif

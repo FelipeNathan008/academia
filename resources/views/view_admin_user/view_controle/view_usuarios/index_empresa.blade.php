@@ -100,13 +100,36 @@
 
                     <div>
                         <label class="text-sm font-medium text-gray-600">Senha</label>
-                        <input type="password" name="password"
-                            placeholder="Digite a senha"
-                            required
-                            pattern=".{8,}"
-                            title="A senha deve ter no mínimo 8 caracteres"
-                            class="w-full border rounded-lg px-4 py-2 mt-1">
-                        <small class="text-gray-500 text-sm">Mínimo 8 caracteres</small>
+                        <div class="relative">
+                            <input
+                                type="password"
+                                name="password"
+                                id="senha"
+                                placeholder="Digite a senha"
+                                required
+                                class="w-full border rounded-lg px-4 py-2 mt-1 pr-10"
+                                oninput="verificarSenha(this.value)">
+                            <button
+                                type="button"
+                                onclick="toggleSenha()"
+                                class="absolute right-3 top-[55%] -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <span id="icone-olho">👁</span>
+                            </button>
+                        </div>
+
+                        <!-- Barra de força -->
+                        <div class="mt-2 h-2 rounded-full bg-gray-200 overflow-hidden">
+                            <div id="barra-forca" class="h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <p id="texto-forca" class="text-xs mt-1 font-medium text-gray-400"></p>
+
+                        <!-- Checklist -->
+                        <ul class="mt-2 space-y-1 text-xs text-gray-500">
+                            <li id="check-min">✗ Mínimo 8 caracteres</li>
+                            <li id="check-maiuscula">✗ Letra maiúscula</li>
+                            <li id="check-numero">✗ Número</li>
+                            <li id="check-especial">✗ Caractere especial (!@#$...)</li>
+                        </ul>
                     </div>
 
                     <div>
@@ -445,5 +468,102 @@
             });
 
         });
+
+        function verificarSenha(valor) {
+            const checks = {
+                min: valor.length >= 8,
+                maiuscula: /[A-Z]/.test(valor),
+                numero: /[0-9]/.test(valor),
+                especial: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(valor),
+            };
+
+            // Atualiza checklist
+            atualizarCheck('check-min', checks.min, 'Mínimo 8 caracteres');
+            atualizarCheck('check-maiuscula', checks.maiuscula, 'Letra maiúscula');
+            atualizarCheck('check-numero', checks.numero, 'Número');
+            atualizarCheck('check-especial', checks.especial, 'Caractere especial (!@#$...)');
+
+            // Calcula pontuação
+            const pontos = Object.values(checks).filter(Boolean).length;
+
+            const barra = document.getElementById('barra-forca');
+            const texto = document.getElementById('texto-forca');
+
+            const niveis = [{
+                    min: 0,
+                    label: '',
+                    cor: '',
+                    largura: '0%'
+                },
+                {
+                    min: 1,
+                    label: 'Muito fraca',
+                    cor: '#ef4444',
+                    largura: '20%'
+                },
+                {
+                    min: 2,
+                    label: 'Fraca',
+                    cor: '#f97316',
+                    largura: '45%'
+                },
+                {
+                    min: 3,
+                    label: 'Média',
+                    cor: '#eab308',
+                    largura: '65%'
+                },
+                {
+                    min: 4,
+                    label: 'Forte',
+                    cor: '#22c55e',
+                    largura: '100%'
+                },
+            ];
+
+            const nivel = niveis[pontos];
+            barra.style.width = nivel.largura;
+            barra.style.backgroundColor = nivel.cor;
+            texto.textContent = nivel.label;
+            texto.style.color = nivel.cor;
+        }
+
+        function atualizarCheck(id, passou, texto) {
+            const el = document.getElementById(id);
+            if (passou) {
+                el.textContent = '✓ ' + texto;
+                el.style.color = '#16a34a'; // verde
+            } else {
+                el.textContent = '✗ ' + texto;
+                el.style.color = '#6b7280'; // cinza
+            }
+        }
+
+        function toggleSenha() {
+            const input = document.getElementById('senha');
+            const icone = document.getElementById('icone-olho');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icone.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                icone.textContent = '👁';
+            }
+        }
+
+        function bloquearSubmit(event, form) {
+            const senha = document.getElementById('senha').value;
+
+            const forte = senha.length >= 8 &&
+                /[A-Z]/.test(senha) &&
+                /[0-9]/.test(senha) &&
+                /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(senha);
+
+            if (!forte) {
+                event.preventDefault();
+                alert('A senha não atende aos requisitos mínimos de segurança.');
+                return false;
+            }
+        }
     </script>
     @endsection

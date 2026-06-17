@@ -1,4 +1,5 @@
 <?php
+// app.php
 
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -12,10 +13,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function ($middleware) {
+
+        // Adicione esta linha:
+        $middleware->appendToGroup('web', \App\Http\Middleware\PreventBackHistory::class);
+
         $middleware->alias([
-            'admin' => \App\Http\Middleware\AdminMiddleware::class,
-            'professor' => \App\Http\Middleware\ProfessorMiddleware::class,
-            'aluno' => \App\Http\Middleware\AlunoMiddleware::class,
+            'admin'                => \App\Http\Middleware\AdminMiddleware::class,
+            'professor'            => \App\Http\Middleware\ProfessorMiddleware::class,
+            'aluno'                => \App\Http\Middleware\AlunoMiddleware::class,
+            'prevent-back-history' => \App\Http\Middleware\PreventBackHistory::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

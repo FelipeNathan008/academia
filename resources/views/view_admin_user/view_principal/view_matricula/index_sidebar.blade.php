@@ -1,6 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Matrículas e Financeiro')
+@section('title', 'Alunos')
 
 @section('content')
 
@@ -11,7 +11,7 @@
         ← Voltar
     </a>
     <h2 class="text-3xl font-extrabold text-gray-800">
-        Visualizar Alunos Matrícula / Modalidade / Financeiro
+        Visualizar Alunos Matrícula / Modalidade
     </h2>
 
 </div>
@@ -246,8 +246,9 @@
                     color:#166534; background-color:#bbf7d0;"> 🎓 Sim
                     </span>
                     @else
-                    <span class="px-2 py-1 text-xs font-semibold rounded-full text-gray-700 bg-gray-200">
-                        Não
+                    <span style="padding:2px 8px; font-size:0.75rem;
+                        font-weight:600; border-radius:9999px;
+                        color:#991b1b; background-color:#fecaca;"> Não
                     </span>
                     @endif
                 </td>
@@ -262,7 +263,7 @@
                         Ver Aluno
                     </a>
                     @endif
-
+                    <!--
                     @if(strtolower($aluno->aluno_bolsista) !== 'sim' && $aluno->matriculas->count() > 0)
                     <a href="{{ route('mensalidade', Crypt::encrypt($aluno->id_aluno)) }}"
                         style="background-color: #15803d; color: white;"
@@ -283,7 +284,7 @@
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                         Ver Matrícula
                     </a>
-                    @endif
+                    @endif-->
                 </td>
 
             </tr>

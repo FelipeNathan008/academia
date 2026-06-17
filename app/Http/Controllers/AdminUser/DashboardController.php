@@ -5,14 +5,11 @@ namespace App\Http\Controllers\AdminUser;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Aluno;
-use App\Models\Matricula;
 use App\Models\Mensalidade;
-use App\Models\DetalhesAluno;
 use App\Models\DetalhesMensalidade;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Models\Turma;
 
 
 class DashboardController extends Controller
@@ -46,96 +43,7 @@ class DashboardController extends Controller
 
 
 
-    public function graduacoes()
-    {
-        $user = Auth::user();
-        $modalidadeFiltro = request()->query('modalidade', '');
-        $faixaFiltro = request()->query('faixa', '');
-
-        $alunos = Aluno::with(['responsavel', 'detalhes'])
-            ->where('id_emp_id', $user->id_emp_id)
-            ->get();
-
-        $modalidades = DetalhesAluno::select('det_modalidade')
-            ->where('id_emp_id', $user->id_emp_id)
-            ->distinct()
-            ->pluck('det_modalidade');
-
-        $faixas = DetalhesAluno::select('det_gradu_nome_cor')
-            ->where('id_emp_id', $user->id_emp_id)
-            ->distinct()
-            ->pluck('det_gradu_nome_cor');
-
-        $alunosFiltrados = collect();
-
-        foreach ($alunos as $aluno) {
-
-            $graduacoes = $aluno->detalhes
-                ->sortBy(function ($d) {
-                    return match (strtolower($d->det_gradu_nome_cor)) {
-
-                        'cinza e branca' => 1,
-                        'cinza' => 2,
-                        'cinza e preta' => 3,
-
-                        'amarela e branca' => 4,
-                        'amarela' => 5,
-                        'amarela e preta' => 6,
-
-                        'laranja e branca' => 7,
-                        'laranja' => 8,
-                        'laranja e preta' => 9,
-
-                        'verde e branca' => 10,
-                        'verde' => 11,
-                        'verde e preta' => 12,
-
-                        'branca' => 13,
-                        'azul' => 14,
-                        'roxa' => 15,
-                        'marrom' => 16,
-                        'preta' => 17,
-
-                        default => 99,
-                    };
-                })
-                ->groupBy('det_modalidade')
-                ->map(function ($grupo) {
-                    return $grupo->last();
-                });
-
-            // filtro por modalidade
-            if ($modalidadeFiltro) {
-                $graduacoes = $graduacoes->filter(function ($valor, $chave) use ($modalidadeFiltro) {
-                    return $chave == $modalidadeFiltro;
-                });
-            }
-
-            // filtro por faixa
-            if ($faixaFiltro) {
-                $graduacoes = $graduacoes->filter(function ($graduacao) use ($faixaFiltro) {
-                    return strtolower($graduacao->det_gradu_nome_cor) == strtolower($faixaFiltro);
-                });
-            }
-
-            if (($modalidadeFiltro || $faixaFiltro) && $graduacoes->isNotEmpty()) {
-                $aluno->graduacoes = $graduacoes;
-                $alunosFiltrados->push($aluno);
-            } elseif (!$modalidadeFiltro && !$faixaFiltro) {
-                $aluno->graduacoes = $graduacoes;
-                $alunosFiltrados->push($aluno);
-            }
-        }
-
-        return view('view_admin_user.view_principal.view_dashboard.graduacoes', [
-            'alunos' => $alunosFiltrados,
-            'modalidades' => $modalidades,
-            'faixas' => $faixas,
-            'modalidadeFiltro' => $modalidadeFiltro,
-            'faixaFiltro' => $faixaFiltro
-        ]);
-    }
-
+   
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -231,60 +139,7 @@ class DashboardController extends Controller
             ->where('id_emp_id', $user->id_emp_id)
             ->count();
 
-        $modalidadeSelecionada = $request->get('modalidade');
-
-        // Buscar todas as modalidades existentes
-        $modalidades = DetalhesAluno::select('det_modalidade')
-            ->where('id_emp_id', $user->id_emp_id)
-            ->distinct()
-            ->pluck('det_modalidade');
-
-        $queryDetalhes = DetalhesAluno::where('id_emp_id', $user->id_emp_id);
-
-        if ($modalidadeSelecionada) {
-            $queryDetalhes->where('det_modalidade', $modalidadeSelecionada);
-        }
-
-        $subQuery = $queryDetalhes->select(
-            'aluno_id_aluno',
-            DB::raw("MAX(
-            CASE
-                WHEN LOWER(det_gradu_nome_cor) = 'cinza e branca' THEN 1
-                WHEN LOWER(det_gradu_nome_cor) = 'cinza' THEN 2
-                WHEN LOWER(det_gradu_nome_cor) = 'cinza e preta' THEN 3
-                WHEN LOWER(det_gradu_nome_cor) = 'amarela e branca' THEN 4
-                WHEN LOWER(det_gradu_nome_cor) = 'amarela' THEN 5
-                WHEN LOWER(det_gradu_nome_cor) = 'amarela e preta' THEN 6
-                WHEN LOWER(det_gradu_nome_cor) = 'laranja e branca' THEN 7
-                WHEN LOWER(det_gradu_nome_cor) = 'laranja' THEN 8
-                WHEN LOWER(det_gradu_nome_cor) = 'laranja e preta' THEN 9
-                WHEN LOWER(det_gradu_nome_cor) = 'verde e branca' THEN 10
-                WHEN LOWER(det_gradu_nome_cor) = 'verde' THEN 11
-                WHEN LOWER(det_gradu_nome_cor) = 'verde e preta' THEN 12
-                WHEN LOWER(det_gradu_nome_cor) = 'branca' THEN 13
-                WHEN LOWER(det_gradu_nome_cor) = 'azul' THEN 14
-                WHEN LOWER(det_gradu_nome_cor) = 'roxa' THEN 15
-                WHEN LOWER(det_gradu_nome_cor) = 'marrom' THEN 16
-                WHEN LOWER(det_gradu_nome_cor) = 'preta' THEN 17
-                ELSE 0
-            END
-        ) as ordem_max
-    ")
-        )
-            ->where('id_emp_id', $user->id_emp_id)
-            ->groupBy('aluno_id_aluno');
-
-        $graduacoes = DB::query()
-            ->fromSub($subQuery, 'sub')
-            ->select('ordem_max', DB::raw('COUNT(*) as total'))
-            ->groupBy('ordem_max')
-            ->pluck('total', 'ordem_max');
-
-        $turmas = Turma::select('turma_nome', 'id_turma')
-            ->distinct()
-            ->get();
-
-        $turmaSelecionada = $request->get('turma');
+        
 
         return view('view_admin_user.dashboard', [
             'graficoLabels' => $labels,
@@ -299,34 +154,6 @@ class DashboardController extends Controller
             'receitaMensal' => $receitaMensal,
             'receitaMensalPago' => $receitaMensalPago,
             'mensalidadesAtrasadas' => $mensalidadesAtrasadas,
-
-            'modalidades' => $modalidades,
-            'modalidadeSelecionada' => $modalidadeSelecionada,
-
-            'turmas' => $turmas,
-            'turmaSelecionada' => $turmaSelecionada,
-
-            'graduacaoCinzaBranca'   => $graduacoes[1] ?? 0,
-            'graduacaoCinza'         => $graduacoes[2] ?? 0,
-            'graduacaoCinzaPreta'    => $graduacoes[3] ?? 0,
-
-            'graduacaoAmarelaBranca' => $graduacoes[4] ?? 0,
-            'graduacaoAmarela'       => $graduacoes[5] ?? 0,
-            'graduacaoAmarelaPreta'  => $graduacoes[6] ?? 0,
-
-            'graduacaoLaranjaBranca' => $graduacoes[7] ?? 0,
-            'graduacaoLaranja'       => $graduacoes[8] ?? 0,
-            'graduacaoLaranjaPreta'  => $graduacoes[9] ?? 0,
-
-            'graduacaoVerdeBranca'   => $graduacoes[10] ?? 0,
-            'graduacaoVerde'         => $graduacoes[11] ?? 0,
-            'graduacaoVerdePreta'    => $graduacoes[12] ?? 0,
-
-            'graduacaoBranca' => $graduacoes[13] ?? 0,
-            'graduacaoAzul'   => $graduacoes[14] ?? 0,
-            'graduacaoRoxa'   => $graduacoes[15] ?? 0,
-            'graduacaoMarrom' => $graduacoes[16] ?? 0,
-            'graduacaoPreta'  => $graduacoes[17] ?? 0,
         ]);
     }
 }

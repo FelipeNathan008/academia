@@ -181,8 +181,6 @@
 </div>
 
 
-
-
 <!-- LISTAGEM -->
 <div class="bg-white rounded-2xl shadow-md p-6">
     <h3 class="text-xl font-bold mb-6 text-gray-700">Lista de Graduações</h3>
@@ -274,38 +272,20 @@
 
 </div>
 
+<script src="{{ asset('js/faixas.js') }}"></script>
 <script>
-    function bloquearSubmit(event, form) {
+    aplicarCoresFaixas();
 
+    function bloquearSubmit(event, form) {
         if (!form.checkValidity()) {
             return;
         }
-
         const btn = form.querySelector('button[type="submit"]');
-
         if (btn) {
             btn.disabled = true;
             btn.innerText = 'Salvando...';
         }
     }
-
-    document.querySelectorAll('.bolinha-faixa').forEach(bolinha => {
-
-        const faixa = bolinha.dataset.faixa;
-        let cor = 'transparent';
-
-        if (faixa.includes('cinza')) cor = '#808080';
-        else if (faixa.includes('amarela')) cor = '#facc15';
-        else if (faixa.includes('laranja')) cor = '#f97316';
-        else if (faixa.includes('verde')) cor = '#22c55e';
-        else if (faixa.includes('branca')) cor = '#ffffff';
-        else if (faixa.includes('azul')) cor = '#2563eb';
-        else if (faixa.includes('roxa')) cor = '#7c3aed';
-        else if (faixa.includes('marrom')) cor = '#78350f';
-        else if (faixa.includes('preta')) cor = '#000000';
-
-        bolinha.style.backgroundColor = cor;
-    });
 
     const filtroModalidade = document.getElementById('filtroModalidade');
     const filtroNome = document.getElementById('filtroNome');

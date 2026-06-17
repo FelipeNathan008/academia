@@ -204,11 +204,11 @@
                         Graduações
                     </a>
 
-                    <a href="{{ route('professores.show', Crypt::encrypt($professor->id_professor)) }}"
+                  <!--  <a href="{{ route('professores.show', Crypt::encrypt($professor->id_professor)) }}"
                         style="background-color: #ca8a04; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                         Ver
-                    </a>
+                    </a> -->
 
                     <a href="{{ route('professores.edit', Crypt::encrypt($professor->id_professor)) }}"
                         style="background-color: #8E251F; color: white;"
@@ -216,7 +216,7 @@
                         Editar
                     </a>
 
-                    <form action="{{ route('professores.destroy', Crypt::encrypt($professor->id_professor)) }}" method="POST"
+                    <!--<form action="{{ route('professores.destroy', Crypt::encrypt($professor->id_professor)) }}" method="POST"
                         onsubmit="return confirm('Deseja excluir este professor?');">
                         @csrf
                         @method('DELETE')
@@ -225,7 +225,7 @@
                             class="px-4 py-2 rounded-lg shadow hover:bg-[#D65A3E] transition duration-200">
                             Excluir
                         </button>
-                    </form>
+                    </form> -->
 
                 </td>
             </tr>

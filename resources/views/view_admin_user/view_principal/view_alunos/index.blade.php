@@ -162,8 +162,6 @@
                 <th class="py-3 px-4">Parentesco</th>
                 <th class="py-3 px-4">Idade</th>
                 <th class="py-3 px-4">Foto</th>
-                <th class="py-3 px-4">Bolsista</th>
-                <th class="py-3 px-4">Matriculado</th>
                 <th class="py-3 px-4">Graduado</th>
                 <th class="py-3 px-4">Ações</th>
             </tr>
@@ -223,7 +221,7 @@
                     @endif
                 </td>
 
-                <!-- BOLSISTA -->
+                <!--
                 <td class="py-3 px-4">
                     @if(strtolower($aluno->aluno_bolsista) === 'sim')
                     <span style="
@@ -248,7 +246,6 @@
                     @endif
                 </td>
 
-                <!-- Matriculado -->
                 <td class="py-3 px-4">
                     @if($aluno->matriculas->where('matri_status', 'Matriculado')->count() > 0)
                     <span style="padding:2px 8px; font-size:0.75rem;
@@ -267,6 +264,8 @@
                     </span>
                     @endif
                 </td>
+
+-->
 
                 <!-- Graduado -->
                 <td class="py-3 px-4">
@@ -302,13 +301,13 @@
                         Matrícula
                     </a>
 
-                    @if(strtolower($aluno->aluno_bolsista) !== 'sim')
+                    <!--@if(strtolower($aluno->aluno_bolsista) !== 'sim')
                     <a href="{{ route('mensalidade', Crypt::encrypt($aluno->id_aluno)) }}"
                         style="background-color: #15803d; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center">
                         Financeiro
                     </a>
-                    @endif
+                    @endif-->
 
 
                     <a href="{{ route('alunos.edit', Crypt::encrypt($aluno->id_aluno)) }}"
@@ -317,7 +316,7 @@
                         Editar
                     </a>
 
-                    <form action="{{ route('alunos.destroy', Crypt::encrypt($aluno->id_aluno)) }}" method="POST"
+                    <!--<form action="{{ route('alunos.destroy', Crypt::encrypt($aluno->id_aluno)) }}" method="POST"
                         onsubmit="return confirm('Deseja excluir este aluno?');">
                         @csrf
                         @method('DELETE')
@@ -326,7 +325,7 @@
                             class="px-4 py-2 rounded-lg shadow hover:bg-[#D65A3E] transition duration-200">
                             Excluir
                         </button>
-                    </form>
+                    </form>-->
                 </td>
             </tr>
 

@@ -31,14 +31,16 @@ class DetalhesAlunoController extends Controller
 
         $modalidades = Modalidade::where('id_emp_id', $user->id_emp_id)->get();
 
-        $graduacoes = DetalhesAluno::where('aluno_id_aluno', $id)
+        $graduacoes = DetalhesAluno::with([
+            'graduacao',
+            'graduacao.modalidade'
+        ])
+            ->where('aluno_id_aluno', $id)
             ->where('id_emp_id', $user->id_emp_id)
-            ->ordenarPorFaixa()
-            ->orderBy('det_grau')
             ->get();
 
-
-        $graduacoesTotais = Graduacao::ordem()
+        $graduacoesTotais = Graduacao::with('modalidade')
+            ->ordem()
             ->where('id_emp_id', $user->id_emp_id)
             ->get();
 
@@ -83,34 +85,37 @@ class DetalhesAlunoController extends Controller
             ->firstOrFail();
 
         $request->validate([
-            'det_gradu_nome_cor' => 'required|string|max:80',
-            'det_grau'           => 'required|integer',
-            'det_modalidade'     => 'required|string|max:100',
-            'det_data'           => 'required|date',
-            'det_certificado'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'id_graduacao'      => 'required|exists:graduacao,id_graduacao',
+            'det_data'          => [
+                'required',
+                'date',
+                'after_or_equal:' . $aluno->aluno_nascimento,
+                'before_or_equal:today'
+            ],
+            'det_certificado'   => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ], [
+            'det_data.after_or_equal' => 'Não é possível informar uma data anterior ao nascimento do aluno.',
+            'det_data.before_or_equal' => 'Não é possível informar uma data futura.',
         ]);
 
         $jaExiste = DetalhesAluno::where('aluno_id_aluno', $id)
-            ->where('det_gradu_nome_cor', $request->det_gradu_nome_cor)
-            ->where('det_grau', $request->det_grau)
-            ->where('det_modalidade', $request->det_modalidade)
+            ->where('id_graduacao', $request->id_graduacao)
             ->where('id_emp_id', $user->id_emp_id)
             ->exists();
 
         if ($jaExiste) {
             return back()->withErrors([
-                'det_grau' => 'Erro, essa graduação já foi cadastrada.'
-            ])->withInput();
+                'id_graduacao' => 'Erro, essa graduação já foi cadastrada.'
+            ]);
         }
+
         $user = Auth::user();
 
         $dados = [
-            'aluno_id_aluno'     => $id,
-            'det_gradu_nome_cor' => $request->det_gradu_nome_cor,
-            'det_grau'           => $request->det_grau,
-            'det_modalidade'     => $request->det_modalidade,
-            'det_data'           => $request->det_data,
-            'id_emp_id' => $user->id_emp_id,
+            'aluno_id_aluno' => $id,
+            'id_graduacao'   => $request->id_graduacao,
+            'det_data'       => $request->det_data,
+            'id_emp_id'      => $user->id_emp_id,
         ];
 
         if ($request->hasFile('det_certificado')) {
@@ -146,7 +151,7 @@ class DetalhesAlunoController extends Controller
         $responsavel = $aluno->responsavel;
 
         $modalidades = Modalidade::where('id_emp_id', $user->id_emp_id)->get();
-        $graduacoesTotais = Graduacao::all();
+        $graduacoesTotais = Graduacao::ordem()->get();
 
         return view('view_admin_user.view_principal.view_alunos.detalhes_aluno_edit', compact(
             'detalhe',
@@ -171,28 +176,38 @@ class DetalhesAlunoController extends Controller
             ->where('id_emp_id', $user->id_emp_id)
             ->firstOrFail();
 
-        $request->validate([
-            'det_gradu_nome_cor' => 'sometimes|string|max:80',
-            'det_grau'           => 'sometimes|integer',
-            'det_modalidade'     => 'sometimes|string|max:100',
-            'det_data'           => 'sometimes|date',
-            'det_certificado'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
-        ]);
+        $aluno = $detalhe->aluno;
 
+        $request->validate([
+            'id_graduacao'      => 'sometimes|exists:graduacao,id_graduacao',
+            'det_data'          => [
+                'sometimes',
+                'date',
+                'after_or_equal:' . $aluno->aluno_nascimento,
+                'before_or_equal:today'
+            ],
+            'det_certificado'   => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ], [
+            'det_data.after_or_equal' => 'Não é possível informar uma data anterior ao nascimento do aluno.',
+            'det_data.before_or_equal' => 'Não é possível informar uma data futura.',
+        ]);
+        
         $jaExiste = DetalhesAluno::where('aluno_id_aluno', $detalhe->aluno_id_aluno)
-            ->where('det_grau', $request->det_grau)
-            ->where('det_modalidade', $request->det_modalidade)
-            ->where('id_emp_id', $user->id_emp_id)
+            ->where('id_graduacao', $request->id_graduacao)
             ->where('id_det_aluno', '!=', $detalhe->id_det_aluno)
+            ->where('id_emp_id', $user->id_emp_id)
             ->exists();
 
         if ($jaExiste) {
             return back()->withErrors([
-                'det_grau' => 'Erro, essa graduação já foi cadastrada.'
-            ])->withInput();
+                'id_graduacao' => 'Erro, essa graduação já foi cadastrada.'
+            ]);
         }
 
-        $dados = $request->only(['det_gradu_nome_cor', 'det_grau', 'det_modalidade', 'det_data']);
+        $dados = $request->only([
+            'id_graduacao',
+            'det_data'
+        ]);
 
         if ($request->hasFile('det_certificado')) {
             // Remove arquivo antigo
@@ -209,7 +224,7 @@ class DetalhesAlunoController extends Controller
         $detalhe->update($dados);
 
         return redirect()->route('detalhes-aluno.index', Crypt::encrypt($detalhe->aluno_id_aluno))
-            ->with('success', 'Graduação do professor atualizada com sucesso!');
+            ->with('success', 'Graduação do aluno atualizada com sucesso!');
     }
 
 

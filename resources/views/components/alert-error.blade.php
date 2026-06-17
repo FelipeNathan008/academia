@@ -5,7 +5,7 @@
         <span class="text-2xl">⚠️</span>
         <div>
             <p class="font-extrabold text-lg">Erro ao salvar!</p>
-            <p class="text-sm">Corrija os campos obrigatórios antes de continuar.</p>
+            <p class="text-sm">Corrija os campos antes de continuar.</p>
         </div>
     </div>
 

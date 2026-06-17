@@ -114,9 +114,7 @@
 
     <div class="header-left">
 
-        <div class="header-title">
-            @yield('title', 'Dashboard')
-        </div>
+        
 
         {{-- MENU ADMIN --}}
         @if(auth()->user()->role === 'admin')
@@ -181,7 +179,7 @@
                 class="header-link {{ request()->routeIs(
                         'professor.show',
                 ) ? 'active' : '' }}">
-                Meus Dados
+                Dados
             </a>
         </div>
 
@@ -210,7 +208,7 @@
                 class="header-link {{ request()->routeIs(
                         'professor-agenda',
                 ) ? 'active' : '' }}">
-                Grade de Horários
+                Horários
             </a>
         </div>
         @endif

@@ -131,7 +131,6 @@ class AlunoController extends Controller
                 'after_or_equal:' . now()->subYears(100)->format('Y-m-d'),
             ],
             'aluno_parentesco' => 'required|string|max:60',
-            //'aluno_bolsista' => 'required|in:sim,nao',
             'aluno_desc' => 'required|string',
             'aluno_foto' => 'nullable|image|max:2048',
         ]);
