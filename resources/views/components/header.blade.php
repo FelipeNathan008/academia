@@ -114,7 +114,7 @@
 
     <div class="header-left">
 
-        
+
 
         {{-- MENU ADMIN --}}
         @if(auth()->user()->role === 'admin')
@@ -158,6 +158,15 @@
                 ) ? 'active' : '' }}">
                 Controle
             </a>
+
+            <a href="{{ route('dashboard.graduacoes') }}"
+                class="header-link {{ request()->routeIs(
+                        'dashboard.graduacoes'
+                        
+                ) ? 'active' : '' }}">
+                Graduação
+            </a>
+
 
         </div>
 

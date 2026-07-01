@@ -23,25 +23,26 @@ class ProfessorUserDetalhesAlunoController extends Controller
         }
 
         $professor = Auth::user()->professor;
+        if (!$professor) abort(403);
 
-        if (!$professor) {
-            abort(403);
-        }
+        $user = Auth::user();
 
         $aluno = Aluno::whereHas('matriculas.grade', function ($query) use ($professor) {
             $query->where('professor_id_professor', $professor->id_professor);
         })->findOrFail($id);
 
-        $graduacoes = DetalhesAluno::where('aluno_id_aluno', $id)
-            ->ordenarPorFaixa()
-            ->orderBy('det_grau')
+        $graduacoes = DetalhesAluno::with(['graduacao', 'graduacao.modalidade'])
+            ->where('aluno_id_aluno', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->get()
+            ->sortByDesc('graduacao.gradu_ordem');
+
+        $graduacoesTotais = Graduacao::with('modalidade')
+            ->ordem()
+            ->where('id_emp_id', $user->id_emp_id)
             ->get();
 
-        $graduacoesTotais = Graduacao::ordenarPorFaixa()
-            ->orderBy('gradu_grau')
-            ->get();
-
-        $modalidades = Modalidade::all();
+        $modalidades = Modalidade::where('id_emp_id', $user->id_emp_id)->get();
 
         return view('view_professor_user.aluno.detalhes_aluno', compact(
             'aluno',
@@ -50,6 +51,7 @@ class ProfessorUserDetalhesAlunoController extends Controller
             'modalidades'
         ));
     }
+
     public function showCertificado($path)
     {
         try {
@@ -79,43 +81,42 @@ class ProfessorUserDetalhesAlunoController extends Controller
             $query->where('professor_id_professor', $professor->id_professor);
         })->findOrFail($id);
 
+        $user = Auth::user();
+
         $request->validate([
-            'det_gradu_nome_cor' => 'required|string|max:80',
-            'det_grau'           => 'required|integer',
-            'det_modalidade'     => 'required|string|max:100',
-            'det_data'           => 'required|date',
-            'det_certificado'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'id_graduacao'    => 'required|exists:graduacao,id_graduacao',
+            'det_data'        => [
+                'required',
+                'date',
+                'after_or_equal:' . $aluno->aluno_nascimento,
+                'before_or_equal:today',
+            ],
+            'det_certificado' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ], [
+            'det_data.after_or_equal'  => 'Não é possível informar uma data anterior ao nascimento do aluno.',
+            'det_data.before_or_equal' => 'Não é possível informar uma data futura.',
         ]);
 
         $jaExiste = DetalhesAluno::where('aluno_id_aluno', $id)
-            ->where('det_gradu_nome_cor', $request->det_gradu_nome_cor)
-            ->where('det_grau', $request->det_grau)
-            ->where('det_modalidade', $request->det_modalidade)
+            ->where('id_graduacao', $request->id_graduacao)
+            ->where('id_emp_id', $user->id_emp_id)
             ->exists();
 
         if ($jaExiste) {
-            return back()->withErrors([
-                'det_grau' => 'Erro, essa graduação já foi cadastrada.'
-            ])->withInput();
+            return back()->withErrors(['id_graduacao' => 'Essa graduação já foi cadastrada.']);
         }
 
         $dados = [
-            'aluno_id_aluno'     => $id,
-            'det_gradu_nome_cor' => $request->det_gradu_nome_cor,
-            'det_grau'           => $request->det_grau,
-            'det_modalidade'     => $request->det_modalidade,
-            'det_data'           => $request->det_data,
-            'id_emp_id'          => Auth::user()->id_emp_id,
+            'aluno_id_aluno' => $id,
+            'id_graduacao'   => $request->id_graduacao,
+            'det_data'       => $request->det_data,
+            'id_emp_id'      => $user->id_emp_id,
         ];
 
         if ($request->hasFile('det_certificado')) {
-
-            $file = $request->file('det_certificado');
-
+            $file     = $request->file('det_certificado');
             $filename = time() . '_' . $file->getClientOriginalName();
-
             $file->move(public_path('images/alunos-certificados'), $filename);
-
             $dados['det_certificado'] = 'images/alunos-certificados/' . $filename;
         }
 
@@ -134,13 +135,17 @@ class ProfessorUserDetalhesAlunoController extends Controller
             abort(404);
         }
 
-        $detalhe = DetalhesAluno::findOrFail($id);
+        $user    = Auth::user();
+        $detalhe = DetalhesAluno::where('id_det_aluno', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
 
-        $aluno = $detalhe->aluno;
-
-        $modalidades = Modalidade::all();
-
-        $graduacoesTotais = Graduacao::all();
+        $aluno           = $detalhe->aluno;
+        $modalidades     = Modalidade::where('id_emp_id', $user->id_emp_id)->get();
+        $graduacoesTotais = Graduacao::with('modalidade')
+            ->ordem()
+            ->where('id_emp_id', $user->id_emp_id)
+            ->get();
 
         return view('view_professor_user.aluno.detalhes_aluno_edit', compact(
             'detalhe',
@@ -158,35 +163,47 @@ class ProfessorUserDetalhesAlunoController extends Controller
             abort(404);
         }
 
-        $detalhe = DetalhesAluno::findOrFail($id);
+        $user    = Auth::user();
+        $detalhe = DetalhesAluno::where('id_det_aluno', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
+        $aluno = $detalhe->aluno;
 
         $request->validate([
-            'det_gradu_nome_cor' => 'required|string|max:80',
-            'det_grau'           => 'required|integer',
-            'det_modalidade'     => 'required|string|max:100',
-            'det_data'           => 'required|date',
-            'det_certificado'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'id_graduacao'    => 'sometimes|exists:graduacao,id_graduacao',
+            'det_data'        => [
+                'sometimes',
+                'date',
+                'after_or_equal:' . $aluno->aluno_nascimento,
+                'before_or_equal:today',
+            ],
+            'det_certificado' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ], [
+            'det_data.after_or_equal'  => 'Não é possível informar uma data anterior ao nascimento do aluno.',
+            'det_data.before_or_equal' => 'Não é possível informar uma data futura.',
         ]);
 
-        $dados = $request->only([
-            'det_gradu_nome_cor',
-            'det_grau',
-            'det_modalidade',
-            'det_data'
-        ]);
+        $jaExiste = DetalhesAluno::where('aluno_id_aluno', $detalhe->aluno_id_aluno)
+            ->where('id_graduacao', $request->id_graduacao)
+            ->where('id_det_aluno', '!=', $detalhe->id_det_aluno)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->exists();
+
+        if ($jaExiste) {
+            return back()->withErrors(['id_graduacao' => 'Essa graduação já foi cadastrada.']);
+        }
+
+        $dados = $request->only(['id_graduacao', 'det_data']);
 
         if ($request->hasFile('det_certificado')) {
-
             if ($detalhe->det_certificado && file_exists(public_path($detalhe->det_certificado))) {
                 unlink(public_path($detalhe->det_certificado));
             }
 
-            $file = $request->file('det_certificado');
-
+            $file     = $request->file('det_certificado');
             $filename = time() . '_' . $file->getClientOriginalName();
-
             $file->move(public_path('images/alunos-certificados'), $filename);
-
             $dados['det_certificado'] = 'images/alunos-certificados/' . $filename;
         }
 
@@ -205,14 +222,16 @@ class ProfessorUserDetalhesAlunoController extends Controller
             abort(404);
         }
 
-        $detalhe = DetalhesAluno::findOrFail($id);
+        $user    = Auth::user();
+        $detalhe = DetalhesAluno::where('id_det_aluno', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
 
         if ($detalhe->det_certificado && file_exists(public_path($detalhe->det_certificado))) {
             unlink(public_path($detalhe->det_certificado));
         }
 
         $alunoId = $detalhe->aluno_id_aluno;
-
         $detalhe->delete();
 
         return redirect()

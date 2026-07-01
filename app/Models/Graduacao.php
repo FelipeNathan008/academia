@@ -39,4 +39,13 @@ class Graduacao extends Model
         return $query->orderBy('gradu_ordem');
     }
 
+    public function detalhesAluno()
+    {
+        return $this->hasMany(DetalhesAluno::class, 'id_graduacao', 'id_graduacao');
+    }
+
+    public function detalhesProfessor()
+    {
+        return $this->hasMany(DetalhesProfessor::class, 'id_graduacao', 'id_graduacao');
+    }
 }

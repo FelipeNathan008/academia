@@ -123,6 +123,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/alunos/{id}/matricula/create', [MatriculaController::class, 'create'])->name('matricula.create');
     Route::post('/alunos/{id}/matricula', [MatriculaController::class, 'store'])->name('matricula.store');
     Route::get('/matricula/{id}', [MatriculaController::class, 'show'])->name('matricula.show');
+    Route::put('matricula/{id}/encerrar', [MatriculaController::class, 'encerrarMatricula'])->name('matricula.encerrar');
+    Route::put('matricula/{id}/pausar',   [MatriculaController::class, 'pausar'])->name('matricula.pausar');
+    Route::put('matricula/{id}/reativar', [MatriculaController::class, 'reativar'])->name('matricula.reativar');
     Route::delete('/matricula/{id}', [MatriculaController::class, 'destroy'])->name('matricula.destroy');
 
 
@@ -149,6 +152,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/agenda', [GradeHorarioController::class, 'index'])->name('grade_horarios.visualizar');
     Route::post('/grade_horarios', [GradeHorarioController::class, 'store'])->name('grade_horarios.store');
     Route::get('/grade_horarios/{id}/edit', [GradeHorarioController::class, 'edit'])->name('grade_horarios.edit');
+    Route::get('grade_horarios/{id}', [GradeHorarioController::class, 'show'])->name('grade_horarios.show');
     Route::put('grade_horarios/update/{id}', [GradeHorarioController::class, 'update'])->name('grade_horarios.update');
     Route::delete('/grade_horarios/{id}', [GradeHorarioController::class, 'destroy'])->name('grade_horarios.destroy');
 
@@ -247,16 +251,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::delete('/turmas/{id}', [TurmaController::class, 'destroy'])->name('turmas.destroy');
 });
 
-//
-// PROFESSOR USER
-//
 
 Route::middleware(['auth', 'professor'])->group(function () {
 
     //DASHBOARD PROFESSOR
     Route::get('/professor/dashboard', [ProfessorUserDashboardController::class, 'index'])->name('dashboard-professor');
     Route::get('/professor/mensalidades-atrasadas', [ProfessorUserDashboardController::class, 'mensalidadesAtrasadas'])
-    ->name('dashboard-professor.mensalidadesAtrasadas');
+        ->name('dashboard-professor.mensalidadesAtrasadas');
 
     //PROFESSOR
     Route::get('/professor/show', [ProfessorUserProfessorController::class, 'show'])->name('professor.show');
@@ -307,7 +308,7 @@ Route::middleware(['auth', 'aluno'])->group(function () {
 
     //DASHBOARD ALUNO
     Route::get('/aluno/dashboard', [AlunoUserDashboardController::class, 'index'])->name('dashboard-aluno');
-       Route::get('/aluno/mensalidades-atrasadas', [AlunoUserDashboardController::class, 'mensalidadesAtrasadas'])
+    Route::get('/aluno/mensalidades-atrasadas', [AlunoUserDashboardController::class, 'mensalidadesAtrasadas'])
         ->name('dashboard-aluno.mensalidadesAtrasadas');
 
     // ALUNO

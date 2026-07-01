@@ -157,14 +157,25 @@
         <p class="text-xs uppercase text-gray-400 mb-2">Status</p>
 
         @if ($matricula->matri_status === 'Matriculado')
+
         <span class="px-4 py-2 text-sm rounded-full bg-green-100 text-green-700 font-medium">
             Matriculado
         </span>
-        @else
-        <span class="px-4 py-2 text-sm rounded-full bg-red-100 text-red-700 font-medium">
-            Matrícula Encerrada
+
+        @elseif ($matricula->matri_status === 'Pausada')
+
+        <span class="px-4 py-2 text-sm rounded-full bg-yellow-100 text-yellow-700 font-medium">
+            Pausada
         </span>
+
+        @else
+
+        <span class="px-4 py-2 text-sm rounded-full bg-red-100 text-red-700 font-medium">
+            Encerrada
+        </span>
+
         @endif
+
     </div>
 
     <!-- OBS -->

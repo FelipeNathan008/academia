@@ -37,7 +37,8 @@ class DetalhesAlunoController extends Controller
         ])
             ->where('aluno_id_aluno', $id)
             ->where('id_emp_id', $user->id_emp_id)
-            ->get();
+            ->get()
+            ->sortByDesc('graduacao.gradu_ordem'); 
 
         $graduacoesTotais = Graduacao::with('modalidade')
             ->ordem()
@@ -69,6 +70,7 @@ class DetalhesAlunoController extends Controller
 
         return response()->file(public_path($filePath));
     }
+    
     public function store(Request $request, $id)
     {
 
@@ -86,7 +88,7 @@ class DetalhesAlunoController extends Controller
 
         $request->validate([
             'id_graduacao'      => 'required|exists:graduacao,id_graduacao',
-            'det_data'          => [
+            'det_data' => [
                 'required',
                 'date',
                 'after_or_equal:' . $aluno->aluno_nascimento,
@@ -180,7 +182,7 @@ class DetalhesAlunoController extends Controller
 
         $request->validate([
             'id_graduacao'      => 'sometimes|exists:graduacao,id_graduacao',
-            'det_data'          => [
+            'det_data' => [
                 'sometimes',
                 'date',
                 'after_or_equal:' . $aluno->aluno_nascimento,
@@ -191,7 +193,7 @@ class DetalhesAlunoController extends Controller
             'det_data.after_or_equal' => 'Não é possível informar uma data anterior ao nascimento do aluno.',
             'det_data.before_or_equal' => 'Não é possível informar uma data futura.',
         ]);
-        
+
         $jaExiste = DetalhesAluno::where('aluno_id_aluno', $detalhe->aluno_id_aluno)
             ->where('id_graduacao', $request->id_graduacao)
             ->where('id_det_aluno', '!=', $detalhe->id_det_aluno)

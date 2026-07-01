@@ -23,22 +23,25 @@
     </button>
 </div>
 
-@if ($errors->any())
-<div class="bg-red-100 text-red-700 p-3 rounded mb-3">
-    <ul>
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-    </ul>
-</div>
-@endif
-<!-- FORMULÁRIO -->
 <div id="cadastroForm" class="hidden mb-10">
     <form id="formCadastro" action="{{ route('grade_horarios.store') }}" method="POST" onsubmit="bloquearSubmit(event, this)">
         @csrf
 
         <div class="bg-white rounded-2xl shadow-md p-8">
             <h3 class="text-xl font-bold mb-6 text-gray-700">Cadastrar Horário</h3>
+
+            <!-- FORMULÁRIO -->
+            @if($horariosTreino->isEmpty())
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded mb-6">
+                <p class="font-semibold">Atenção</p>
+                <p>Não existe nenhum horário cadastrado. É necessário cadastrar uma horários antes de criar a grade.</p>
+
+                <a href="{{ route('horario_treino') }}"
+                    class="inline-block mt-2 text-sm text-blue-600 hover:underline">
+                    Cadastrar horários agora →
+                </a>
+            </div>
+            @endif
 
             <!-- PROFESSOR + MODALIDADE -->
             <div class="flex gap-6 mb-4">
@@ -53,14 +56,12 @@
                     </select>
                 </div>
 
+                <!-- MODALIDADE -->
                 <div class="flex-1">
                     <label class="text-sm font-medium text-gray-600">Modalidade</label>
                     <select id="modalidadeSelect" name="grade_modalidade" disabled required
                         class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100">
                         <option value="">Selecione a modalidade</option>
-                        @foreach ($horariosTreino->unique('hora_modalidade') as $h)
-                        <option value="{{ $h->hora_modalidade }}">{{ $h->hora_modalidade }}</option>
-                        @endforeach
                     </select>
                 </div>
             </div>
@@ -145,13 +146,19 @@
         </div>
     </form>
 </div>
-@include('view_admin_user.view_admin.view_grade_horarios.agenda_semanal')
-<!-- JS -->
-<script>
-    const professor = document.getElementById('professorSelect');
-    const modalidade = document.getElementById('modalidadeSelect');
-    const horario = document.getElementById('horarioTreinoSelect');
+<div id="profData"
+    data-professores='@json($professores)'
+    data-horarios='@json($horariosTreino)'>
+</div>
 
+@include('view_admin_user.view_admin.view_grade_horarios.agenda_semanal')
+<script>
+    const profData = JSON.parse(document.getElementById('profData').dataset.professores);
+    const horariosData = JSON.parse(document.getElementById('profData').dataset.horarios);
+
+    const professorSelect = document.getElementById('professorSelect');
+    const modalidadeSelect = document.getElementById('modalidadeSelect');
+    const horarioSelect = document.getElementById('horarioTreinoSelect');
     const diaTexto = document.getElementById('gradeDiaTexto');
     const diaNumero = document.getElementById('gradeDiaNumero');
     const inicio = document.getElementById('gradeInicio');
@@ -167,31 +174,6 @@
         7: 'Sábado'
     };
 
-    function toggleCadastro() {
-        cadastroForm.classList.toggle('hidden');
-        formCadastro.reset();
-        resetCampos();
-    }
-
-    function fecharCadastro() {
-        cadastroForm.classList.add('hidden');
-    }
-
-
-    function bloquearSubmit(event, form) {
-
-        if (!form.checkValidity()) {
-            return; // deixa validação normal do HTML
-        }
-
-        const btn = form.querySelector('button[type="submit"]');
-
-        if (btn) {
-            btn.disabled = true;
-            btn.innerText = 'Salvando...';
-        }
-    }
-
     function resetCampos() {
         diaTexto.value = '';
         diaNumero.value = '';
@@ -199,42 +181,105 @@
         fim.value = '';
     }
 
-    professor.addEventListener('change', () => {
-        modalidade.disabled = !professor.value;
-        horario.disabled = true;
-        modalidade.value = ''; // LIMPA MODALIDADE
-        horario.value = '';
+    function toggleCadastro() {
+        cadastroForm.classList.toggle('hidden');
+        formCadastro.reset();
         resetCampos();
-    });
+        modalidadeSelect.innerHTML = `<option value="">Selecione a modalidade</option>`;
+        modalidadeSelect.disabled = true;
+        horarioSelect.innerHTML = `<option value="">Selecione o horário</option>`;
+        horarioSelect.disabled = true;
+    }
 
-    modalidade.addEventListener('change', () => {
-        horario.disabled = !modalidade.value;
-        horario.value = '';
-        [...horario.options].forEach(o => {
-            if (!o.dataset.modalidade) return;
-            o.hidden = o.dataset.modalidade !== modalidade.value;
+    function fecharCadastro() {
+        cadastroForm.classList.add('hidden');
+    }
+
+    function bloquearSubmit(event, form) {
+        if (!form.checkValidity()) return;
+        const btn = form.querySelector('button[type="submit"]');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Salvando...';
+        }
+    }
+
+    // 1) PROFESSOR → popula modalidades do professor
+    professorSelect.addEventListener('change', () => {
+        modalidadeSelect.innerHTML = `<option value="">Selecione a modalidade</option>`;
+        modalidadeSelect.disabled = true;
+        horarioSelect.innerHTML = `<option value="">Selecione o horário</option>`;
+        horarioSelect.disabled = true;
+        resetCampos();
+
+        const prof = profData.find(p => p.id_professor == professorSelect.value);
+        if (!prof) return;
+
+        const modalidadesVistas = new Set();
+        prof.detalhes.forEach(d => {
+            const modNome = d.graduacao?.modalidade?.mod_nome;
+            if (modNome && !modalidadesVistas.has(modNome)) {
+                modalidadesVistas.add(modNome);
+                const opt = document.createElement('option');
+                opt.value = modNome;
+                opt.textContent = modNome;
+                modalidadeSelect.appendChild(opt);
+            }
         });
-        resetCampos();
+
+        if (modalidadesVistas.size === 0) {
+            alert(`O professor ${prof.prof_nome} não possui modalidade cadastrada, cadastre  prosseguir`);
+            professorSelect.value = '';
+            return;
+        }
+
+        modalidadeSelect.disabled = false;
     });
 
-    horario.addEventListener('change', () => {
-        const opt = horario.options[horario.selectedIndex];
+    // 2) MODALIDADE → reconstrói options de horário filtrando pelo mod_nome
+    modalidadeSelect.addEventListener('change', () => {
+        horarioSelect.innerHTML = `<option value="">Selecione o horário</option>`;
+        horarioSelect.disabled = true;
+        resetCampos();
+
+        const modSelecionada = modalidadeSelect.value;
+        if (!modSelecionada) return;
+
+        // filtra os horários cujo hora_modalidade bate com o nome da modalidade
+        const horariosFiltrados = horariosData.filter(h => h.hora_modalidade === modSelecionada);
+
+        if (horariosFiltrados.length === 0) {
+            alert(`Nenhum horário disponível para a modalidade "${modSelecionada}".`);
+            return;
+        }
+
+        horariosFiltrados.forEach(h => {
+            const opt = document.createElement('option');
+            opt.value = h.id_hora;
+            opt.dataset.modalidade = h.hora_modalidade;
+            opt.dataset.dia = h.hora_semana;
+            opt.dataset.inicio = h.hora_inicio;
+            opt.dataset.fim = h.hora_fim;
+            opt.textContent = `${h.hora_modalidade} | ${h.hora_semana} | ${h.hora_inicio.substring(0,5)} - ${h.hora_fim.substring(0,5)}`;
+            horarioSelect.appendChild(opt);
+        });
+
+        horarioSelect.disabled = false;
+    });
+
+    // 3) HORÁRIO → preenche dia/início/fim
+    horarioSelect.addEventListener('change', () => {
+        const opt = horarioSelect.options[horarioSelect.selectedIndex];
         if (!opt.value) {
             resetCampos();
             return;
         }
 
         const diasArray = opt.dataset.dia.split(',').map(d => d.trim());
-
         diaNumero.value = diasArray.join(',');
-
-        diaTexto.value = diasArray
-            .map(d => mapaDias[d])
-            .filter(Boolean)
-            .join(', ');
-
-        inicio.value = opt.dataset.inicio;
-        fim.value = opt.dataset.fim;
+        diaTexto.value = diasArray.map(d => mapaDias[d]).filter(Boolean).join(', ');
+        inicio.value = opt.dataset.inicio.substring(0, 5);
+        fim.value = opt.dataset.fim.substring(0, 5);
     });
 </script>
 @endsection

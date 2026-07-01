@@ -189,27 +189,29 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
             ? round(($presencas / $totalAulas) * 100)
             : 0;
 
-            $detalhes = \App\Models\DetalhesAluno::where('aluno_id_aluno', $matricula->aluno->id_aluno)
-            ->where('det_modalidade', $grade->grade_modalidade)
-            ->ordenarPorFaixaInverso()
-            ->orderByDesc('det_grau')
+            $detalhes = \App\Models\DetalhesAluno::with('graduacao')
+            ->where('aluno_id_aluno', $matricula->aluno->id_aluno)
+            ->whereHas('graduacao.modalidade', function ($q) use ($grade) {
+            $q->where('mod_nome', $grade->grade_modalidade);
+            })
+            ->orderByDesc('det_data')
+            ->orderByDesc(
+            \App\Models\Graduacao::select('gradu_ordem')
+            ->whereColumn('graduacao.id_graduacao', 'detalhes_aluno.id_graduacao')
+            ->limit(1)
+            )
             ->first();
 
             $meta = 0;
 
-            if ($detalhes) {
-            $metaGraduacao = \App\Models\Graduacao::where('gradu_nome_cor', $detalhes->det_gradu_nome_cor)
-            ->where('gradu_grau', $detalhes->det_grau)
-            ->first();
-
-            $meta = $metaGraduacao->gradu_meta ?? 0;
+            if ($detalhes && $detalhes->graduacao) {
+            $meta = $detalhes->graduacao->gradu_meta ?? 0;
             }
 
             $barra = $meta > 0
             ? min(100, round(($presencas / $meta) * 100))
             : 0;
             @endphp
-
             <tr class="border-b hover:bg-gray-50 transition linha-aluno"
                 data-presencas="{{ $presencas }}"
                 data-barra="{{ $barra }}">

@@ -66,50 +66,52 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="text-sm font-medium text-gray-600">Graduação</label>
-                    <select name="det_gradu_nome_cor" onchange="preencherGraus(this)" class="w-full border rounded-lg px-3 py-2" required>
-                        <option value="">Selecione uma graduação</option>
-                        @php
-                        $cores = [];
-                        @endphp
-                        @foreach($graduacoesTotais as $g)
-                        @if(!in_array($g->gradu_nome_cor, $cores))
-                        @php
-                        $cores[] = $g->gradu_nome_cor;
-                        // pega todos os graus dessa cor
-                        $grausDaCor = $graduacoesTotais->filter(fn($x) => $x->gradu_nome_cor == $g->gradu_nome_cor)->pluck('gradu_grau')->sort()->values()->all();
-                        @endphp
-                        <option value="{{ $g->gradu_nome_cor }}" data-graus="{{ implode(',', $grausDaCor) }}">
-                            {{ $g->gradu_nome_cor }}
+                    <select id="modalidadeCadastro"
+                        class="w-full border rounded-lg px-3 py-2">
+                        <option value="">Selecione a modalidade</option>
+
+                        @foreach($modalidades as $modalidade)
+                        <option value="{{ $modalidade->id_modalidade }}">
+                            {{ $modalidade->mod_nome }}
                         </option>
-                        @endif
                         @endforeach
                     </select>
                 </div>
 
                 <div>
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Grau</label>
-                        <select name="det_grau" class="w-full border rounded-lg px-3 py-2 grau-input" required>
-                            <option value="">Selecione primeiro uma graduação</option>
-                        </select>
-                    </div>
+                    <label class="text-sm font-medium text-gray-600">
+                        Faixa
+                    </label>
 
+                    <select id="faixaCadastro"
+                        class="w-full border rounded-lg px-3 py-2"
+                        disabled>
+                        <option value="">Selecione a faixa</option>
+                    </select>
                 </div>
 
-
                 <div>
-                    <label class="text-sm font-medium text-gray-600">Modalidade</label>
-                    <select name="det_modalidade" class="w-full border rounded-lg px-3 py-2" required>
-                        <option value="">Selecione</option>
-                        @foreach($modalidades as $modalidade)
-                        <option value="{{ $modalidade->mod_nome }}">{{ $modalidade->mod_nome }}</option>
-                        @endforeach
+                    <label class="text-sm font-medium text-gray-600">
+                        Grau
+                    </label>
+
+                    <select name="id_graduacao"
+                        id="grauCadastro"
+                        class="w-full border rounded-lg px-3 py-2"
+                        required
+                        disabled>
+                        <option value="">Selecione o grau</option>
                     </select>
                 </div>
 
                 <div>
                     <label class="text-sm font-medium text-gray-600">Data</label>
-                    <input type="date" name="det_data" class="w-full border rounded-lg px-3 py-2" required>
+                    <input type="date"
+                        name="det_data"
+                        id="dataGraduacaoProfessor"
+                        class="w-full border rounded-lg px-3 py-2"
+                        max="{{ now()->format('Y-m-d') }}"
+                        required>
                 </div>
 
                 <div class="md:col-span-2">
@@ -156,10 +158,11 @@
                 </label>
                 <select id="filtroModalidade"
                     class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+                    focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
                     <option value="">Todas</option>
+
                     @foreach($modalidades as $modalidade)
-                    <option value="{{ strtolower($modalidade->mod_nome) }}">
+                    <option value="{{ $modalidade->id_modalidade }}">
                         {{ $modalidade->mod_nome }}
                     </option>
                     @endforeach
@@ -241,16 +244,26 @@
                 <tbody>
                     @forelse ($lista as $det)
                     <tr class="border-b hover:bg-gray-50 transition linha-graduacao"
-                        data-graduacao="{{ strtolower($det->det_gradu_nome_cor) }}"
-                        data-modalidade="{{ strtolower($det->det_modalidade) }}">
+                        data-graduacao="{{ strtolower($det->graduacao->gradu_nome_cor) }}"
+                        data-modalidade="{{ $det->graduacao->id_modalidade }}">
+
                         <td class="py-3 px-4">
-                            <span class="bolinha-faixa" data-faixa="{{ strtolower($det->det_gradu_nome_cor) }}" style="display:inline-block; width:16px; height:16px; border-radius:50%; margin-right:8px; vertical-align:middle; border:2px solid #000; background-color:transparent;"></span>
-                            {{ $det->det_gradu_nome_cor }}
+                            <span class="bolinha-faixa"
+                                data-faixa="{{ strtolower($det->graduacao->gradu_nome_cor) }}"
+                                style="display:inline-block;width:16px;height:16px;border-radius:50%;margin-right:8px;border:2px solid #000;">
+                            </span>
+
+                            {{ $det->graduacao->gradu_nome_cor }}
                         </td>
-                        <td class="py-3 px-4">{{ $det->det_grau }}</td>
-                        <td class="py-3 px-4">{{ $det->det_modalidade }}</td>
-                        <td class="py-3 px-4">{{ \Carbon\Carbon::parse($det->det_data)->format('d/m/Y') }}</td>
+
                         <td class="py-3 px-4">
+                            {{ $det->graduacao->gradu_grau }}
+                        </td>
+
+                        <td class="py-3 px-4">
+                            {{ $det->graduacao->modalidade->mod_nome }}
+                        </td>
+                        <td class="py-3 px-4">{{ \Carbon\Carbon::parse($det->det_data)->format('d/m/Y') }}</td>
 
                         <td class="py-3 px-4 flex gap-2">
 
@@ -286,8 +299,42 @@
                 </tbody>
             </table>
 </div>
-
+<div id="graduacoes-data" style="display:none;">
+    @foreach($graduacoesTotais as $g)
+    <div
+        data-id="{{ $g->id_graduacao }}"
+        data-modalidade="{{ $g->id_modalidade }}"
+        data-faixa="{{ $g->gradu_nome_cor }}"
+        data-grau="{{ $g->gradu_grau }}"
+        data-ordem="{{ $g->gradu_ordem }}">
+    </div>
+    @endforeach
+</div>
+<script src="{{ asset('js/faixas.js') }}"></script>
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const inputData = document.getElementById('dataGraduacaoProfessor');
+
+        if (inputData) {
+            inputData.addEventListener('change', function() {
+
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
+
+                const dataSelecionada = new Date(this.value);
+
+                if (dataSelecionada > hoje) {
+                    alert('A data da graduação não pode ser futura.');
+
+                    this.value = '';
+                    this.focus();
+                }
+            });
+        }
+
+    });
+
     function toggleCadastro() {
         const form = document.getElementById('cadastroForm');
         form.classList.toggle('hidden');
@@ -314,25 +361,87 @@
         document.getElementById('cadastroForm').classList.add('hidden');
     }
 
-    function preencherGraus(select) {
-        const grauSelect = select.closest('form').querySelector('.grau-input');
-        grauSelect.innerHTML = '';
-        if (!select.value) {
-            grauSelect.innerHTML = '<option value="">Selecione primeiro uma graduação</option>';
+    // CADASTRO DE GRADUAÇÃO
+    const modalidadeSelect = document.getElementById('modalidadeCadastro');
+    const faixaSelect = document.getElementById('faixaCadastro');
+    const grauSelect = document.getElementById('grauCadastro');
+
+    const graduacoes = Array.from(
+        document.querySelectorAll('#graduacoes-data div')
+    ).map(item => ({
+        id: item.dataset.id,
+        modalidade: item.dataset.modalidade,
+        faixa: item.dataset.faixa,
+        grau: item.dataset.grau,
+        ordem: Number(item.dataset.ordem)
+    }));
+
+    modalidadeSelect.addEventListener('change', function() {
+
+        faixaSelect.innerHTML =
+            '<option value="">Selecione a faixa</option>';
+
+        grauSelect.innerHTML =
+            '<option value="">Selecione o grau</option>';
+
+        grauSelect.disabled = true;
+
+        const modalidadeId = this.value;
+
+        if (!modalidadeId) {
+            faixaSelect.disabled = true;
             return;
         }
 
-        const graus = select.selectedOptions[0].dataset.graus.split(',').sort((a, b) => a - b);
+        faixaSelect.disabled = false;
 
-        grauSelect.innerHTML = '<option value="">Selecione um grau</option>';
+        const faixas = [...new Set(
+            graduacoes
+            .filter(g => g.modalidade == modalidadeId)
+            .sort((a, b) => a.ordem - b.ordem)
+            .map(g => g.faixa)
+        )];
 
-        graus.forEach(grau => {
-            const option = document.createElement('option');
-            option.value = grau;
-            option.textContent = grau;
-            grauSelect.appendChild(option);
+        faixas.forEach(faixa => {
+            faixaSelect.innerHTML += `
+                <option value="${faixa}">
+                    ${faixa}
+                </option>
+            `;
         });
-    }
+    });
+
+    faixaSelect.addEventListener('change', function() {
+
+        grauSelect.innerHTML =
+            '<option value="">Selecione o grau</option>';
+
+        const modalidadeId = modalidadeSelect.value;
+        const faixa = this.value;
+
+        if (!faixa) {
+            grauSelect.disabled = true;
+            return;
+        }
+
+        grauSelect.disabled = false;
+
+        graduacoes
+            .filter(g =>
+                g.modalidade == modalidadeId &&
+                g.faixa == faixa
+            )
+            .sort((a, b) => a.ordem - b.ordem)
+            .forEach(g => {
+
+                grauSelect.innerHTML += `
+                    <option value="${g.id}">
+                        Grau ${g.grau}
+                    </option>
+                `;
+            });
+    });
+
 
     document.addEventListener('DOMContentLoaded', function() {
 
@@ -374,23 +483,8 @@
             aplicarFiltro();
         });
 
-    });
+        aplicarCoresFaixas(); // <- FALTAVA ISSO
 
-
-    // Bolinhas de cor
-    document.querySelectorAll('.bolinha-faixa').forEach(bolinha => {
-        const faixa = bolinha.dataset.faixa;
-        let cor = 'transparent';
-        if (faixa.includes('cinza e branca')) cor = '#808080';
-        else if (faixa.includes('branca')) cor = '#ffffff';
-        else if (faixa.includes('amarela')) cor = '#facc15';
-        else if (faixa.includes('laranja')) cor = '#f97316';
-        else if (faixa.includes('verde')) cor = '#22c55e';
-        else if (faixa.includes('azul')) cor = '#2563eb';
-        else if (faixa.includes('roxa')) cor = '#7c3aed';
-        else if (faixa.includes('marrom')) cor = '#78350f';
-        else if (faixa.includes('preta')) cor = '#000000';
-        bolinha.style.backgroundColor = cor;
     });
 </script>
 

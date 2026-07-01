@@ -27,7 +27,11 @@ class GradeHorarioController extends Controller
 
         $professores = Professor::all();
         $modalidades = Modalidade::where('id_emp_id', $user->id_emp_id)->get();
+
         $horariosTreino = HorarioTreino::whereDoesntHave('gradeHorario')->get();
+
+        $professores = Professor::with('detalhes.graduacao.modalidade')->get();
+
         $turmas = Turma::where('id_emp_id', $user->id_emp_id)->get();
 
         return view('view_admin_user.view_admin.view_grade_horarios.index', compact(
@@ -35,7 +39,8 @@ class GradeHorarioController extends Controller
             'professores',
             'horariosTreino',
             'turmas',
-            'modalidades'
+            'modalidades',
+            'professores'
         ));
     }
 
@@ -48,8 +53,8 @@ class GradeHorarioController extends Controller
             'horario_treino_id_hora' => 'required|exists:horario_treino,id_hora',
             'grade_modalidade'       => 'required|string|max:80',
             'grade_dia_semana'       => 'required|string|max:80',
-            'grade_inicio'           => 'required|date_format:H:i:s',
-            'grade_fim'              => 'required|date_format:H:i:s',
+            'grade_inicio'           => 'required|date_format:H:i,H:i:s',
+            'grade_fim'              => 'required|date_format:H:i,H:i:s',
             'grade_turma'            => 'required|string|max:60',
             'grade_desc'             => 'required|string',
         ]);
@@ -107,11 +112,14 @@ class GradeHorarioController extends Controller
             ->where('id_emp_id', $user->id_emp_id)
             ->firstOrFail();
 
-        $professores = Professor::all();
+        $professores = Professor::with('detalhes.graduacao.modalidade')->get();
+
         $horariosTreino = HorarioTreino::whereDoesntHave('gradeHorario')
             ->orWhere('id_hora', $grade->horario_treino_id_hora)
             ->get();
+
         $turmas = Turma::where('id_emp_id', $user->id_emp_id)->get();
+
         return view('view_admin_user.view_admin.view_grade_horarios.edit', compact(
             'grade',
             'professores',
@@ -138,8 +146,8 @@ class GradeHorarioController extends Controller
             'horario_treino_id_hora' => 'required|exists:horario_treino,id_hora',
             'grade_modalidade'       => 'required|string|max:80',
             'grade_dia_semana'       => 'required|string|max:80',
-            'grade_inicio'           => 'required|date_format:H:i:s',
-            'grade_fim'              => 'required|date_format:H:i:s',
+            'grade_inicio'           => 'required|date_format:H:i,H:i:s',
+            'grade_fim'              => 'required|date_format:H:i,H:i:s',
             'grade_turma'            => 'required|string|max:60',
             'grade_desc'             => 'required|string',
         ]);
@@ -163,6 +171,23 @@ class GradeHorarioController extends Controller
             ->with('success', 'Grade de horário atualizada com sucesso!');
     }
 
+    public function show($id)
+    {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+        $grade = GradeHorario::with(['professor', 'matriculas'])
+            ->where('id_grade', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
+        return view('view_admin_user.view_admin.view_grade_horarios.show', compact('grade'));
+    }
+
     public function destroy($id)
     {
         try {
@@ -175,6 +200,12 @@ class GradeHorarioController extends Controller
         $grade = GradeHorario::where('id_grade', $id)
             ->where('id_emp_id', $user->id_emp_id)
             ->firstOrFail();
+
+        if ($grade->matriculas()->exists()) {
+            return redirect()
+                ->route('grade_horarios')
+                ->withErrors(['erro' => 'Não é possível excluir esta grade pois existem matrículas vinculadas a ela.']);
+        }
 
         $grade->delete();
 

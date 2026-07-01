@@ -4,8 +4,8 @@
     <div class="flex items-center gap-3 mb-3">
         <span class="text-2xl">⚠️</span>
         <div>
-            <p class="font-extrabold text-lg">Erro ao salvar!</p>
-            <p class="text-sm">Corrija os campos antes de continuar.</p>
+            <p class="font-extrabold text-lg">Erro ao prosseguir!</p>
+            <p class="text-sm">Corrija os pontos antes de continuar.</p>
         </div>
     </div>
 

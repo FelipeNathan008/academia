@@ -30,7 +30,7 @@ class ResponsavelController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('view_admin_user.view_principal.view_responsavel.index', compact('responsaveis','totalResponsaveis'));
+        return view('view_admin_user.view_principal.view_responsavel.index', compact('responsaveis', 'totalResponsaveis'));
     }
 
     // CADASTRAR RESPONSÁVEL
@@ -42,8 +42,6 @@ class ResponsavelController extends Controller
             'resp_cpf' => preg_replace('/\D/', '', $request->resp_cpf),
             'resp_cep' => preg_replace('/\D/', '', $request->resp_cep),
             'resp_telefone' => preg_replace('/\D/', '', $request->resp_telefone),
-
-            'id_emp_id' => $user->id_emp_id
         ]);
 
         $request->validate([
@@ -60,13 +58,14 @@ class ResponsavelController extends Controller
             'resp_cidade' => 'required|string|max:150',
         ]);
 
-        $jaExiste = Responsavel::where('resp_cpf', $request->resp_cpf)
-            ->where('id_emp_id', $user->id_emp_id)
-            ->exists();
+        // VERIFICA DUPLICIDADE DE CPF (descriptografando em PHP, pois o valor no banco é cifrado)
+        $cpfJaExiste = Responsavel::where('id_emp_id', $user->id_emp_id)
+            ->get()
+            ->contains(fn($r) => $r->resp_cpf === $request->resp_cpf);
 
-        if ($jaExiste) {
+        if ($cpfJaExiste) {
             return back()->withErrors([
-                'resp_cpf' => 'Erro, Já existe esse CPF cadastrado.'
+                'resp_cpf' => 'Erro, já existe esse CPF cadastrado.'
             ])->withInput();
         }
 
@@ -114,14 +113,22 @@ class ResponsavelController extends Controller
             ->firstOrFail();
 
         $request->merge([
-            'resp_cpf' => preg_replace('/\D/', '', $request->resp_cpf),
             'resp_cep' => preg_replace('/\D/', '', $request->resp_cep),
         ]);
+
+        // Só normaliza/valida CPF se o campo foi preenchido (ou seja, o admin optou por alterar)
+        $cpfAlterado = $request->filled('resp_cpf');
+
+        if ($cpfAlterado) {
+            $request->merge([
+                'resp_cpf' => preg_replace('/\D/', '', $request->resp_cpf),
+            ]);
+        }
 
         $request->validate([
             'resp_nome' => 'required|string|max:120',
             'resp_parentesco' => 'required|string|max:60',
-            'resp_cpf' => 'required|string|size:11',
+            'resp_cpf' => $cpfAlterado ? 'required|string|size:11' : 'nullable',
             'resp_telefone' => 'required|string|max:20',
             'resp_email' => 'required|email|max:150',
             'resp_cep' => 'required|digits:8',
@@ -132,23 +139,28 @@ class ResponsavelController extends Controller
             'resp_cidade' => 'required|string|max:150',
         ]);
 
-        $jaExiste = Responsavel::where('resp_cpf', $request->resp_cpf)
-            ->where('id_responsavel', '!=', $id)
-            ->where('id_emp_id', $user->id_emp_id)
-            ->exists();
+        if ($cpfAlterado) {
+            $cpfJaExiste = Responsavel::where('id_emp_id', $user->id_emp_id)
+                ->where('id_responsavel', '!=', $id)
+                ->get()
+                ->contains(fn($r) => $r->resp_cpf === $request->resp_cpf);
 
-        if ($jaExiste) {
-            return back()->withErrors([
-                'resp_cpf' => 'Erro, Já existe esse CPF cadastrado.'
-            ])->withInput();
+            if ($cpfJaExiste) {
+                return back()->withErrors([
+                    'resp_cpf' => 'Erro, já existe esse CPF cadastrado.'
+                ])->withInput();
+            }
         }
 
-        $responsavel->update($request->all());
+        $dados = $request->except($cpfAlterado ? [] : ['resp_cpf']);
+
+        $responsavel->update($dados);
 
         return redirect()
             ->route('responsaveis')
             ->with('success', 'Responsável atualizado com sucesso!');
     }
+    
 
     // EXCLUIR RESPONSÁVEL
     public function destroy($id)

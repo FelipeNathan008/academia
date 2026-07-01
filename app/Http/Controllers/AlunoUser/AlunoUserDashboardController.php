@@ -19,79 +19,61 @@ class AlunoUserDashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-
         $responsavel = $user->responsavel;
 
         if (!$responsavel) {
             abort(403);
         }
 
-        // TOTAL DE ALUNOS DO RESPONSÁVEL
-        $totalAlunos = Aluno::where('responsavel_id_responsavel', $responsavel->id_responsavel)
-            ->count();
+        $totalAlunos = Aluno::where('responsavel_id_responsavel', $responsavel->id_responsavel)->count();
 
-        // TOTAL DE BOLSISTAS
         $totalBolsistas = Aluno::where('responsavel_id_responsavel', $responsavel->id_responsavel)
             ->where('aluno_bolsista', 'sim')
             ->count();
 
-        // IDs DOS ALUNOS
         $alunosIds = Aluno::where('responsavel_id_responsavel', $responsavel->id_responsavel)
             ->pluck('id_aluno');
 
-        $alunos = Aluno::where(
-            'responsavel_id_responsavel',
-            $responsavel->id_responsavel
-        )->get();
+        $alunos = Aluno::where('responsavel_id_responsavel', $responsavel->id_responsavel)->get();
 
-        $alunoSelecionado = request('aluno_id');
-        $matriculaSelecionada = null;
-        if (!$alunoSelecionado) {
-            $matriculaSelecionada = null;
-        }
-        if (request('matricula_id')) {
-
+        // DESCRIPTOGRAFA aluno_id
+        $alunoSelecionado = null;
+        if (request('aluno_id')) {
             try {
-
-                $matriculaSelecionada = decrypt(
-                    request('matricula_id')
-                );
+                $alunoSelecionado = decrypt(request('aluno_id'));
             } catch (\Exception $e) {
+                $alunoSelecionado = null;
+            }
+        }
 
+        // DESCRIPTOGRAFA matricula_id
+        $matriculaSelecionada = null;
+        if (request('matricula_id')) {
+            try {
+                $matriculaSelecionada = decrypt(request('matricula_id'));
+            } catch (\Exception $e) {
                 $matriculaSelecionada = null;
             }
         }
 
-        if ($matriculaSelecionada) {
-
-            $matriculaValida = Matricula::where(
-                'id_matricula',
-                $matriculaSelecionada
-            )
-                ->where(
-                    'aluno_id_aluno',
-                    $alunoSelecionado
-                )
+        // VALIDA se matrícula pertence ao aluno selecionado
+        if ($matriculaSelecionada && $alunoSelecionado) {
+            $matriculaValida = Matricula::where('id_matricula', $matriculaSelecionada)
+                ->where('aluno_id_aluno', $alunoSelecionado)
                 ->exists();
 
             if (!$matriculaValida) {
-
                 $matriculaSelecionada = null;
-
-                $presencas = 0;
-                $faltas = 0;
             }
         }
-        $matriculas = collect();
 
+        $matriculas = collect();
         $presencas = 0;
         $faltas = 0;
-
         $meta = 0;
         $barraMeta = 0;
 
         if ($alunoSelecionado) {
-
             $matriculas = Matricula::with('grade')
                 ->where('aluno_id_aluno', $alunoSelecionado)
                 ->where('matri_status', '!=', 'Encerrada')
@@ -99,49 +81,32 @@ class AlunoUserDashboardController extends Controller
         }
 
         if ($matriculaSelecionada) {
+            $matricula = Matricula::with('grade', 'aluno')->find($matriculaSelecionada);
 
-            $matricula = Matricula::with('grade', 'aluno')
-                ->find($matriculaSelecionada);
-
-            $presencas = FrequenciaAluno::where(
-                'matricula_id_matricula',
-                $matriculaSelecionada
-            )
+            $presencas = FrequenciaAluno::where('matricula_id_matricula', $matriculaSelecionada)
                 ->where('freq_presenca', 'Presente')
                 ->count();
 
-            $faltas = FrequenciaAluno::where(
-                'matricula_id_matricula',
-                $matriculaSelecionada
-            )
+            $faltas = FrequenciaAluno::where('matricula_id_matricula', $matriculaSelecionada)
                 ->where('freq_presenca', 'Falta')
                 ->count();
 
-            $detalhes = DetalhesAluno::where(
-                'aluno_id_aluno',
-                $matricula->aluno_id_aluno
-            )
-                ->where(
-                    'det_modalidade',
-                    $matricula->grade->grade_modalidade
+            $detalhes = DetalhesAluno::with('graduacao.modalidade')
+                ->where('aluno_id_aluno', $matricula->aluno_id_aluno)
+                ->whereHas('graduacao.modalidade', function ($q) use ($matricula) {
+                    $q->where('mod_nome', $matricula->grade->grade_modalidade);
+                })
+                ->orderByDesc('det_data')
+                ->orderByDesc(
+                    Graduacao::select('gradu_ordem')
+                        ->whereColumn('graduacao.id_graduacao', 'detalhes_aluno.id_graduacao')
+                        ->limit(1)
                 )
-                ->ordenarPorFaixaInverso()
-                ->orderByDesc('det_grau')
                 ->first();
 
-            if ($detalhes) {
-
-                $graduacao = Graduacao::where(
-                    'gradu_nome_cor',
-                    $detalhes->det_gradu_nome_cor
-                )
-                    ->where(
-                        'gradu_grau',
-                        $detalhes->det_grau
-                    )
-                    ->first();
-
-                $meta = $graduacao->gradu_meta ?? 0;
+            $meta = 0;
+            if ($detalhes && $detalhes->graduacao) {
+                $meta = $detalhes->graduacao->gradu_meta ?? 0;
             }
 
             $barraMeta = $meta > 0
@@ -150,13 +115,10 @@ class AlunoUserDashboardController extends Controller
         }
 
         $totalFrequencias = $presencas + $faltas;
-
         $percentualPresenca = $totalFrequencias > 0
             ? round(($presencas * 100) / $totalFrequencias, 1)
             : 0;
 
-
-        // TOTAL MENSAL
         $receitaMensal = DetalhesMensalidade::whereMonth('det_mensa_data_venc', Carbon::now()->month)
             ->whereYear('det_mensa_data_venc', Carbon::now()->year)
             ->whereHas('mensalidade.matricula', function ($q) use ($alunosIds) {
@@ -164,7 +126,6 @@ class AlunoUserDashboardController extends Controller
             })
             ->sum('det_mensa_valor');
 
-        // TOTAL PAGO
         $receitaMensalPago = DetalhesMensalidade::whereMonth('det_mensa_data_venc', Carbon::now()->month)
             ->whereYear('det_mensa_data_venc', Carbon::now()->year)
             ->where('det_mensa_status', 'Pago')
@@ -173,17 +134,13 @@ class AlunoUserDashboardController extends Controller
             })
             ->sum('det_mensa_valor');
 
-        // ATUALIZA ATRASADOS
         DetalhesMensalidade::where('det_mensa_status', 'Em aberto')
             ->whereDate('det_mensa_data_venc', '<', Carbon::today())
             ->whereHas('mensalidade.matricula', function ($q) use ($alunosIds) {
                 $q->whereIn('aluno_id_aluno', $alunosIds);
             })
-            ->update([
-                'det_mensa_status' => 'Atrasado'
-            ]);
+            ->update(['det_mensa_status' => 'Atrasado']);
 
-        // TOTAL ATRASADO
         $mensalidadesAtrasadas = DetalhesMensalidade::where('det_mensa_status', 'Atrasado')
             ->whereHas('mensalidade.matricula', function ($q) use ($alunosIds) {
                 $q->whereIn('aluno_id_aluno', $alunosIds);

@@ -187,13 +187,22 @@
                     </label>
 
                     <input type="text"
+                        value="{{ $responsavel->resp_cpf_mascarado }}"
+                        disabled
+                        class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100 text-gray-500">
+
+                    <label class="inline-flex items-center mt-2 text-sm text-gray-600 cursor-pointer">
+                        <input type="checkbox" id="alterarCpfCheck" class="mr-2" onchange="toggleCpfInput()">
+                        Alterar CPF
+                    </label>
+
+                    <input type="text"
                         name="resp_cpf"
+                        id="resp_cpf_input"
                         maxlength="14"
-                        required
                         placeholder="000.000.000-00"
-                        value="{{ old('resp_cpf', $responsavel->resp_cpf) }}"
                         oninput="mascaraCPF(this)"
-                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                        class="hidden w-full border rounded-lg px-4 py-2 mt-2 focus:ring-2 focus:ring-[#8E251F]">
                 </div>
 
                 <div class="flex-1">
@@ -347,11 +356,7 @@
                 <p class="text-xs uppercase text-gray-400">CPF</p>
 
                 <p class="text-lg font-semibold text-gray-800">
-                    @if($responsavel->resp_cpf)
-                    {{ preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', preg_replace('/\D/', '', $responsavel->resp_cpf)) }}
-                    @else
-                    -
-                    @endif
+                    {{ $responsavel->resp_cpf_mascarado }}
                 </p>
             </div>
 
@@ -440,6 +445,21 @@
 
     function fecharEdicao() {
         document.getElementById('editForm').classList.add('hidden');
+    }
+
+    function toggleCpfInput() {
+        const checkbox = document.getElementById('alterarCpfCheck');
+        const input = document.getElementById('resp_cpf_input');
+
+        if (checkbox.checked) {
+            input.classList.remove('hidden');
+            input.required = true;
+            input.value = '';
+        } else {
+            input.classList.add('hidden');
+            input.required = false;
+            input.value = '';
+        }
     }
 
     function validarNome(input) {

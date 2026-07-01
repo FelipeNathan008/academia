@@ -47,8 +47,8 @@
 
                 <p class="text-lg font-semibold text-gray-800">
 
-                    @if($responsavel->resp_cpf)
-                    {{ preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', preg_replace('/\D/', '', $responsavel->resp_cpf)) }}
+                    @if($responsavel->resp_cpf_mascarado)
+                    {{ $responsavel->resp_cpf_mascarado }}
                     @else
                     -
                     @endif

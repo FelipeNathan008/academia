@@ -179,7 +179,24 @@
 
             <tr class="border-b hover:bg-gray-50 transition">
                 <!-- NOME -->
-                <td class="py-3 px-4">{{ $aluno->aluno_nome }}</td>
+
+                <td class="py-3 px-4">
+                    {{ $aluno->aluno_nome }}
+
+                    @if(strtolower($aluno->aluno_bolsista) === 'sim')
+                    <span style="
+                        display:inline-block;
+                        margin-left:6px;
+                        padding:2px 8px;
+                        font-size:0.7rem;
+                        font-weight:600;
+                        border-radius:9999px;
+                        color:#854d0e;
+                        background-color:#fef9c3;">
+                        🎓 Bolsista
+                    </span>
+                    @endif
+                </td>
 
                 <!-- PARENTESCO -->
                 <td

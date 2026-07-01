@@ -40,7 +40,7 @@
 
     <div class="p-6 bg-white rounded-xl shadow-sm">
         <h3 class="font-semibold text-lg mb-2">Matrículas Ativas</h3>
-        <p class="text-2xl font-bold mb-2">{{ $totalMatriculas }}</p>
+        <p class="text-2xl font-bold mb-2">{{ $totalMatriculasAtivas }}</p>
         <span class="text-sm text-gray-500">Total de Matrículas Cadastradas</span>
     </div>
 
@@ -90,6 +90,7 @@
 </div>
 
 
+
 <div style="
     background: white;
     padding: 14px;
@@ -124,6 +125,7 @@
             data-labels='@json($graficoLabels)'
             data-dados='@json($graficoDados)'
             data-dados-encerrados='@json($graficoDadosEncerrados)'
+            data-dados-pausados='@json($graficoDadosPausados)'
             style="width: 100%; height: 100%;">
         </canvas>
     </div>
@@ -142,26 +144,37 @@
             const labels = JSON.parse(canvas.dataset.labels);
             const dados = JSON.parse(canvas.dataset.dados);
             const dadosEncerrados = JSON.parse(canvas.dataset.dadosEncerrados);
+            const dadosPausados = JSON.parse(canvas.dataset.dadosPausados);
 
             new Chart(canvas, {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [{
-                            label: 'Matrículas Ativas',
+                            label: 'Matrículas Cadastradas',
                             data: dados,
+                            backgroundColor: 'rgba(22, 101, 52, 0.7)',
+                            borderColor: 'rgba(22, 101, 52, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Matrículas Pausadas',
+                            data: dadosPausados,
+                            backgroundColor: 'rgba(234, 88, 12, 0.7)',
+                            borderColor: 'rgba(234, 88, 12, 1)',
                             borderWidth: 1
                         },
                         {
                             label: 'Matrículas Encerradas',
                             data: dadosEncerrados,
+                            backgroundColor: 'rgba(220, 38, 38, 0.7)',
+                            borderColor: 'rgba(220, 38, 38, 1)',
                             borderWidth: 1
                         }
                     ]
                 }
             });
         }
-
 
 
     });

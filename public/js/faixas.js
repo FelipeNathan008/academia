@@ -1,3 +1,5 @@
+// (public/js/faixas.js)
+
 const CORES_FAIXAS = {
     'branca': '#ffffff',
     'cinza': '#808080',

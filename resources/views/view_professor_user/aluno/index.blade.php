@@ -96,7 +96,6 @@
                 <th class="py-3 px-4">Responsável</th>
                 <th class="py-3 px-4">Modalidade</th>
                 <th class="py-3 px-4">Mensalidade</th>
-                <th class="py-3 px-4">Bolsista</th>
                 <th class="py-3 px-4">Matriculado</th>
                 <th class="py-3 px-4">Ações</th>
             </tr>
@@ -135,6 +134,19 @@
 
                 <td class="py-3 px-4 font-medium">
                     {{ $aluno->aluno_nome }}
+                    @if(strtolower($aluno->aluno_bolsista) === 'sim')
+                    <span style="
+                        display:inline-block;
+                        margin-left:6px;
+                        padding:2px 8px;
+                        font-size:0.7rem;
+                        font-weight:600;
+                        border-radius:9999px;
+                        color:#854d0e;
+                        background-color:#fef9c3;">
+                        🎓 Bolsista
+                    </span>
+                    @endif
                 </td>
 
                 <td class="py-3 px-4">
@@ -157,22 +169,6 @@
                     font-weight:600; border-radius:9999px;
                     color:#166534; background-color:#bbf7d0;">
                         Em dia
-                    </span>
-                    @endif
-                </td>
-
-                <td class="py-3 px-4">
-                    @if(strtolower($aluno->aluno_bolsista) === 'sim')
-                    <span style="padding:2px 8px; font-size:0.75rem;
-                    font-weight:600; border-radius:9999px;
-                    color:#166534; background-color:#bbf7d0;">
-                        Sim
-                    </span>
-                    @else
-                    <span style="padding:2px 8px; font-size:0.75rem;
-                    font-weight:600; border-radius:9999px;
-                    color:#444; background-color:#f3f4f6;">
-                        Não
                     </span>
                     @endif
                 </td>

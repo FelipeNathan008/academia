@@ -37,11 +37,10 @@
     <table class="w-full text-left border-collapse">
         <thead>
             <tr class="border-b text-gray-600 text-sm">
+                <th class="py-3 px-4">Foto</th>
                 <th class="py-3 px-4">Aluno</th>
                 <th class="py-3 px-4">Parentesco</th>
                 <th class="py-3 px-4">Idade</th>
-                <th class="py-3 px-4">Foto</th>
-                <th class="py-3 px-4">Bolsista</th>
                 <th class="py-3 px-4">Ações</th>
             </tr>
         </thead>
@@ -51,19 +50,6 @@
             @forelse($alunos as $aluno)
 
             <tr class="border-b hover:bg-gray-50 transition">
-
-                <td class="py-3 px-4">
-                    {{ $aluno->aluno_nome }}
-                </td>
-
-                <td class="py-3 px-4">
-                    {{ $aluno->aluno_parentesco }}
-                </td>
-
-                <td class="py-3 px-4">
-                    {{ \Carbon\Carbon::parse($aluno->aluno_nascimento)->age }} anos
-                </td>
-
                 <!-- FOTO -->
                 <td class="py-3 px-4">
                     @if($aluno->aluno_foto)
@@ -78,34 +64,30 @@
 
 
                 <td class="py-3 px-4">
-
-                    @if($aluno->aluno_bolsista === 'sim')
-
+                    {{ $aluno->aluno_nome }}
+                    @if(strtolower($aluno->aluno_bolsista) === 'sim')
                     <span style="
-                        padding:4px 10px;
-                        font-size:0.75rem;
+                        display:inline-block;
+                        margin-left:6px;
+                        padding:2px 8px;
+                        font-size:0.7rem;
                         font-weight:600;
                         border-radius:9999px;
-                        color:#166534;
-                        background-color:#bbf7d0;">
-                        Sim
+                        color:#854d0e;
+                        background-color:#fef9c3;">
+                        🎓 Bolsista
                     </span>
-
-                    @else
-
-                    <span style="
-                        padding:4px 10px;
-                        font-size:0.75rem;
-                        font-weight:600;
-                        border-radius:9999px;
-                        color:#7f1d1d;
-                        background-color:#fecaca;">
-                        Não
-                    </span>
-
                     @endif
-
                 </td>
+
+                <td class="py-3 px-4">
+                    {{ $aluno->aluno_parentesco }}
+                </td>
+
+                <td class="py-3 px-4">
+                    {{ \Carbon\Carbon::parse($aluno->aluno_nascimento)->age }} anos
+                </td>
+
 
                 <td class="py-3 px-4">
 

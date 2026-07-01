@@ -36,6 +36,7 @@ class HorarioTreinoController extends Controller
             'hora_modalidade' => 'required|string|max:100',
         ], [
             'hora_fim.after' => 'O horário final não pode ser menor ou igual ao horário inicial.',
+            'hora_semana.required' => 'É preciso escolher um dia da semana para cadastrar uma aula',
         ]);
 
         $dias = collect($request->hora_semana)
@@ -95,6 +96,7 @@ class HorarioTreinoController extends Controller
             'hora_modalidade' => 'required|string|max:100',
         ], [
             'hora_fim.after' => 'O horário final não pode ser menor ou igual ao horário inicial.',
+            'hora_semana.required' => 'É preciso escolher um dia da semana para atualizar a aula',
         ]);
 
         // transforma array [1,2,3] em "1,2,3"
@@ -127,6 +129,11 @@ class HorarioTreinoController extends Controller
         $horario = HorarioTreino::where('id_hora', $id)
             ->where('id_emp_id', $user->id_emp_id)
             ->firstOrFail();
+
+        if ($horario->gradeHorario()->exists()) {
+            return redirect()->route('horario_treino')
+                ->withErrors(['erro' => 'Não é possível excluir este horário pois ele está Ocupado (possui uma grade vinculada).']);
+        }
 
         $horario->delete();
 

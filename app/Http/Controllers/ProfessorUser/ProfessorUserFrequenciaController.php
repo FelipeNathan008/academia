@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\professorUser;
 
 use App\Http\Controllers\Controller;
-use App\Models\Mensalidade;
-use App\Models\DetalhesMensalidade;
+use App\Models\DetalhesAluno;
+use App\Models\Graduacao;
 use App\Models\FrequenciaAluno;
 use App\Models\GradeHorario;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
@@ -250,7 +250,7 @@ class ProfessorUserFrequenciaController extends Controller
 
         $grade = GradeHorario::with([
             'professor',
-            'matriculas.aluno.detalhes',
+            'matriculas.aluno.detalhes.graduacao',
             'matriculas.frequencias'
         ])
             ->where('id_grade', $id)
@@ -258,9 +258,35 @@ class ProfessorUserFrequenciaController extends Controller
             ->where('id_emp_id', $user->id_emp_id)
             ->firstOrFail();
 
+        $anoSelecionado = request()->get('ano', now()->year);
+
+        $anosDisponiveis = FrequenciaAluno::selectRaw('YEAR(freq_data_aula) as ano')
+            ->where('grade_horario_id_grade', $grade->id_grade)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->distinct()
+            ->orderByDesc('ano')
+            ->pluck('ano');
+
+        $frequenciaMensal = FrequenciaAluno::selectRaw("
+            YEAR(freq_data_aula) as ano,
+            MONTH(freq_data_aula) as mes,
+            freq_presenca,
+            COUNT(*) as total
+        ")
+            ->where('grade_horario_id_grade', $grade->id_grade)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->whereYear('freq_data_aula', $anoSelecionado)
+            ->groupBy(
+                DB::raw('YEAR(freq_data_aula)'),
+                DB::raw('MONTH(freq_data_aula)'),
+                'freq_presenca'
+            )
+            ->orderBy('mes')
+            ->get();
+
         return view(
             'view_professor_user.frequencia_aluno.relatorio_professor',
-            compact('grade')
+            compact('grade', 'frequenciaMensal', 'anosDisponiveis', 'anoSelecionado')
         );
     }
 }

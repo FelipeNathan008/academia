@@ -9,6 +9,8 @@ use App\Models\Matricula;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
+use App\Models\FrequenciaAluno;
+use Illuminate\Support\Facades\DB;
 
 class AlunoUserFrequenciaController extends Controller
 {
@@ -49,20 +51,23 @@ class AlunoUserFrequenciaController extends Controller
         $totalPresencasGeral = $matricula->frequencias->where('freq_presenca', 'Presente')->count();
         $totalFaltasGeral = $matricula->frequencias->where('freq_presenca', 'Falta')->count();
 
-        $detalhes = DetalhesAluno::where('aluno_id_aluno', $matricula->aluno->id_aluno)
-            ->where('det_modalidade', $grade->grade_modalidade)
-            ->ordenarPorFaixaInverso()
-            ->orderByDesc('det_grau')
+        $detalhes = DetalhesAluno::with('graduacao')
+            ->where('aluno_id_aluno', $matricula->aluno->id_aluno)
+            ->whereHas('graduacao.modalidade', function ($q) use ($grade) {
+                $q->where('mod_nome', $grade->grade_modalidade);
+            })
+            ->orderByDesc('det_data')
+            ->orderByDesc(
+                Graduacao::select('gradu_ordem')
+                    ->whereColumn('graduacao.id_graduacao', 'detalhes_aluno.id_graduacao')
+                    ->limit(1)
+            )
             ->first();
 
         $meta = 0;
 
-        if ($detalhes) {
-            $metaGraduacao = Graduacao::where('gradu_nome_cor', $detalhes->det_gradu_nome_cor)
-                ->where('gradu_grau', $detalhes->det_grau)
-                ->first();
-
-            $meta = $metaGraduacao->gradu_meta ?? 0;
+        if ($detalhes && $detalhes->graduacao) {
+            $meta = $detalhes->graduacao->gradu_meta ?? 0;
         }
 
         $percentual = $totalAulas > 0
@@ -73,6 +78,32 @@ class AlunoUserFrequenciaController extends Controller
             ? min(100, round(($totalPresencasGeral / $meta) * 100))
             : 0;
 
+        $anoSelecionado = request()->get('ano', now()->year);
+
+        $anosDisponiveis = FrequenciaAluno::selectRaw('YEAR(freq_data_aula) as ano')
+            ->where('matricula_id_matricula', $matricula->id_matricula)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->distinct()
+            ->orderByDesc('ano')
+            ->pluck('ano');
+
+        $frequenciaMensal = FrequenciaAluno::selectRaw("
+        YEAR(freq_data_aula) as ano,
+        MONTH(freq_data_aula) as mes,
+        freq_presenca,
+        COUNT(*) as total
+    ")
+            ->where('matricula_id_matricula', $matricula->id_matricula)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->whereYear('freq_data_aula', $anoSelecionado)
+            ->groupBy(
+                DB::raw('YEAR(freq_data_aula)'),
+                DB::raw('MONTH(freq_data_aula)'),
+                'freq_presenca'
+            )
+            ->orderBy('mes')
+            ->get();
+
         return view('view_aluno_user.frequencia.visualizar', compact(
             'matricula',
             'grade',
@@ -82,7 +113,10 @@ class AlunoUserFrequenciaController extends Controller
             'detalhes',
             'meta',
             'percentual',
-            'barra'
+            'barra',
+            'frequenciaMensal',
+            'anosDisponiveis',
+            'anoSelecionado'
         ));
     }
 }

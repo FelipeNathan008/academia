@@ -111,17 +111,25 @@
                     {{ $matricula->grade->grade_modalidade ?? '-' }}
                 </td>
 
+                <!-- STATUS -->
                 <td class="py-3 px-4">
                     @if ($matricula->matri_status === 'Matriculado')
                     <span class="px-2 py-1 rounded-full text-xs font-semibold"
                         style="background-color: #dcfce7; color: #166534;">
                         Matriculado
                     </span>
+                    @elseif ($matricula->matri_status === 'Pausada')
+                    <span class="px-2 py-1 rounded-full text-xs font-semibold"
+                        style="background-color: #fef9c3; color: #854d0e;">
+                        Pausada
+                    </span>
+
                     @else
                     <span class="px-2 py-1 rounded-full text-xs font-semibold"
                         style="background-color: #fee2e2; color: #991b1b;">
                         Encerrada
                     </span>
+
                     @endif
                 </td>
 

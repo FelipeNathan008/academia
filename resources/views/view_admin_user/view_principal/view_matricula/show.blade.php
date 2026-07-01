@@ -65,6 +65,7 @@
 <!-- CARD PRINCIPAL -->
 <div class="bg-white rounded-2xl shadow-md p-8">
 
+    <!-- GRID -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
 
         <!-- COLUNA 1 -->
@@ -72,9 +73,22 @@
 
             <div>
                 <p class="text-xs uppercase text-gray-400">Aluno</p>
-                <p class="text-lg font-semibold text-gray-800">
-                    {{ $matricula->aluno->aluno_nome }}
-                </p>
+
+                <div class="flex items-center gap-3 mt-1">
+                    <p class="text-lg font-semibold text-gray-800">
+                        {{ $matricula->aluno->aluno_nome }}
+                    </p>
+
+                    @if(strtolower($matricula->aluno->aluno_bolsista) === 'sim')
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                        🎓 Bolsista
+                    </span>
+                    @else
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
+                        Não bolsista
+                    </span>
+                    @endif
+                </div>
             </div>
 
             <div>
@@ -110,7 +124,6 @@
                 </p>
             </div>
 
-            <!-- MODALIDADE -->
             <div>
                 <p class="text-xs uppercase text-gray-400">Modalidade</p>
                 <p class="text-lg font-semibold text-gray-800">
@@ -134,6 +147,7 @@
             <div>
                 <p class="text-xs uppercase text-gray-400">Dias da Semana</p>
                 <p class="text-lg font-semibold text-gray-800">
+
                     @if($matricula->grade && $matricula->grade->grade_dia_semana)
 
                     @php
@@ -159,37 +173,66 @@
                     @else
                     -
                     @endif
+
                 </p>
             </div>
 
         </div>
 
+    </div>
 
-        <!-- STATUS -->
-        <div class="mt-10 pt-6 border-t">
-            <p class="text-xs uppercase text-gray-400 mb-2">Status</p>
+    <!-- STATUS -->
+    <div class="mt-10 pt-6 border-t">
+        <p class="text-xs uppercase text-gray-400 mb-2">Status</p>
 
-            @if ($matricula->matri_status === 'Matriculado')
-            <span class="px-4 py-2 text-sm rounded-full bg-green-100 text-green-700 font-medium">
-                Matriculado
-            </span>
-            @else
-            <span class="px-4 py-2 text-sm rounded-full bg-red-100 text-red-700 font-medium">
-                Matrícula Encerrada
-            </span>
-            @endif
+        @if ($matricula->matri_status === 'Matriculado')
+
+        <span class="px-4 py-2 rounded-full bg-green-100 text-green-700 font-medium text-sm">
+            Matriculado
+        </span>
+
+        @elseif ($matricula->matri_status === 'Pausada')
+
+        <span class="px-4 py-2 rounded-full bg-yellow-100 text-yellow-700 font-medium text-sm">
+            Pausada
+        </span>
+
+        @else
+
+        <span class="px-4 py-2 rounded-full bg-red-100 text-red-700 font-medium text-sm">
+            Encerrada
+        </span>
+
+        @endif
+    </div>
+
+    @if($matricula->matri_motivo)
+    <div class="mt-8">
+        <p class="text-xs uppercase text-gray-400 mb-2">
+            Motivo
+        </p>
+
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <p class="text-gray-700 leading-relaxed">
+                {{ $matricula->matri_motivo }}
+            </p>
         </div>
+    </div>
+    @endif
 
-        <!-- OBSERVAÇÕES -->
-        @if($matricula->matri_desc)
-        <div class="mt-8 pt-6 border-t">
-            <p class="text-xs uppercase text-gray-400 mb-2">Observações</p>
+    @if($matricula->matri_desc)
+    <div class="mt-8 pt-6 border-t">
+        <p class="text-xs uppercase text-gray-400 mb-2">
+            Observações
+        </p>
+
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <p class="text-gray-700 leading-relaxed">
                 {{ $matricula->matri_desc }}
             </p>
         </div>
-        @endif
-
     </div>
+    @endif
 
-    @endsection
+</div>
+@endsection

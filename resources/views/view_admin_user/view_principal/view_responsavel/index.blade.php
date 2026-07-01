@@ -234,6 +234,7 @@
         <thead>
             <tr class="border-b text-gray-600 text-sm">
                 <th class="py-3 px-4 text-left">Nome</th>
+                <th class="py-3 px-4 text-left">CPF</th>
                 <th class="py-3 px-4 text-left">Tipo</th>
                 <th class="py-3 px-4 text-left">Telefone</th>
                 <th class="py-3 px-4 text-left">Ações</th>
@@ -246,8 +247,12 @@
                     ? 'responsavel-sem-aluno' 
                     : 'hover:bg-gray-50' }}">
 
-                <td class="py-3 px-4 ">
+                <td class="py-3 px-4">
                     {{ $resp->resp_nome }}
+                </td>
+
+                <td class="py-3 px-4 font-mono text-gray-600">
+                    {{ $resp->resp_cpf_mascarado }}
                 </td>
 
                 <td class="py-3 px-4">
@@ -291,7 +296,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="5" class="text-center py-6 text-gray-500">
+                <td colspan="6" class="text-center py-6 text-gray-500">
                     Nenhum responsável cadastrado
                 </td>
             </tr>

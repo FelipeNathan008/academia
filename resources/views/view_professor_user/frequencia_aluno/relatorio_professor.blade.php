@@ -19,35 +19,25 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
 <!-- BREADCRUMB -->
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
-
         <li>
             <a href="{{ route('professor-frequencia.dias', Crypt::encrypt($grade->id_grade)) }}"
                 class="hover:text-[#8E251F] transition">
                 Frequência
             </a>
         </li>
-
         <li>/</li>
-
-        <li class="text-gray-400">
-            {{ $grade->professor->prof_nome }}
-        </li>
-
+        <li class="text-gray-400">{{ $grade->professor->prof_nome }}</li>
         <li>/</li>
-
         <li class="font-semibold text-gray-700">
             Relatório
         </li>
-
     </ol>
 </nav>
 
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
-
     <div class="flex items-center gap-4">
-
-        <a href="{{ route('professor-frequencia', Crypt::encrypt($grade->id_grade)) }}"
+        <a href="{{ route('professor-frequencia.dias', Crypt::encrypt($grade->id_grade)) }}"
             class="flex items-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
             ← Voltar
         </a>
@@ -55,38 +45,51 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
         <h2 class="text-3xl font-extrabold text-gray-800">
             Relatório da Frequência
         </h2>
-
     </div>
 
     <!-- GRÁFICO -->
-    <div class="mb-6">
+    <div class="mb-6 bg-white rounded-2xl shadow-md p-6 w-full md:w-[900px] mx-auto">
 
-        <div class="mb-2 text-center">
+        <form method="GET" class="mb-4 flex justify-center">
+            <div class="flex flex-col w-[220px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Selecione Ano
+                </label>
 
+                <select name="ano"
+                    onchange="this.form.submit()"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                   focus:ring-2 focus:ring-[#174ab9] focus:outline-none text-center">
+
+                    @foreach($anosDisponiveis as $ano)
+                    <option value="{{ $ano }}"
+                        {{ $ano == $anoSelecionado ? 'selected' : '' }}>
+                        {{ $ano }}
+                    </option>
+                    @endforeach
+
+                </select>
+            </div>
+        </form>
+
+        <div class="mb-4 text-center">
             <h3 class="text-lg font-bold text-gray-700">
-                Resumo Geral de Frequência
+                Frequência Mensal
             </h3>
 
             <p class="text-sm text-gray-500">
-                Distribuição total de presenças e faltas da turma
+                Comparativo mensal de presenças e faltas
             </p>
-
         </div>
 
-        <canvas
-            id="graficoFrequencia"
-            style="max-height: 250px;"
-            data-presencas="{{ $totalPresencasGeral }}"
-            data-faltas="{{ $totalFaltasGeral }}">
-        </canvas>
-
+        <div class="w-full h-[450px]">
+            <canvas id="graficoBarras"></canvas>
+        </div>
     </div>
-
 </div>
 
 <!-- CARD DA GRADE -->
 <div class="mb-8">
-
     <div class="bg-white border-l-8 border-[#8E251F] rounded-2xl shadow-lg p-6">
 
         <p class="text-xs uppercase tracking-widest text-gray-500">
@@ -110,23 +113,18 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
                 {{ ucfirst($grade->grade_turma) }}
 
                 <span class="text-xs text-gray-500 block">
-
                     {{ \Carbon\Carbon::parse($grade->grade_inicio)->format('H:i') }}
                     às
                     {{ \Carbon\Carbon::parse($grade->grade_fim)->format('H:i') }}
-
                 </span>
-
             </div>
 
         </div>
 
     </div>
-
 </div>
 
 <!-- TABELA -->
-
 <div class="bg-white rounded-2xl shadow-md p-6">
 
     <table class="w-full text-left border-collapse">
@@ -150,32 +148,30 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
             @php
             $totalAulas = $matricula->frequencias->count();
 
-            $presencas = $matricula->frequencias
-            ->where('freq_presenca', 'Presente')
-            ->count();
-
-            $faltas = $matricula->frequencias
-            ->where('freq_presenca', 'Falta')
-            ->count();
+            $presencas = $matricula->frequencias->where('freq_presenca', 'Presente')->count();
+            $faltas = $matricula->frequencias->where('freq_presenca', 'Falta')->count();
 
             $percentual = $totalAulas > 0
             ? round(($presencas / $totalAulas) * 100)
             : 0;
 
-            $detalhes = \App\Models\DetalhesAluno::where('aluno_id_aluno', $matricula->aluno->id_aluno)
-            ->where('det_modalidade', $grade->grade_modalidade)
-            ->ordenarPorFaixaInverso()
-            ->orderByDesc('det_grau')
+            $detalhes = \App\Models\DetalhesAluno::with('graduacao')
+            ->where('aluno_id_aluno', $matricula->aluno->id_aluno)
+            ->whereHas('graduacao.modalidade', function ($q) use ($grade) {
+            $q->where('mod_nome', $grade->grade_modalidade);
+            })
+            ->orderByDesc('det_data')
+            ->orderByDesc(
+            \App\Models\Graduacao::select('gradu_ordem')
+            ->whereColumn('graduacao.id_graduacao', 'detalhes_aluno.id_graduacao')
+            ->limit(1)
+            )
             ->first();
 
             $meta = 0;
 
-            if ($detalhes) {
-            $metaGraduacao = \App\Models\Graduacao::where('gradu_nome_cor', $detalhes->det_gradu_nome_cor)
-            ->where('gradu_grau', $detalhes->det_grau)
-            ->first();
-
-            $meta = $metaGraduacao->gradu_meta ?? 0;
+            if ($detalhes && $detalhes->graduacao) {
+            $meta = $detalhes->graduacao->gradu_meta ?? 0;
             }
 
             $barra = $meta > 0
@@ -183,7 +179,9 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
             : 0;
             @endphp
 
-            <tr class="border-b hover:bg-gray-50 transition">
+            <tr class="border-b hover:bg-gray-50 transition linha-aluno"
+                data-presencas="{{ $presencas }}"
+                data-barra="{{ $barra }}">
 
                 <td class="py-3 px-4 font-semibold">
                     {{ $matricula->aluno->aluno_nome ?? '-' }}
@@ -211,11 +209,10 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
                     {{ $percentual }}%
                 </td>
 
-                <!-- META (igual módulo principal) -->
+                <!-- META -->
                 <td class="py-3 px-4">
 
                     <div class="mb-2">
-
                         @if($barra >= 100)
                         <span class="px-2 py-1 rounded-full text-xs font-semibold"
                             style="background-color: #dcfce7; color: #166534;">
@@ -229,11 +226,12 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
                         @endif
                     </div>
 
-                    <div class="w-full bg-gray-200 rounded-full h-3"
+                    <div class="w-full bg-gray-200 rounded-full h-3 progress-container"
                         data-barra="{{ $barra }}">
                         <div class="h-3 rounded-full transition-all duration-500 progress-bar"></div>
                     </div>
                 </td>
+
                 <td class="py-3 px-4 text-center">
                     @if($matricula->aluno)
                     <a href="{{ route('professor-detalhes-aluno.index', Crypt::encrypt($matricula->aluno->id_aluno)) }}"
@@ -251,8 +249,6 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
 
     </table>
 
-
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -260,38 +256,92 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
 <script>
     document.addEventListener("DOMContentLoaded", function() {
 
-        const canvas = document.getElementById('graficoFrequencia');
+        const dadosBackend = @json($frequenciaMensal);
+
+        const nomesMeses = [
+            'Jan', 'Fev', 'Mar', 'Abr',
+            'Mai', 'Jun', 'Jul', 'Ago',
+            'Set', 'Out', 'Nov', 'Dez'
+        ];
+
+        const mesesMap = {};
+        const presencas = {};
+        const faltas = {};
+
+        dadosBackend.forEach(item => {
+
+            const nomeMes = nomesMeses[item.mes - 1];
+
+            mesesMap[nomeMes] = true;
+
+            if (!presencas[nomeMes]) presencas[nomeMes] = 0;
+            if (!faltas[nomeMes]) faltas[nomeMes] = 0;
+
+            if (item.freq_presenca === 'Presente') {
+                presencas[nomeMes] = item.total;
+            }
+
+            if (item.freq_presenca === 'Falta') {
+                faltas[nomeMes] = item.total;
+            }
+
+        });
+
+        const labels = Object.keys(mesesMap);
+
+        const dadosPresenca = labels.map(mes => presencas[mes] || 0);
+        const dadosFalta = labels.map(mes => faltas[mes] || 0);
+
+        const canvas = document.getElementById('graficoBarras');
 
         if (canvas) {
 
             new Chart(canvas, {
-
-                type: 'pie',
-
+                type: 'bar',
                 data: {
-                    labels: ['Presenças', 'Faltas'],
+                    labels: labels,
                     datasets: [{
-                        data: [
-                            canvas.dataset.presencas,
-                            canvas.dataset.faltas
-                        ],
-                        backgroundColor: ['#16a34a', '#dc2626']
-                    }]
+                            label: 'Presenças',
+                            data: dadosPresenca,
+                            backgroundColor: '#16a34a'
+                        },
+                        {
+                            label: 'Faltas',
+                            data: dadosFalta,
+                            backgroundColor: '#dc2626'
+                        }
+                    ]
                 },
-
                 options: {
                     responsive: true,
-
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
                             position: 'bottom'
                         }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
                     }
                 }
-
             });
 
         }
+
+        document.querySelectorAll(".progress-container").forEach(function(container) {
+
+            const barra = parseInt(container.dataset.barra);
+            const bar = container.querySelector(".progress-bar");
+
+            bar.style.width = barra + "%";
+            bar.style.backgroundColor = barra >= 100 ? "#15803d" : "#facc15";
+
+        });
 
     });
 </script>

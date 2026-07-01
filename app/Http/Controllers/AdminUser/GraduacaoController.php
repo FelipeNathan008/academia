@@ -158,9 +158,16 @@ class GraduacaoController extends Controller
         } catch (DecryptException $e) {
             abort(404);
         }
+
         $graduacao = Graduacao::where('id_graduacao', $id)
             ->where('id_emp_id', $user->id_emp_id)
             ->firstOrFail();
+
+        // Bloqueia exclusão se houver alunos com esta graduação
+        if ($graduacao->detalhesAluno()->exists()) {
+            return redirect()->route('graduacoes')
+                ->withErrors(['erro' => 'Não é possível excluir esta graduação pois existem alunos/professores vinculados a ela.']);
+        }
 
         $graduacao->delete();
 

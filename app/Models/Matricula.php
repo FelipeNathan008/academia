@@ -11,17 +11,18 @@ class Matricula extends Model
 {
     protected $table = 'matricula';
     protected $primaryKey = 'id_matricula';
-
     protected $fillable = [
         'aluno_id_aluno',
         'grade_id_grade',
         'matri_desc',
         'matri_status',
+        'matri_motivo',
         'matri_data',
+        'matri_data_pausa',
+        'matri_data_encerramento',
         'matri_plano',
         'id_emp_id'
     ];
-
     public function aluno()
     {
         return $this->belongsTo(Aluno::class, 'aluno_id_aluno', 'id_aluno');
@@ -39,8 +40,8 @@ class Matricula extends Model
     {
         return $this->hasMany(
             Mensalidade::class,
-            'matricula_id_matricula', 
-            'id_matricula' 
+            'matricula_id_matricula',
+            'id_matricula'
         );
     }
     public function grade()
@@ -52,7 +53,7 @@ class Matricula extends Model
         return $this->hasMany(
             FrequenciaAluno::class,
             'matricula_id_matricula',
-            'id_matricula' // chave primária da matrícula
+            'id_matricula'
         );
     }
 }

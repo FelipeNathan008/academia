@@ -137,6 +137,13 @@
                         Matriculado
                     </span>
 
+                    @elseif ($matricula->matri_status === 'Pausada')
+
+                    <span class="px-2 py-1 rounded-full text-xs font-semibold"
+                        style="background-color: #fef9c3; color: #854d0e;">
+                        Pausada
+                    </span>
+
                     @else
 
                     <span class="px-2 py-1 rounded-full text-xs font-semibold"

@@ -322,7 +322,7 @@
                                     </p>
 
                                     <div class="flex justify-end gap-2 mt-2">
-                                        <a href="{{ route('frequencia.dias', Crypt::encrypt($evento->id_grade)) }}"
+                                        <a href="{{ route('grade_horarios.show', Crypt::encrypt($evento->id_grade)) }}"
                                             class="btn btn-det">Detalhes</a>
                                         </a>
 

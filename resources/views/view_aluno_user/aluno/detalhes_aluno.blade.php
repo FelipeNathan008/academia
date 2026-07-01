@@ -157,142 +157,143 @@
     @php
 
     $ordem = [
-        'cinza e branca' => 1,
-        'cinza' => 2,
-        'cinza e preta' => 3,
+    'cinza e branca' => 1,
+    'cinza' => 2,
+    'cinza e preta' => 3,
 
-        'amarela e branca' => 4,
-        'amarela' => 5,
-        'amarela e preta' => 6,
+    'amarela e branca' => 4,
+    'amarela' => 5,
+    'amarela e preta' => 6,
 
-        'laranja e branca' => 7,
-        'laranja' => 8,
-        'laranja e preta' => 9,
+    'laranja e branca' => 7,
+    'laranja' => 8,
+    'laranja e preta' => 9,
 
-        'verde e branca' => 10,
-        'verde' => 11,
-        'verde e preta' => 12,
+    'verde e branca' => 10,
+    'verde' => 11,
+    'verde e preta' => 12,
 
-        'branca' => 13,
-        'azul' => 14,
-        'roxa' => 15,
-        'marrom' => 16,
-        'preta' => 17,
+    'branca' => 13,
+    'azul' => 14,
+    'roxa' => 15,
+    'marrom' => 16,
+    'preta' => 17,
     ];
 
     $lista = $graduacoes->sort(function ($a, $b) use ($ordem) {
 
-        $faixaA = strtolower($a->det_gradu_nome_cor);
-        $faixaB = strtolower($b->det_gradu_nome_cor);
+    $faixaA = strtolower($a->det_gradu_nome_cor);
+    $faixaB = strtolower($b->det_gradu_nome_cor);
 
-        $ordA = $ordem[$faixaA] ?? 99;
-        $ordB = $ordem[$faixaB] ?? 99;
+    $ordA = $ordem[$faixaA] ?? 99;
+    $ordB = $ordem[$faixaB] ?? 99;
 
-        $grauA = intval($a->det_grau);
-        $grauB = intval($b->det_grau);
+    $grauA = intval($a->det_grau);
+    $grauB = intval($b->det_grau);
 
-        return $ordA === $ordB
-            ? $grauB <=> $grauA
-            : $ordB <=> $ordA;
-    });
+    return $ordA === $ordB
+    ? $grauB <=> $grauA
+        : $ordB <=> $ordA;
+            });
 
-    @endphp
+            @endphp
 
-    <table class="w-full text-left border-collapse">
+            <table class="w-full text-left border-collapse">
 
-        <thead>
+                <thead>
 
-            <tr class="border-b text-gray-600 text-sm">
+                    <tr class="border-b text-gray-600 text-sm">
 
-                <th class="py-3 px-4">Graduação</th>
-                <th class="py-3 px-4">Grau</th>
-                <th class="py-3 px-4">Modalidade</th>
-                <th class="py-3 px-4">Data</th>
-                <th class="py-3 px-4">Certificado</th>
+                        <th class="py-3 px-4">Graduação</th>
+                        <th class="py-3 px-4">Grau</th>
+                        <th class="py-3 px-4">Modalidade</th>
+                        <th class="py-3 px-4">Data</th>
+                        <th class="py-3 px-4">Certificado</th>
 
-            </tr>
+                    </tr>
 
-        </thead>
+                </thead>
 
-        <tbody>
+                <tbody>
 
-            @forelse ($lista as $det)
+                    @forelse ($lista as $det)
 
-            <tr class="border-b hover:bg-gray-50 transition linha-graduacao"
-                data-graduacao="{{ strtolower($det->det_gradu_nome_cor) }}"
-                data-modalidade="{{ strtolower($det->det_modalidade) }}">
+                    <tr class="border-b hover:bg-gray-50 transition linha-graduacao"
+                        data-modalidade="{{ $det->graduacao->id_modalidade }}"
+                        data-graduacao="{{ strtolower($det->graduacao->gradu_nome_cor) }}">
 
-                <td class="py-3 px-4">
+                        <td class="py-3 px-4">
 
-                    <span class="bolinha-faixa"
-                        data-faixa="{{ strtolower($det->det_gradu_nome_cor) }}"
-                        style="display:inline-block; width:16px; height:16px; border-radius:50%; margin-right:8px; vertical-align:middle; border:2px solid #000; background-color:transparent;">
-                    </span>
+                            <span
+                                class="bolinha-faixa"
+                                data-faixa="{{ strtolower($det->graduacao->gradu_nome_cor) }}"
+                                style="display:inline-block;width:16px;height:16px;border-radius:50%;margin-right:8px;border:2px solid #000;">
+                            </span>
 
-                    {{ $det->det_gradu_nome_cor }}
+                            {{ $det->graduacao->gradu_nome_cor }}
 
-                </td>
+                        </td>
 
-                <td class="py-3 px-4">
-                    {{ $det->det_grau }}
-                </td>
+                        <td class="py-3 px-4">
+                            {{ $det->graduacao->gradu_grau }}
+                        </td>
 
-                <td class="py-3 px-4">
-                    {{ $det->det_modalidade }}
-                </td>
+                        <td class="py-3 px-4">
+                            {{ $det->graduacao->modalidade->mod_nome }}
+                        </td>
 
-                <td class="py-3 px-4">
-                    {{ \Carbon\Carbon::parse($det->det_data)->format('d/m/Y') }}
-                </td>
+                        <td class="py-3 px-4">
+                            {{ \Carbon\Carbon::parse($det->det_data)->format('d/m/Y') }}
+                        </td>
 
-                <td class="py-3 px-4">
+                        <td class="py-3 px-4">
 
-                    @if($det->det_certificado)
+                            @if($det->det_certificado)
 
-                    <a href="{{ route('aluno-detalhes.showCertificado', ['path' => Crypt::encrypt($det->det_certificado)]) }}"
-                        target="_blank"
-                        style="background-color: #174ab9; color: white;"
-                        class="px-4 py-2 rounded-lg shadow hover:bg-[#12398f] transition duration-200 text-center inline-block">
+                            <a href="{{ route('aluno-detalhes.showCertificado', ['path' => Crypt::encrypt($det->det_certificado)]) }}"
+                                target="_blank"
+                                style="background-color: #174ab9; color: white;"
+                                class="px-4 py-2 rounded-lg shadow hover:bg-[#12398f] transition duration-200 text-center inline-block">
 
-                        Ver Certificado
+                                Ver Certificado
 
-                    </a>
+                            </a>
 
-                    @else
+                            @else
 
-                    <span class="text-gray-400">
-                        Não enviado
-                    </span>
+                            <span class="text-gray-400">
+                                Não enviado
+                            </span>
 
-                    @endif
+                            @endif
 
-                </td>
+                        </td>
 
-            </tr>
+                    </tr>
 
-            @empty
+                    @empty
 
-            <tr>
+                    <tr>
 
-                <td colspan="5"
-                    class="text-center py-6 text-gray-500">
+                        <td colspan="5"
+                            class="text-center py-6 text-gray-500">
 
-                    Nenhuma graduação cadastrada
+                            Nenhuma graduação cadastrada
 
-                </td>
+                        </td>
 
-            </tr>
+                    </tr>
 
-            @endforelse
+                    @endforelse
 
-        </tbody>
+                </tbody>
 
-    </table>
+            </table>
 
 </div>
+<script src="{{ asset('js/faixas.js') }}"></script>
 
 <script>
-
     document.addEventListener('DOMContentLoaded', function() {
 
         const filtroGraduacao = document.getElementById('filtroGraduacao');
@@ -335,30 +336,9 @@
             aplicarFiltro();
 
         });
+        aplicarCoresFaixas();
 
     });
-
-    // BOLINHAS
-    document.querySelectorAll('.bolinha-faixa').forEach(bolinha => {
-
-        const faixa = bolinha.dataset.faixa;
-
-        let cor = 'transparent';
-
-        if (faixa.includes('cinza e branca')) cor = '#808080';
-        else if (faixa.includes('branca')) cor = '#ffffff';
-        else if (faixa.includes('amarela')) cor = '#facc15';
-        else if (faixa.includes('laranja')) cor = '#f97316';
-        else if (faixa.includes('verde')) cor = '#22c55e';
-        else if (faixa.includes('azul')) cor = '#2563eb';
-        else if (faixa.includes('roxa')) cor = '#7c3aed';
-        else if (faixa.includes('marrom')) cor = '#78350f';
-        else if (faixa.includes('preta')) cor = '#000000';
-
-        bolinha.style.backgroundColor = cor;
-
-    });
-
 </script>
 
 @endsection

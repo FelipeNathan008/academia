@@ -8,8 +8,7 @@
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2 flex-wrap">
         <li>
-            <a href="{{ route('aluno.index') }}"
-                class="hover:text-[#8E251F] transition">
+            <a href="{{ route('aluno.index') }}" class="hover:text-[#8E251F] transition">
                 Alunos
             </a>
         </li>
@@ -40,24 +39,44 @@
         </h2>
     </div>
 
-    <div class="mb-6">
-        <div class="mb-2 text-center">
+    <!-- GRÁFICO -->
+    <div class="mb-6 bg-white rounded-2xl shadow-md p-6 w-full md:w-[900px] mx-auto">
+
+        <form method="GET" class="mb-4 flex justify-center">
+            <div class="flex flex-col w-[220px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Selecione Ano
+                </label>
+
+                <select name="ano"
+                    onchange="this.form.submit()"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                   focus:ring-2 focus:ring-[#174ab9] focus:outline-none text-center">
+
+                    @foreach($anosDisponiveis as $ano)
+                    <option value="{{ $ano }}"
+                        {{ $ano == $anoSelecionado ? 'selected' : '' }}>
+                        {{ $ano }}
+                    </option>
+                    @endforeach
+
+                </select>
+            </div>
+        </form>
+
+        <div class="mb-4 text-center">
             <h3 class="text-lg font-bold text-gray-700">
-                Resumo Geral de Frequência
+                Frequência Mensal
             </h3>
+
             <p class="text-sm text-gray-500">
-                Evolução da meta de presença do aluno
+                Comparativo mensal de presenças e faltas
             </p>
-
-
         </div>
 
-        <canvas
-            id="graficoFrequencia"
-            style="max-height: 250px;"
-            data-presencas="{{ $totalPresencasGeral }}"
-            data-meta="{{ $meta }}">
-        </canvas>
+        <div class="w-full h-[450px]">
+            <canvas id="graficoBarras"></canvas>
+        </div>
     </div>
 </div>
 
@@ -153,9 +172,9 @@
                         @endif
                     </div>
 
-                    <div class="w-full bg-gray-200 rounded-full h-3">
-                        <div class="barra-progresso h-3 rounded-full transition-all duration-500"
-                            data-barra="{{ $barra }}"></div>
+                    <div class="w-full bg-gray-200 rounded-full h-3 progress-container"
+                        data-barra="{{ $barra }}">
+                        <div class="h-3 rounded-full transition-all duration-500 progress-bar"></div>
                     </div>
                 </td>
             </tr>
@@ -167,43 +186,89 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const canvas = document.getElementById('graficoFrequencia');
+
+        // =========================
+        // DADOS DO GRÁFICO
+        // =========================
+
+        const dadosBackend = @json($frequenciaMensal);
+
+        const nomesMeses = [
+            'Jan', 'Fev', 'Mar', 'Abr',
+            'Mai', 'Jun', 'Jul', 'Ago',
+            'Set', 'Out', 'Nov', 'Dez'
+        ];
+
+        const mesesMap = {};
+        const presencas = {};
+        const faltas = {};
+
+        dadosBackend.forEach(item => {
+
+            const nomeMes = nomesMeses[item.mes - 1];
+
+            mesesMap[nomeMes] = true;
+
+            if (!presencas[nomeMes]) {
+                presencas[nomeMes] = 0;
+            }
+
+            if (!faltas[nomeMes]) {
+                faltas[nomeMes] = 0;
+            }
+
+            if (item.freq_presenca === 'Presente') {
+                presencas[nomeMes] = item.total;
+            }
+
+            if (item.freq_presenca === 'Falta') {
+                faltas[nomeMes] = item.total;
+            }
+
+        });
+
+        const labels = Object.keys(mesesMap);
+
+        const dadosPresenca = labels.map(mes => presencas[mes] || 0);
+        const dadosFalta = labels.map(mes => faltas[mes] || 0);
+
+        // =========================
+        // GRÁFICO
+        // =========================
+
+        const canvas = document.getElementById('graficoBarras');
+
         if (canvas) {
 
-            const presencas = parseInt(canvas.dataset.presencas);
-            const meta = parseInt(canvas.dataset.meta);
-
-            // evita negativo
-            let restante = meta - presencas;
-            if (restante < 0) {
-                restante = 0;
-            }
             new Chart(canvas, {
-                type: 'pie',
+                type: 'bar',
                 data: {
-                    labels: ['Presenças', 'Restante da Meta'],
+                    labels: labels,
                     datasets: [{
-                        data: [
-                            presencas,
-                            restante
-                        ],
-                        backgroundColor: [
-                            '#16a34a',
-                            '#d1d5db'
-                        ]
-                    }]
+                            label: 'Presenças',
+                            data: dadosPresenca,
+                            backgroundColor: '#16a34a'
+                        },
+                        {
+                            label: 'Faltas',
+                            data: dadosFalta,
+                            backgroundColor: '#dc2626'
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
                             position: 'bottom'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.label + ': ' + context.raw;
-                                }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
                             }
                         }
                     }
@@ -212,18 +277,21 @@
 
         }
 
-        document.querySelectorAll('.barra-progresso').forEach(barra => {
+        // =========================
+        // BARRA DE PROGRESSO
+        // =========================
 
-            const valor = parseInt(barra.dataset.barra);
+        document.querySelectorAll(".progress-container").forEach(function(container) {
 
-            barra.style.width = valor + "%";
+            const barra = parseInt(container.dataset.barra);
+            const bar = container.querySelector(".progress-bar");
 
-            barra.style.backgroundColor =
-                valor >= 100 ?
-                "#15803d" :
-                "#facc15";
+            bar.style.width = barra + "%";
+
+            bar.style.backgroundColor = barra >= 100 ? "#15803d" : "#facc15";
 
         });
+
     });
 </script>
 

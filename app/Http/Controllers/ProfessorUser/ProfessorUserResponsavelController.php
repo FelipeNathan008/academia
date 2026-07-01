@@ -64,14 +64,23 @@ class ProfessorUserResponsavelController extends Controller
             ->firstOrFail();
 
         $request->merge([
-            'resp_cpf' => preg_replace('/\D/', '', $request->resp_cpf),
             'resp_cep' => preg_replace('/\D/', '', $request->resp_cep),
         ]);
+
+        // SÓ TRATA O CPF SE O CAMPO FOI PREENCHIDO
+        // (no formulário, o CPF só aparece se o professor marcar "Alterar CPF")
+        $cpfAlterado = $request->filled('resp_cpf');
+
+        if ($cpfAlterado) {
+            $request->merge([
+                'resp_cpf' => preg_replace('/\D/', '', $request->resp_cpf),
+            ]);
+        }
 
         $request->validate([
             'resp_nome' => 'required|string|max:120',
             'resp_parentesco' => 'required|string|max:60',
-            'resp_cpf' => 'required|string|size:11',
+            'resp_cpf' => $cpfAlterado ? 'required|string|size:11' : 'nullable',
             'resp_telefone' => 'required|string|max:20',
             'resp_email' => 'required|email|max:150',
             'resp_cep' => 'required|digits:8',
@@ -82,18 +91,25 @@ class ProfessorUserResponsavelController extends Controller
             'resp_cidade' => 'required|string|max:150',
         ]);
 
-        $jaExiste = Responsavel::where('resp_cpf', $request->resp_cpf)
-            ->where('id_responsavel', '!=', $id)
-            ->where('id_emp_id', $user->id_emp_id)
-            ->exists();
+        // VERIFICA DUPLICIDADE DE CPF (descriptografando em PHP,
+        // já que o valor salvo no banco é cifrado e não-determinístico)
+        if ($cpfAlterado) {
+            $jaExiste = Responsavel::where('id_emp_id', $user->id_emp_id)
+                ->where('id_responsavel', '!=', $id)
+                ->get()
+                ->contains(fn($r) => $r->resp_cpf === $request->resp_cpf);
 
-        if ($jaExiste) {
-            return back()->withErrors([
-                'resp_cpf' => 'Erro, Já existe esse CPF cadastrado.'
-            ])->withInput();
+            if ($jaExiste) {
+                return back()->withErrors([
+                    'resp_cpf' => 'Erro, Já existe esse CPF cadastrado.'
+                ])->withInput();
+            }
         }
 
-        $responsavel->update($request->all());
+        // SE O CPF NÃO FOI ALTERADO, REMOVE DO ARRAY PRA NÃO SOBRESCREVER COM NULL
+        $dados = $request->except($cpfAlterado ? [] : ['resp_cpf']);
+
+        $responsavel->update($dados);
 
         return back()->with('success', 'Responsável atualizado com sucesso!');
     }

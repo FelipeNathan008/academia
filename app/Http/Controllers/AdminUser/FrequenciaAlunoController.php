@@ -6,7 +6,6 @@ namespace App\Http\Controllers\AdminUser;
 use App\Http\Controllers\Controller;
 use App\Models\FrequenciaAluno;
 use Illuminate\Support\Facades\DB;
-
 use App\Models\GradeHorario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -92,7 +91,7 @@ class FrequenciaAlunoController extends Controller
         $user = Auth::user();
 
         $grade = GradeHorario::with([
-            'matriculas.aluno.detalhes',
+            'matriculas.aluno.detalhes.graduacao',
             'matriculas.frequencias',
             'professor'
         ])

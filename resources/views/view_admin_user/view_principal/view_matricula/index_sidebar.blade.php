@@ -66,13 +66,16 @@
                 </label>
                 <select name="matricula"
                     class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+               focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
                     <option value="">Todos</option>
                     <option value="Matriculado" {{ request('matricula') == 'Matriculado' ? 'selected' : '' }}>
                         Matriculado
                     </option>
+                    <option value="Pausada" {{ request('matricula') == 'Pausada' ? 'selected' : '' }}>
+                        Pausado
+                    </option>
                     <option value="Encerrada" {{ request('matricula') == 'Encerrada' ? 'selected' : '' }}>
-                        Não Matriculado
+                        Sem Matrícula
                     </option>
                 </select>
             </div>
@@ -165,22 +168,22 @@
                     {{ $nascimento ? $nascimento->age : '-' }}
                 </td>
 
-                <!-- MODALIDADE  -->
+                <!-- MODALIDADE -->
                 <td class="py-3 px-4">
-                    @if($aluno->matriculas->count() === 0)
-                    <span class="py-3 px-4 font-medium text-gray-800">
-                        S/ MATRÍCULA
-                    </span>
+                    @php
+                    $matriculasAtivas = $aluno->matriculas->whereIn('matri_status', ['Matriculado', 'Pausada']);
+                    @endphp
 
-                    @elseif($aluno->matriculas->count() === 1)
+                    @if($matriculasAtivas->count() === 0)
+                    <span class="py-3 px-4 font-medium text-gray-800">S/ MATRÍCULA</span>
+
+                    @elseif($matriculasAtivas->count() === 1)
                     <span class="py-3 px-4 font-medium text-gray-800">
-                        {{ Str::upper($aluno->matriculas->first()?->grade?->grade_modalidade) }}
+                        {{ Str::upper($matriculasAtivas->first()?->grade?->grade_modalidade) }}
                     </span>
 
                     @else
-                    <span class="py-3 px-4 font-medium text-gray-800">
-                        MMA
-                    </span>
+                    <span class="py-3 px-4 font-medium text-gray-800">MMA</span>
                     @endif
                 </td>
 
@@ -240,19 +243,31 @@
 
                 <!-- Matriculado -->
                 <td class="py-3 px-4">
-                    @if($aluno->matriculas->count() > 0)
-                    <span style="padding:2px 8px; font-size:0.75rem;
-                    font-weight:600; border-radius:9999px;
-                    color:#166534; background-color:#bbf7d0;"> 🎓 Sim
+                    @php
+                    $temAtiva = $aluno->matriculas->where('matri_status', 'Matriculado')->count() > 0;
+                    $temPausada = $aluno->matriculas->where('matri_status', 'Pausada')->count() > 0;
+                    $temAlguma = $aluno->matriculas->count() > 0;
+                    @endphp
+
+                    @if($temAtiva)
+                    <span style="padding:2px 8px; font-size:0.75rem; font-weight:600;
+              border-radius:9999px; color:#166534; background-color:#bbf7d0;">
+                        Matriculado
+                    </span>
+                    @elseif($temPausada)
+                    <span style="padding:2px 8px; font-size:0.75rem; font-weight:600;
+              border-radius:9999px; color:#854d0e; background-color:#fef9c3;">
+                        Pausado
                     </span>
                     @else
-                    <span style="padding:2px 8px; font-size:0.75rem;
-                        font-weight:600; border-radius:9999px;
-                        color:#991b1b; background-color:#fecaca;"> Não
+                    <span style="padding:2px 8px; font-size:0.75rem; font-weight:600;
+              border-radius:9999px; color:#991b1b; background-color:#fee2e2;">
+                        Sem Matrícula
                     </span>
                     @endif
                 </td>
 
+                </td>
                 <!-- AÇÕES -->
                 <td class="py-3 px-4 flex gap-2">
 

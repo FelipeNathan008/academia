@@ -52,11 +52,7 @@
         <thead>
             <tr class="border-b text-gray-600 text-sm">
                 <th class="py-3 px-4">Aluno</th>
-                <th class="py-3 px-4">Responsável</th>
-                <th class="py-3 px-4">Plano</th>
-                <th class="py-3 px-4">Professor</th>
                 <th class="py-3 px-4">Turma</th>
-                <th class="py-3 px-4">Modalidade</th>
                 <th class="py-3 px-4">Vencimento</th>
                 <th class="py-3 px-4 text-right">Valor</th>
                 <th class="py-3 px-4 text-center">Ações</th>
@@ -72,42 +68,57 @@
             ->where('det_mensa_status', 'Atrasado')
             ->sortBy('det_mensa_data_venc')
             ->first();
-
             @endphp
+
             <tr class="border-b hover:bg-red-50 transition">
 
-                <td class="py-3 px-4 font-semibold">
-                    {{ $mensalidade->matricula->aluno->aluno_nome ?? '-' }}
+                <!-- ALUNO + RESPONSÁVEL + PLANO -->
+                <td class="py-4 px-4">
+
+                    <p class="font-semibold text-gray-800">
+                        {{ $mensalidade->matricula->aluno->aluno_nome ?? '-' }}
+                    </p>
+
+                    <p class="text-sm text-gray-500">
+                        Resp.
+                        {{ $mensalidade->matricula->aluno->responsavel->resp_nome ?? '-' }}
+                    </p>
+
+                    <p class="text-sm text-gray-500">
+                        Plano:
+                        <strong>{{ $mensalidade->matricula->matri_plano ?? '-' }}</strong>
+                    </p>
+
                 </td>
 
-                <td class="py-3 px-4">
-                    {{ $mensalidade->matricula->aluno->responsavel->resp_nome ?? '-' }}
-                </td>
+                <!-- TURMA + MODALIDADE + PROFESSOR + HORÁRIO -->
+                <td class="py-4 px-4">
 
-                <td class="py-3 px-4">
-                    {{ $mensalidade->matricula->matri_plano ?? '-' }}
-                </td>
-                <td class="py-3 px-4">
-                    {{ $mensalidade->matricula->grade->professor->prof_nome ?? '-' }}
-                </td>
+                    @if($mensalidade->matricula && $mensalidade->matricula->grade)
 
+                    <p class="font-semibold text-gray-800">
+                        {{ ucfirst($mensalidade->matricula->grade->grade_turma) }}
+                    </p>
 
-                <td class="py-3 px-4">
-                    @if($mensalidade->matricula)
-                    {{ ucfirst($mensalidade->matricula->grade->grade_turma) }}
-                    <span class="text-xs text-gray-500 block">
+                    <p class="text-sm text-gray-600">
+                        {{ $mensalidade->matricula->grade->grade_modalidade ?? '-' }}
+                    </p>
+
+                    <p class="text-sm text-gray-500">
+                        Prof.
+                        {{ $mensalidade->matricula->grade->professor->prof_nome ?? '-' }}
+                    </p>
+
+                    <p class="text-xs text-gray-500 mt-1">
                         {{ \Carbon\Carbon::parse($mensalidade->matricula->grade->grade_inicio)->format('H:i') }}
                         às
                         {{ \Carbon\Carbon::parse($mensalidade->matricula->grade->grade_fim)->format('H:i') }}
-                    </span>
+                    </p>
+
                     @else
                     -
                     @endif
-                </td>
 
-
-                <td class="py-3 px-4">
-                    {{ $mensalidade->matricula->grade->grade_modalidade ?? '-' }}
                 </td>
 
                 <td class="py-3 px-4">
@@ -126,18 +137,17 @@
                         style="background-color: #174ab9;"> Ver Detalhes
                     </button>
                     <a href="{{ route('mensalidade', Crypt::encrypt($mensalidade->matricula->aluno->id_aluno)) }}"
-                     style="background-color: #15803d; color: white;"
+                        style="background-color: #15803d; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center">
                         Financeiro
                     </a>
                 </td>
 
-
             </tr>
 
             <!-- LINHA OCULTA DETALHES-->
             <tr id="detalhe-{{ $mensalidade->id_mensalidade }}" class="hidden bg-gray-50">
-                <td colspan="10" class="px-6 py-6">
+                <td colspan="5" class="px-6 py-6">
 
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
 
@@ -287,7 +297,7 @@
 
             @empty
             <tr>
-                <td colspan="9" class="text-center py-6 text-gray-500">
+                <td colspan="5" class="text-center py-6 text-gray-500">
                     Nenhuma mensalidade em atraso 🎉
                 </td>
             </tr>

@@ -33,14 +33,21 @@ class AlunoUserDetalhesAlunoController extends Controller
             ->where('responsavel_id_responsavel', $responsavel->id_responsavel)
             ->firstOrFail();
 
-        $graduacoes = DetalhesAluno::where('aluno_id_aluno', $id)
-            ->orderBy('det_grau')
-            ->get();
+        $graduacoes = DetalhesAluno::with([
+            'graduacao',
+            'graduacao.modalidade'
+        ])
 
-        $graduacoesTotais = Graduacao::ordenarPorFaixa()
-            ->orderBy('gradu_grau')
-            ->get();
+            ->where('aluno_id_aluno', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->get()
+            ->sortByDesc('graduacao.gradu_ordem');
 
+        $graduacoesTotais = Graduacao::with('modalidade')
+            ->ordem()
+            ->where('id_emp_id', $user->id_emp_id)
+            ->get();
+            
         $modalidades = Modalidade::all();
 
         return view('view_aluno_user.aluno.detalhes_aluno', compact(

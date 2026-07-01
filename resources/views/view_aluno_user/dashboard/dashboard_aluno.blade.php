@@ -109,44 +109,34 @@ use Illuminate\Support\Facades\Crypt;
                 <select
                     name="aluno_id"
                     id="aluno_id"
+                    onchange="this.form.submit()"
                     class="border border-gray-300 rounded-xl px-4 py-3 min-w-[280px]">
 
-                    <option value="">
-                        Selecione um aluno
-                    </option>
+                    <option value="">Selecione um aluno</option>
 
                     @foreach($alunos as $aluno)
-
                     <option
-                        value="{{ $aluno->id_aluno }}"
+                        value="{{ encrypt($aluno->id_aluno) }}"
                         {{ $alunoSelecionado == $aluno->id_aluno ? 'selected' : '' }}>
-
                         {{ $aluno->aluno_nome }}
-
                     </option>
-
                     @endforeach
 
                 </select>
 
                 <!-- MATRÍCULA -->
                 @if($alunoSelecionado)
-
                 <select
                     name="matricula_id"
                     onchange="this.form.submit()"
                     class="border border-gray-300 rounded-xl px-4 py-3 min-w-[280px]">
 
-                    <option value="">
-                        Selecione uma matrícula
-                    </option>
+                    <option value="">Selecione uma matrícula</option>
 
                     @foreach($matriculas as $matricula)
-
                     <option
-                        value="{{ Crypt::encrypt($matricula->id_matricula) }}"
+                        value="{{ encrypt($matricula->id_matricula) }}"
                         {{ $matriculaSelecionada == $matricula->id_matricula ? 'selected' : '' }}>
-
                         {{ $matricula->grade->grade_modalidade }}
                         -
                         {{ $matricula->grade->grade_dia_semana }}
@@ -154,9 +144,9 @@ use Illuminate\Support\Facades\Crypt;
                         {{ \Carbon\Carbon::parse($matricula->grade->grade_inicio)->format('H:i') }}
                         às
                         {{ \Carbon\Carbon::parse($matricula->grade->grade_fim)->format('H:i') }}
-
                     </option>
                     @endforeach
+
                 </select>
                 @endif
             </div>
@@ -269,28 +259,10 @@ use Illuminate\Support\Facades\Crypt;
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const selectAluno = document.getElementById('aluno_id');
 
-        if (selectAluno) {
-
-            selectAluno.addEventListener('change', function() {
-
-                const url = new URL(window.location.href);
-
-                url.searchParams.set('aluno_id', this.value);
-
-                url.searchParams.delete('matricula_id');
-
-                window.location.href = url.toString();
-
-            });
-
-        }
         const canvas = document.getElementById('graficoFrequencia');
 
-        if (!canvas) {
-            return;
-        }
+        if (!canvas) return;
 
         const presencas = parseInt(canvas.dataset.presencas);
         const faltas = parseInt(canvas.dataset.faltas);
@@ -298,19 +270,10 @@ use Illuminate\Support\Facades\Crypt;
         new Chart(canvas, {
             type: 'pie',
             data: {
-                labels: [
-                    'Presenças',
-                    'Faltas'
-                ],
+                labels: ['Presenças', 'Faltas'],
                 datasets: [{
-                    data: [
-                        presencas,
-                        faltas
-                    ],
-                    backgroundColor: [
-                        '#22c55e',
-                        '#ef4444'
-                    ]
+                    data: [presencas, faltas],
+                    backgroundColor: ['#22c55e', '#ef4444']
                 }]
             },
             options: {
@@ -322,31 +285,18 @@ use Illuminate\Support\Facades\Crypt;
                 }
             }
         });
-    });
-    document.querySelectorAll(".progress-meta").forEach(function(container) {
 
-        const barra = parseInt(container.dataset.barra);
+        document.querySelectorAll(".progress-meta").forEach(function(container) {
+            const barra = parseInt(container.dataset.barra);
+            const progressBar = container.querySelector(".progress-meta-bar");
+            progressBar.style.width = barra + "%";
+            progressBar.classList.add(barra >= 100 ? "bg-green-600" : "bg-yellow-500");
+        });
 
-        const progressBar = container.querySelector(".progress-meta-bar");
-
-        progressBar.style.width = barra + "%";
-
-        if (barra >= 100) {
-            progressBar.classList.add("bg-green-600");
-        } else {
-            progressBar.classList.add("bg-yellow-500");
-        }
-
-    });
-    document.querySelectorAll(".meta-texto").forEach(function(element) {
-
-        const barra = parseInt(element.dataset.barra);
-
-        if (barra >= 100) {
-            element.style.color = "#16a34a";
-        } else {
-            element.style.color = "#a16207";
-        }
+        document.querySelectorAll(".meta-texto").forEach(function(element) {
+            const barra = parseInt(element.dataset.barra);
+            element.style.color = barra >= 100 ? "#16a34a" : "#a16207";
+        });
 
     });
 </script>
