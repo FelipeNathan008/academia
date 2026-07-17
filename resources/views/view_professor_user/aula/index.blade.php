@@ -1,4 +1,4 @@
-{{-- resources/views/view_aula/index.blade.php --}}
+{{-- resources/views/view_professor_user/aula/index.blade.php --}}
 
 @extends('layouts.dashboard')
 
@@ -13,12 +13,6 @@
 <!-- BREADCRUMB -->
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
-        <li>
-            <a href="{{ route('professores') }}" class="hover:text-[#8E251F] transition">
-                Professores
-            </a>
-        </li>
-        <li>/</li>
         <li class="text-gray-400">{{ $grade->professor->prof_nome }}</li>
         <li>/</li>
         <li class="font-semibold text-gray-700">Aulas</li>
@@ -28,13 +22,13 @@
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div class="flex items-center gap-4">
-        <a href="{{ route('grades.aulas') }}"
+        <a href="{{ route('professor-frequencia') }}"
             class="flex items-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
             ← Voltar
         </a>
 
         <h2 class="text-3xl font-extrabold text-gray-800">
-            Aulas do Professor
+            Minhas Aulas
         </h2>
     </div>
 
@@ -47,7 +41,7 @@
 <!-- CARD PROFESSOR -->
 <div class="mb-8">
     <div class="bg-white border-l-8 border-[#174ab9] rounded-2xl shadow-lg p-6">
-        <p class="text-xs uppercase tracking-widest text-gray-500">Professor selecionado</p>
+        <p class="text-xs uppercase tracking-widest text-gray-500">Professor</p>
 
         <h3 class="text-2xl font-extrabold text-gray-800 mt-1">
             {{ $grade->professor->prof_nome }}
@@ -91,7 +85,7 @@ $diasSelecionados = $diasPermitidos
     class="hidden mb-10 {{ $errors->any() ? '' : 'hidden' }}"
     data-dias-permitidos="{{ $diasPermitidos->implode(',') }}">
 
-    <form action="{{ route('aulas.store', Crypt::encrypt($grade->id_grade)) }}"
+    <form action="{{ route('professor-aulas.store', Crypt::encrypt($grade->id_grade)) }}"
         method="POST"
         onsubmit="return validarSubmit(event, this)">
 
@@ -153,8 +147,6 @@ $diasSelecionados = $diasPermitidos
                             <option value="inativo" {{ old('aula_status') == 'inativo' ? 'selected' : '' }}>Inativo</option>
                         </select>
                     </div>
-
-                    </td>
                 </div>
 
                 <!-- Característica -->
@@ -168,7 +160,7 @@ $diasSelecionados = $diasPermitidos
                         maxlength="255"
                         required
                         value="{{ old('aula_caract_exercicio') }}"
-                        placeholder="Ex: Técninca de finalização"
+                        placeholder="Ex: Técnica de finalização"
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                 </div>
 
@@ -264,6 +256,34 @@ $diasSelecionados = $diasPermitidos
         AULAS CADASTRADAS
     </h3>
 
+    <!-- FILTRO POR NOME -->
+    <div class="flex justify-center mb-8">
+        <div class="flex flex-wrap gap-4 items-end justify-center">
+
+            <div class="flex flex-col w-[300px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Nome do Exercício
+                </label>
+
+                <input type="text"
+                    id="filtroNomeAula"
+                    autocomplete="off"
+                    placeholder="Buscar por nome..."
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+            </div>
+
+            <!-- Limpar -->
+            <button id="limparFiltroNome"
+                class="h-[48px] px-6 rounded-xl bg-gray-300
+                       text-gray-800 font-semibold hover:bg-gray-400
+                       transition shadow-md">
+                Limpar filtro
+            </button>
+
+        </div>
+    </div>
+
     <table class="w-full text-left border-collapse">
 
         <thead>
@@ -280,7 +300,8 @@ $diasSelecionados = $diasPermitidos
 
             @forelse ($aulas as $aula)
 
-            <tr class="border-b hover:bg-gray-50 transition">
+            <tr class="border-b hover:bg-gray-50 transition linha-aula"
+                data-nome="{{ strtolower($aula->aula_nome_exercicio ?? '') }}">
 
                 <td class="py-3 px-4">
                     {{ $aula->aula_nome_exercicio }}
@@ -311,22 +332,21 @@ $diasSelecionados = $diasPermitidos
                     @endif
                 </td>
 
-
                 <td class="py-3 px-4 flex gap-2">
 
-                    <a href="{{ route('aulas.show', Crypt::encrypt($aula->id_aula)) }}"
+                    <a href="{{ route('professor-aulas.show', Crypt::encrypt($aula->id_aula)) }}"
                         style="background-color: #174ab9; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition duration-200 text-center">
                         Ver
                     </a>
 
-                    <a href="{{ route('aulas.edit', Crypt::encrypt($aula->id_aula)) }}"
+                    <a href="{{ route('professor-aulas.edit', Crypt::encrypt($aula->id_aula)) }}"
                         style="background-color: #8E251F; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                         Editar
                     </a>
 
-                    <form action="{{ route('aulas.destroy', Crypt::encrypt($aula->id_aula)) }}"
+                    <form action="{{ route('professor-aulas.destroy', Crypt::encrypt($aula->id_aula)) }}"
                         method="POST"
                         onsubmit="return confirm('Deseja excluir esta aula?');">
 
@@ -349,11 +369,17 @@ $diasSelecionados = $diasPermitidos
             <tr>
                 <td colspan="5"
                     class="text-center py-6 text-gray-500">
-                    Nenhuma aula cadastrada para este professor
+                    Nenhuma aula cadastrada para esta grade
                 </td>
             </tr>
 
             @endforelse
+
+            <tr id="msgNenhumaAulaFiltro" class="hidden">
+                <td colspan="5" class="text-center py-6 text-gray-500">
+                    Nenhuma aula encontrada com esse nome
+                </td>
+            </tr>
 
         </tbody>
 
@@ -394,9 +420,8 @@ $diasSelecionados = $diasPermitidos
 
         flatpickr.localize(flatpickr.l10ns.pt);
 
-        // Desabilita no calendário qualquer dia que não esteja na grade
         function diaPermitido(date) {
-            const diaSemana = date.getDay() + 1; // JS: 0=Domingo -> +1 = 1=Domingo (padrão do sistema)
+            const diaSemana = date.getDay() + 1;
             return diasPermitidos.includes(diaSemana);
         }
 
@@ -440,6 +465,50 @@ $diasSelecionados = $diasPermitidos
             inicioPicker,
             fimPicker
         };
+
+        // ======================================
+        // FILTRO POR NOME NA LISTAGEM
+        // ======================================
+
+        const filtroNome = document.getElementById('filtroNomeAula');
+        const limparNome = document.getElementById('limparFiltroNome');
+        const linhasAulas = document.querySelectorAll('.linha-aula');
+        const msgNenhumaAula = document.getElementById('msgNenhumaAulaFiltro');
+
+        function aplicarFiltroNome() {
+
+            const nome = filtroNome.value.toLowerCase().trim();
+
+            let algumaVisivel = false;
+
+            linhasAulas.forEach(linha => {
+
+                const nomeAula = linha.dataset.nome || '';
+                const mostrar = !nome || nomeAula.includes(nome);
+
+                linha.style.display = mostrar ? '' : 'none';
+
+                if (mostrar) {
+                    algumaVisivel = true;
+                }
+            });
+
+            if (msgNenhumaAula) {
+                msgNenhumaAula.classList.toggle('hidden', algumaVisivel || linhasAulas.length === 0);
+            }
+        }
+
+        if (filtroNome) {
+            filtroNome.addEventListener('input', aplicarFiltroNome);
+        }
+
+        if (limparNome) {
+            limparNome.addEventListener('click', function() {
+                filtroNome.value = '';
+                aplicarFiltroNome();
+            });
+        }
+
     });
 
     function validarSubmit(event, form) {

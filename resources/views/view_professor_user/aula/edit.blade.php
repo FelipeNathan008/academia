@@ -11,17 +11,10 @@
 <!-- BREADCRUMB -->
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
-        <li>
-            <a href="{{ route('professores') }}"
-                class="hover:text-[#8E251F] transition">
-                Professores
-            </a>
-        </li>
-        <li>/</li>
         <li class="text-gray-400">{{ $aula->gradeHorario->professor->prof_nome ?? '-' }}</li>
         <li>/</li>
         <li>
-            <a href="{{ route('aulas', Crypt::encrypt($aula->gradeHorario->id_grade)) }}"
+            <a href="{{ route('professor-aulas', Crypt::encrypt($aula->gradeHorario->id_grade)) }}"
                 class="hover:text-[#8E251F] transition">
                 Aulas
             </a>
@@ -42,7 +35,6 @@
         7 => 'Sábado',
     ];
 
-    // Dias permitidos pela grade (1=Domingo ... 7=Sábado)
     $diasPermitidos = collect(explode(',', $aula->gradeHorario->grade_dia_semana))
         ->map(fn($d) => (int) trim($d))
         ->filter()
@@ -82,7 +74,7 @@
         </p>
     </div>
 
-    <form action="{{ route('aulas.update', Crypt::encrypt($aula->id_aula)) }}"
+    <form action="{{ route('professor-aulas.update', Crypt::encrypt($aula->id_aula)) }}"
         method="POST"
         onsubmit="return validarSubmit(event, this)">
 
@@ -147,7 +139,7 @@
                         name="aula_inicio"
                         required
                         autocomplete="off"
-                        value="{{ old('aula_inicio', optional($aula->aula_inicio)->format('Y-m-d')) }}"
+                        value="{{ old('aula_inicio', $aula->aula_inicio ? \Carbon\Carbon::parse($aula->aula_inicio)->format('Y-m-d') : '') }}"
                         placeholder="Selecione a data"
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] bg-white">
 
@@ -164,7 +156,7 @@
                         name="aula_fim"
                         required
                         autocomplete="off"
-                        value="{{ old('aula_fim', optional($aula->aula_fim)->format('Y-m-d')) }}"
+                        value="{{ old('aula_fim', $aula->aula_fim ? \Carbon\Carbon::parse($aula->aula_fim)->format('Y-m-d') : '') }}"
                         placeholder="Selecione a data"
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] bg-white">
 
@@ -203,7 +195,7 @@
         </div>
 
         <div class="flex justify-end gap-4 mt-8">
-            <a href="{{ route('aulas', Crypt::encrypt($aula->gradeHorario->id_grade)) }}"
+            <a href="{{ route('professor-aulas', Crypt::encrypt($aula->gradeHorario->id_grade)) }}"
                 class="px-5 py-2 border rounded-lg hover:bg-gray-100">
                 Voltar
             </a>
@@ -240,17 +232,20 @@
 
         flatpickr.localize(flatpickr.l10ns.pt);
 
-        // Desabilita no calendário qualquer dia que não esteja na grade
         function diaPermitido(date) {
-            const diaSemana = date.getDay() + 1; // JS: 0=Domingo -> +1 = 1=Domingo (padrão do sistema)
+            const diaSemana = date.getDay() + 1;
             return diasPermitidos.includes(diaSemana);
         }
+
+        const valorInicioOriginal = document.getElementById('aula_inicio').value;
+        const valorFimOriginal = document.getElementById('aula_fim').value;
 
         const inicioPicker = flatpickr('#aula_inicio', {
             dateFormat: 'Y-m-d',
             altInput: true,
             altFormat: 'd/m/Y',
             allowInput: false,
+            defaultDate: valorInicioOriginal || null,
             disable: [
                 function(date) {
                     return !diaPermitido(date);
@@ -270,6 +265,7 @@
             altInput: true,
             altFormat: 'd/m/Y',
             allowInput: false,
+            defaultDate: valorFimOriginal || null,
             disable: [
                 function(date) {
                     return !diaPermitido(date);
@@ -280,10 +276,8 @@
             }
         });
 
-        // Ajusta o minDate do "Fim" já na carga da página, caso "Início" já venha preenchido
-        const inicioInputInicial = document.getElementById('aula_inicio').value;
-        if (inicioInputInicial) {
-            fimPicker.set('minDate', inicioInputInicial);
+        if (valorInicioOriginal) {
+            fimPicker.set('minDate', valorInicioOriginal);
         }
 
         window._aulaValidacao = {

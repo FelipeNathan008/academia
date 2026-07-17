@@ -56,7 +56,7 @@
 </div>
 
 <!-- FORMULÁRIO -->
-<div id="cadastroForm" class="hidden mb-10">
+<div id="cadastroForm" class="mb-10 {{ $errors->any() ? '' : 'hidden' }}">
     <form action="{{ route('responsaveis.store') }}" method="POST" onsubmit="bloquearSubmit(event, this)">
         @csrf
 
@@ -73,7 +73,8 @@
                     <div style="flex: 1;">
                         <label class="text-sm font-medium text-gray-600">Nome do Responsável</label>
                         <input type="text" name="resp_nome" required maxlength="120"
-                            placeholder="Ex: Maria Lúcia"
+                            value="{{ old('resp_nome') }}"
+                            placeholder=" Ex: Maria Lúcia"
                             oninput="validarNome(this)"
                             class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                     </div>
@@ -83,8 +84,8 @@
                         <select name="resp_parentesco" required
                             class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                             <option value="">Selecione o Tipo</option>
-                            <option>Responsável</option>
-                            <option>Outro</option>
+                            <option {{ old('resp_parentesco') == 'Responsável' ? 'selected' : '' }}>Responsável</option>
+                            <option {{ old('resp_parentesco') == 'Outro' ? 'selected' : '' }}>Outro</option>
                         </select>
                     </div>
                 </div>
@@ -94,6 +95,7 @@
                     <div style="flex: 1;">
                         <label class="text-sm font-medium text-gray-600">Email</label>
                         <input type="email" name="resp_email" required maxlength="150"
+                            value="{{ old('resp_email') }}"
                             placeholder="Ex: marialucia@email.com"
                             class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                     </div>
@@ -101,6 +103,7 @@
                     <div style="flex: 1;">
                         <label class="text-sm font-medium text-gray-600">Telefone</label>
                         <input type="text" id="resp_telefone" name="resp_telefone" required
+                            value="{{ old('resp_telefone') }}"
                             placeholder="Ex: (99) 99999-9999"
                             class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                     </div>
@@ -112,14 +115,19 @@
                     <div style="flex: 1;">
                         <label class="text-sm font-medium text-gray-600">CPF</label>
                         <input type="text" name="resp_cpf" required maxlength="14"
+                            value="{{ old('resp_cpf') }}"
                             placeholder="000.000.000-00"
                             oninput="mascaraCPF(this)"
-                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] @error('resp_cpf') border-red-500 @enderror">
+                        @error('resp_cpf')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div style="flex: 1;">
                         <label class="text-sm font-medium text-gray-600">CEP</label>
                         <input type="text" name="resp_cep" id="resp_cep" required maxlength="9"
+                            value="{{ old('resp_cep') }}"
                             placeholder="00000-000" oninput="mascaraCEP(this)" onblur="buscarCEP()"
                             class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                     </div>
@@ -130,6 +138,7 @@
                     <div style="flex: 1;">
                         <label class="text-sm font-medium text-gray-600">Cidade</label>
                         <input type="text" name="resp_cidade" required placeholder="Ex: São Paulo"
+                            value="{{ old('resp_cidade') }}"
                             oninput="validarTexto(this)"
                             class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                     </div>
@@ -137,6 +146,7 @@
                     <div style="flex: 1;">
                         <label class="text-sm font-medium text-gray-600">Bairro</label>
                         <input type="text" name="resp_bairro" required placeholder="Ex: Centro"
+                            value="{{ old('resp_bairro') }}"
                             oninput="validarTexto(this)"
                             class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                     </div>
@@ -147,18 +157,21 @@
                     <div style="flex: 2;">
                         <label class="text-sm font-medium text-gray-600">Logradouro</label>
                         <input type="text" name="resp_logradouro" required placeholder="Rua, Avenida, etc."
+                            value="{{ old('resp_logradouro') }}"
                             class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                     </div>
 
                     <div style="flex: 1;">
                         <label class="text-sm font-medium text-gray-600">Número</label>
                         <input type="text" name="resp_numero" placeholder="Ex: 63" required
+                            value="{{ old('resp_numero') }}"
                             class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                     </div>
 
                     <div style="flex: 1;">
                         <label class="text-sm font-medium text-gray-600">Complemento</label>
                         <input type="text" name="resp_complemento" placeholder="Ex: Bloco B, Apto 302"
+                            value="{{ old('resp_complemento') }}"
                             class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                     </div>
                 </div>
@@ -423,6 +436,7 @@
         });
 
     });
+
 </script>
 
 @endsection

@@ -81,6 +81,7 @@
                             Editar
                         </a>
 
+                        <!-- Excluir
                         <form action="{{ route('turmas.destroy', Crypt::encrypt($turma->id_turma)) }}"
                             method="POST"
                             onsubmit="return confirm('Excluir turma?')">
@@ -91,7 +92,7 @@
                                 class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
                                 Excluir
                             </button>
-                        </form>
+                        </form>-->
 
                     </div>
                 </td>

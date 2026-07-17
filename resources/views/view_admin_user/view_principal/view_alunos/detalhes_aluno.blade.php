@@ -229,7 +229,12 @@
         </thead>
 
         <tbody>
-
+            <tr id="msgSelecioneModalidade">
+                <td colspan="5" class="text-center py-6 text-gray-500">
+                    🔍 Selecione uma <strong>modalidade</strong> no filtro acima para visualizar as graduações cadastradas, ou cadastre a primeira.
+                </td>
+            </tr>
+            
             @foreach ($lista as $det)
             <tr class="border-b hover:bg-gray-50 transition linha-graduacao"
                 data-modalidade="{{ $det->graduacao->id_modalidade }}"
@@ -421,6 +426,13 @@
             const modalidade = filtroModalidade.value;
             const graduacao = filtroGraduacao.value;
 
+            const msgSelecione = document.getElementById('msgSelecioneModalidade');
+
+            // Mostra a mensagem só quando nenhuma modalidade foi selecionada
+            if (msgSelecione) {
+                msgSelecione.style.display = modalidade ? 'none' : '';
+            }
+
             linhas.forEach(linha => {
 
                 const modalidadeLinha = linha.dataset.modalidade;
@@ -428,22 +440,15 @@
 
                 let mostrar = true;
 
-                // exatamente igual ao outro código
                 if (!modalidade) {
                     mostrar = false;
                 }
 
-                if (
-                    modalidade &&
-                    modalidadeLinha !== modalidade
-                ) {
+                if (modalidade && modalidadeLinha !== modalidade) {
                     mostrar = false;
                 }
 
-                if (
-                    graduacao &&
-                    graduacaoLinha !== graduacao
-                ) {
+                if (graduacao && graduacaoLinha !== graduacao) {
                     mostrar = false;
                 }
 

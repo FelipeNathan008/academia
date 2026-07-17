@@ -15,32 +15,32 @@ return new class extends Migration
 
             $table->id('id_aula');
 
-            $table->unsignedBigInteger('professor_id');
-            $table->unsignedBigInteger('grade_horario_id');
+            // Grade de Horário
+            $table->unsignedBigInteger('id_grade_horario');
 
-            $table->string('aula_posicao_ensino', 150);
+            // Dados da aula
+            $table->string('aula_nome_exercicio', 150);
+            $table->string('aula_caract_exercicio', 255);
+            $table->date('aula_inicio');
+            $table->date('aula_fim');
+            $table->string('aula_link')->nullable();
+            $table->string('aula_status', 20)->default('ativo');
+            $table->string('aula_desc', 255);
 
-            $table->date('aula_periodo_inicial');
-            $table->date('aula_periodo_final');
-
-            // EMPRESA
+            // Empresa
             $table->foreignId('id_emp_id')
                 ->nullable()
                 ->constrained('empresas', 'id_empresa');
 
-            // FILIAL
+            // Filial
             $table->foreignId('id_filial_id')
                 ->nullable()
                 ->constrained('filiais', 'id_filial');
 
             $table->timestamps();
 
-            $table->foreign('professor_id')
-                ->references('id_professor')
-                ->on('professor')
-                ->onDelete('cascade');
-
-            $table->foreign('grade_horario_id')
+            // Foreign Key
+            $table->foreign('id_grade_horario')
                 ->references('id_grade')
                 ->on('grade_horario')
                 ->onDelete('cascade');

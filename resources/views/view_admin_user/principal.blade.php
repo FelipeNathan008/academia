@@ -41,7 +41,7 @@
         <a href="{{ route('professores.alunos') }}"
             style="background-color: #ca8a04; color: white;"
             class="px-4 py-3 rounded-xl shadow hover:opacity-90 transition text-center font-semibold">
-            Professores / Alunos
+            Professores
         </a>
 
         <a href="{{ route('frequencia.listagem') }}"
@@ -50,6 +50,11 @@
             Frequência dos Alunos
         </a>
 
+        <a href="{{ route('grades.aulas') }}"
+            style="background-color: #0d4270; color: white;"
+            class="px-4 py-3 rounded-xl shadow hover:opacity-90 transition text-center font-semibold">
+            Aula dos Alunos
+        </a>
     </div>
 
 </div>

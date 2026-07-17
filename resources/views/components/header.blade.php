@@ -130,6 +130,8 @@
                         'matricula.*', 'matricula', 'finaceiro.*', 'mensalidade',
                         'professores.*', 'professores', 'detalhes-professor.*',
                         'frequencia.*',
+                        'aulas.*','aulas', 'grades.aulas', 'grades.aulas.*',
+
                         
                 ) ? 'active' : '' }}">
                 Principal
@@ -138,7 +140,7 @@
             <a href="{{ route('admin.administracao') }}"
                 class="header-link {{ request()->routeIs(
                         'admin.administracao',
-                        'grades.*', 'aulas', 'grade_horarios.*','grade_horarios',
+                        'grade_horarios.*','grade_horarios',
                         'graduacoes', 'graduacoes.*',
                         'modalidades', 'modalidades.*',
                         'horario_treino', 'horario_treino.*',
@@ -207,8 +209,9 @@
             <a href="{{ route('professor-frequencia') }}"
                 class="header-link {{ request()->routeIs(
                         'professor-frequencia', 'professor-frequencia.*',
+                        'professor-aulas.*','professor-aulas'
                 ) ? 'active' : '' }}">
-                Frequência
+                Frequência / Aulas
             </a>
         </div>
 

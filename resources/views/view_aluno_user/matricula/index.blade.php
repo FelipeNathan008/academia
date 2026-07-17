@@ -157,16 +157,22 @@
 
                 <td class="py-3 px-4">
 
+                    <a href="{{ route('aluno-aulas.index', Crypt::encrypt($matricula->grade_id_grade)) }}"
+                        style="background-color: #10388f; color: white;"
+                        class="px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition duration-200 text-center inline-block">
+                        Aulas
+                    </a>
+
                     <a href="{{ route('aluno-matricula.show', Crypt::encrypt($matricula->id_matricula)) }}"
-                        class="px-4 py-2 rounded-lg shadow text-white hover:bg-[#1e40af] transition"
-                        style="background-color:#174ab9;">
+                        style="background-color: #224eac; color: white;"
+                        class="px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition duration-200 text-center inline-block">
                         Ver Matrícula
                     </a>
 
                     <!-- Aqui colcoar a rota certa do frequencia-->
                     <a href="{{ route('aluno-frequencia.visualizar', Crypt::encrypt($matricula->id_matricula)) }}"
-                        class="px-4 py-2 rounded-lg shadow text-white hover:bg-[#1e40af] transition"
-                        style="background-color:#174ab9;">
+                        style="background-color: #174ab9; color: white;"
+                        class="px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition duration-200 text-center inline-block">
                         Frequência
                     </a>
                 </td>

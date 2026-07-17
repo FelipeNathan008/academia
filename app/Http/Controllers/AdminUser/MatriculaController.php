@@ -353,9 +353,10 @@ class MatriculaController extends Controller
 
                 $dataBase = Carbon::parse($request->matri_data);
 
-                for ($i = 1; $i <= $quantidadeParcelas; $i++) {
+                for ($i = 0; $i <= $quantidadeParcelas; $i++) {
 
                     $dataVencimento = $dataBase->copy()->addMonthsNoOverflow($i);
+                    $dataVencimento->locale('pt_BR');
 
                     DetalhesMensalidade::create([
                         'mensalidade_id_mensalidade' => $mensalidade->id_mensalidade,

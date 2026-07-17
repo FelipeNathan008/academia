@@ -12,22 +12,26 @@ class Aula extends Model
     protected $primaryKey = 'id_aula';
 
     protected $fillable = [
-        'professor_id',
-        'grade_horario_id',
-        'aula_posicao_ensino',
-        'aula_periodo_inicial',
-        'aula_periodo_final',
-        'id_emp_id'
+        'id_grade_horario',
+        'aula_nome_exercicio',
+        'aula_caract_exercicio',
+        'aula_inicio',
+        'aula_fim',
+        'aula_link',
+        'aula_status',
+        'aula_desc',
+        'id_emp_id',
+        'id_filial_id',
     ];
 
-    public function professor()
-    {
-        return $this->belongsTo(Professor::class, 'professor_id', 'id_professor');
-    }
+    protected $casts = [
+        'aula_inicio' => 'date:Y-m-d',
+        'aula_fim'    => 'date:Y-m-d',
+    ];
 
     public function gradeHorario()
     {
-        return $this->belongsTo(GradeHorario::class, 'grade_horario_id', 'id_grade');
+        return $this->belongsTo(GradeHorario::class, 'id_grade_horario', 'id_grade');
     }
 
     protected static function booted()

@@ -9,9 +9,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Auth;
+use App\Traits\ProcessaFotoTrait;
+
 
 class AlunoController extends Controller
 {
+    use ProcessaFotoTrait;
+
     public function index($responsavelId)
     {
         try {
@@ -36,7 +40,6 @@ class AlunoController extends Controller
     // CADASTRAR ALUNO PARA UM RESPONSÁVEL
     public function store(Request $request, $responsavelId)
     {
-
         try {
             $id = Crypt::decrypt($responsavelId);
         } catch (DecryptException $e) {
@@ -54,7 +57,7 @@ class AlunoController extends Controller
             ],
             'aluno_bolsista' => 'required|in:sim,nao',
             'aluno_desc' => 'required|string',
-            'aluno_foto' => 'required|image|max:2048',
+            'aluno_foto' => 'required|image|mimes:jpeg,jpg,png,webp|max:5120',
         ]);
 
         $user = Auth::user();
@@ -63,13 +66,7 @@ class AlunoController extends Controller
             ->where('id_emp_id', $user->id_emp_id)
             ->firstOrFail();
 
-        $filename = null;
-        if ($request->hasFile('aluno_foto')) {
-            $file = $request->file('aluno_foto');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('images/alunos'), $filename);
-        }
-        $users = Auth::user();
+        $filename = $this->processarFoto($request->file('aluno_foto'), 'alunos');
 
         Aluno::create([
             'responsavel_id_responsavel' => $responsavel->id_responsavel,
@@ -79,8 +76,7 @@ class AlunoController extends Controller
             'aluno_bolsista' => $request->aluno_bolsista,
             'aluno_desc' => $request->aluno_desc,
             'aluno_foto' => $filename,
-
-            'id_emp_id' => $users->id_emp_id,
+            'id_emp_id' => $user->id_emp_id,
         ]);
 
         return redirect()
@@ -132,27 +128,20 @@ class AlunoController extends Controller
             ],
             'aluno_parentesco' => 'required|string|max:60',
             'aluno_desc' => 'required|string',
-            'aluno_foto' => 'nullable|image|max:2048',
+            'aluno_foto' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
         ]);
 
         // FOTO
         if ($request->hasFile('aluno_foto')) {
-            if ($aluno->aluno_foto && file_exists(public_path('images/alunos/' . $aluno->aluno_foto))) {
-                unlink(public_path('images/alunos/' . $aluno->aluno_foto));
-            }
+            $this->removerFoto('alunos', $aluno->aluno_foto);
 
-            $file = $request->file('aluno_foto');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('images/alunos'), $filename);
-
+            $filename = $this->processarFoto($request->file('aluno_foto'), 'alunos');
             $aluno->aluno_foto = $filename;
         }
 
-        // ATUALIZAÇÃO DOS DADOS (SEM only)
         $aluno->aluno_nome = $request->aluno_nome;
         $aluno->aluno_parentesco = $request->aluno_parentesco;
         $aluno->aluno_nascimento = $request->aluno_nascimento;
-        //$aluno->aluno_bolsista = $request->aluno_bolsista;
         $aluno->aluno_desc = $request->aluno_desc;
 
         $aluno->save();
@@ -191,13 +180,12 @@ class AlunoController extends Controller
 
         $responsavelId = $aluno->responsavel_id_responsavel;
 
-        if ($aluno->aluno_foto && file_exists(public_path('images/alunos/' . $aluno->aluno_foto))) {
-            unlink(public_path('images/alunos/' . $aluno->aluno_foto));
-        }
+        $this->removerFoto('alunos', $aluno->aluno_foto);
 
         $aluno->delete();
 
         return redirect()
-            ->route('alunos', Crypt::encrypt($responsavelId))->with('success', 'Aluno removido com sucesso!');
+            ->route('alunos', Crypt::encrypt($responsavelId))
+            ->with('success', 'Aluno removido com sucesso!');
     }
 }

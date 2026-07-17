@@ -9,12 +9,12 @@
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div class="flex items-center gap-4">
-        <a href="{{ route('admin.principal') }}"
+        <a href="{{ url()->previous() }}"
             class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
             ← Voltar
         </a>
         <h2 class="text-3xl font-extrabold text-gray-800">
-            Professores / Alunos
+            Professores
         </h2>
     </div>
 
@@ -97,12 +97,55 @@
 <div class="bg-white rounded-2xl shadow-md p-6">
     <h3 class="text-xl font-bold mb-6 text-gray-700">LISTA DE PROFESSORES</h3>
 
+    <!-- FILTROS -->
+    <div class="flex justify-center mb-8">
+        <div class="flex flex-wrap gap-4 items-end justify-center">
+
+            <!-- Nome -->
+            <div class="flex flex-col w-[260px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Nome
+                </label>
+
+                <input type="text"
+                    id="filtroNomeProfessor"
+                    placeholder="Buscar por nome..."
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+            </div>
+
+            <!-- Graduado -->
+            <div class="flex flex-col w-[200px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Graduado
+                </label>
+
+                <select id="filtroGraduado"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+
+                    <option value="">Todos</option>
+                    <option value="sim">Sim</option>
+                    <option value="nao">Não</option>
+
+                </select>
+            </div>
+
+            <!-- Limpar -->
+            <button id="limparFiltroProfessor"
+                class="h-[48px] px-6 rounded-xl bg-gray-300
+                       text-gray-800 font-semibold hover:bg-gray-400
+                       transition shadow-md">
+                Limpar filtro
+            </button>
+
+        </div>
+    </div>
+
     <table class="w-full text-left border-collapse">
         <thead>
             <tr class="border-b border-gray-300 text-gray-600 text-sm">
                 <th class="py-3 px-4">Nome</th>
-                <!-- <th class="py-3 px-4">Idade</th>-->
-                <th class="py-3 px-4">Empresa</th>
                 <th class="py-3 px-4">Foto</th>
                 <th class="py-3 px-4">Qtd. Alunos</th>
                 <th class="py-3 px-4">Graduado</th>
@@ -114,42 +157,14 @@
             @forelse ($professores as $professor)
 
             @php
-            $nascimento = $professor->prof_nascimento
-            ? \Carbon\Carbon::parse($professor->prof_nascimento)
-            : null;
-            $hoje = \Carbon\Carbon::today();
+            $professorGraduado = $professor->detalhes->where('professor_id_professor', $professor->id_professor)->count() > 0;
             @endphp
 
-            <tr class="border-b transition professor-row"
-                data-prof="{{ $professor->id_professor }}">
+            <tr class="border-b hover:bg-gray-50 transition linha-professor"
+                data-nome="{{ strtolower($professor->prof_nome ?? '') }}"
+                data-graduado="{{ $professorGraduado ? 'sim' : 'nao' }}">
+
                 <td class="py-3 px-4">{{ $professor->prof_nome }}</td>
-
-
-
-                <!-- <td class="py-3 px-4">
-                    @if($nascimento)
-                    {{ $nascimento->age }}
-
-                    @if ($nascimento->isBirthday())
-                    <span style="margin-left:6px; padding:2px 8px; font-size:0.75rem; font-weight:600;
-                    border-radius:9999px; color:#166534; background-color:#bbf7d0;">
-                        🧁 Hoje
-                    </span>
-                    @elseif ($nascimento->month === $hoje->month)
-                    <span style="margin-left:6px; padding:2px 8px; font-size:0.75rem; font-weight:600;
-                    border-radius:9999px; color:#854d0e; background-color:#fef3c7;">
-                        🎉 Este mês
-                    </span>
-                    @endif
-                    @else
-                    -
-                    @endif
-                </td> -->
-
-
-                <td class="py-3 px-4 font-bold">
-                    {{ $professor->empresas->emp_nome ?? '-' }}
-                </td>
 
                 <td class="py-3 px-4">
                     @if($professor->prof_foto)
@@ -166,10 +181,9 @@
                     {{ $professor->qtd_aluno ?? '0'}}
                 </td>
 
-
                 <!-- Graduado -->
                 <td class="py-3 px-4">
-                    @if($professor->detalhes->where('professor_id_professor',$professor->id_professor)->count() > 0)
+                    @if($professorGraduado)
                     <span style="padding:2px 8px; font-size:0.75rem;
                         font-weight:600; border-radius:9999px;
                         color:#166534; background-color:#bbf7d0;"> 🥋 Sim
@@ -189,13 +203,11 @@
 
                 <td class="py-3 px-4 flex gap-2">
 
-                    <button type="button"
-                        data-id="{{ $professor->id_professor }}"
-                        class="btn-ver-prof px-4 py-2 rounded-lg shadow text-white"
-                        style="background-color: #275cce; color: white;">
-                        Ver Alunos
-                    </button>
-
+                    <a href="{{ route('grades.aulas') }}?professor={{ Crypt::encrypt($professor->id_professor) }}"
+                        style="background-color: #275cce; color: white;"
+                        class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
+                        Aulas
+                    </a>
 
                     <!-- Botão Graduações -->
                     <a href="{{ route('detalhes-professor.index', Crypt::encrypt($professor->id_professor)) }}"
@@ -204,19 +216,13 @@
                         Graduações
                     </a>
 
-                  <!--  <a href="{{ route('professores.show', Crypt::encrypt($professor->id_professor)) }}"
-                        style="background-color: #ca8a04; color: white;"
-                        class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
-                        Ver
-                    </a> -->
-
                     <a href="{{ route('professores.edit', Crypt::encrypt($professor->id_professor)) }}"
                         style="background-color: #8E251F; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                         Editar
                     </a>
 
-                    <!--<form action="{{ route('professores.destroy', Crypt::encrypt($professor->id_professor)) }}" method="POST"
+                    <form action="{{ route('professores.destroy', Crypt::encrypt($professor->id_professor)) }}" method="POST"
                         onsubmit="return confirm('Deseja excluir este professor?');">
                         @csrf
                         @method('DELETE')
@@ -225,211 +231,14 @@
                             class="px-4 py-2 rounded-lg shadow hover:bg-[#D65A3E] transition duration-200">
                             Excluir
                         </button>
-                    </form> -->
-
-                </td>
-            </tr>
-
-            <tr id="detalhe-prof-{{ $professor->id_professor }}" class="hidden bg-gray-50">
-                <td colspan="8" class="px-6 py-6">
-
-                    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden p-4">
-
-                        <div class="flex flex-col w-[300px]">
-                            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
-                                Turma / Horário
-                            </label>
-
-                            <select class="filtro-unico border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                                focus:ring-2 focus:ring-[#8E251F] focus:outline-none"
-                                data-prof="{{ $professor->id_professor }}">
-
-                                <option value="">Todas</option>
-                                @php
-                                $diasMap = [
-                                1 => 'Dom',
-                                2 => 'Seg',
-                                3 => 'Ter',
-                                4 => 'Qua',
-                                5 => 'Qui',
-                                6 => 'Sex',
-                                7 => 'Sáb'
-                                ];
-                                @endphp
-                                @foreach($professor->alunos->unique('id_grade') as $g)
-
-                                @php
-                                $dias = collect(explode(',', $g->grade_dia_semana ?? ''))
-                                ->map(fn($d) => $diasMap[$d] ?? $d)
-                                ->implode(', ');
-                                @endphp
-
-                                <option value="{{ $g->id_grade }}">
-                                    {{ $g->grade_modalidade }}
-                                    - {{ $g->grade_turma }}
-                                    - ({{ \Carbon\Carbon::parse($g->grade_inicio)->format('H:i') }}
-                                    até {{ \Carbon\Carbon::parse($g->grade_fim)->format('H:i') }})
-                                    - {{ $dias }}
-                                </option>
-
-                                @endforeach
-
-                            </select>
-                        </div>
-
-                        <!-- HEADER -->
-                        <div class="px-4 py-3 bg-gray-100 border-b">
-                            <h4 class="text-sm font-semibold text-gray-700">
-                                Alunos do Professor
-                            </h4>
-                        </div>
-
-                        <!-- TABELA -->
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm text-left">
-                                <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
-                                    <tr>
-                                        <th class="px-4 py-3">Foto</th>
-                                        <th class="px-4 py-3">Aluno</th>
-                                        <th class="px-4 py-3">Idade</th>
-                                        <th class="px-4 py-3">Modalidade</th>
-                                        <th class="px-4 py-3">Mensalidade</th>
-                                        <th class="px-4 py-3">Bolsista</th>
-                                        <th class="px-4 py-3">Ações</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody class="divide-y divide-gray-100">
-
-                                    @forelse($professor->alunos as $aluno)
-                                    @php
-                                    $nascimento = $aluno->aluno_nascimento
-                                    ? \Carbon\Carbon::parse($aluno->aluno_nascimento)
-                                    : null;
-                                    @endphp
-
-                                    <tr class="linha-aluno hover:bg-gray-50 transition"
-                                        data-grade="{{ $aluno->id_grade }}"
-                                        data-horario="{{ $aluno->grade_inicio }}">
-
-                                        <td class="py-3 px-4">
-                                            @if($aluno->aluno_foto)
-                                            <div class="w-12 h-12 overflow-hidden">
-                                                <img src="{{ asset('images/alunos/' . $aluno->aluno_foto) }}"
-                                                    alt="Foto" style="width:48px; height:48px; object-fit:cover;">
-                                            </div>
-                                            @else
-                                            -
-                                            @endif
-                                        </td>
-
-                                        <td class="px-4 py-3">
-                                            {{ $aluno->aluno_nome }}
-                                        </td>
-
-                                        <!-- IDADE -->
-                                        <td class="py-3 px-4">
-                                            {{ $nascimento ? $nascimento->age : '-' }}
-                                        </td>
-
-                                        <td class="px-4 py-3">
-                                            {{ $aluno->grade_modalidade ?? '-' }}
-                                        </td>
-
-                                        <!-- MENSALIDADES  -->
-                                        <td class="py-3 px-4">
-                                            @if($aluno->atrasado)
-                                            <span style="padding:2px 8px; font-size:0.75rem;
-                                                font-weight:600; border-radius:9999px;
-                                                color:#991b1b; background-color:#fecaca;">
-                                                Atrasado
-                                            </span>
-                                            @else
-                                            <span style="padding:2px 8px; font-size:0.75rem;
-                                                font-weight:600; border-radius:9999px;
-                                                color:#166534; background-color:#bbf7d0;">
-                                                Em dia
-                                            </span>
-                                            @endif
-                                        </td>
-
-                                        <!-- BOLSISTA -->
-                                        <td class="py-3 px-4">
-                                            @if(strtolower($aluno->aluno_bolsista) === 'sim')
-                                            <span style="padding:2px 8px; font-size:0.75rem;
-                                                font-weight:600; border-radius:9999px;
-                                                color:#166534; background-color:#bbf7d0;">
-                                                Sim
-                                            </span>
-                                            @else
-                                            <span style="padding:2px 8px; font-size:0.75rem;
-                                                font-weight:600; border-radius:9999px;
-                                                color:#444; background-color:#f3f4f6;">
-                                                Não
-                                            </span>
-                                            @endif
-                                        </td>
-
-
-                                        <td class="py-3 px-4 flex gap-2">
-
-                                            {{-- VER ALUNO --}}
-                                            @if($aluno->id_responsavel)
-                                            <a href="{{ route('alunos.show', Crypt::encrypt($aluno->id_aluno)) }}"
-                                                style="background-color: #174ab9; color: white;"
-                                                class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
-                                                Detalhes
-                                            </a>
-                                            @endif
-
-                                            {{-- FINANCEIRO --}}
-                                            @if(strtolower($aluno->aluno_bolsista) !== 'sim' && $aluno->matriculado > 0)
-                                            <a href="{{ route('mensalidade', Crypt::encrypt($aluno->id_aluno)) }}"
-                                                style="background-color: #15803d; color: white;"
-                                                class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center">
-                                                Financeiro
-                                            </a>
-                                            @endif
-
-                                            {{-- MATRÍCULA --}}
-                                            @if($aluno->matriculado == 0)
-                                            <a href="{{ route('matricula', Crypt::encrypt($aluno->id_aluno)) }}"
-                                                class="px-4 py-2 rounded-lg shadow text-white"
-                                                style="background-color: #ca8a04;">
-                                                Matricular
-                                            </a>
-                                            @else
-                                            <a href="{{ route('matricula', Crypt::encrypt($aluno->id_aluno)) }}"
-                                                style="background-color: #8E251F; color: white;"
-                                                class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
-                                                Ver Matrícula
-                                            </a>
-                                            @endif
-
-                                        </td>
-
-                                    </tr>
-
-                                    @empty
-                                    <tr>
-                                        <td colspan="6" class="px-4 py-4 text-center text-gray-400">
-                                            Nenhum aluno vinculado
-                                        </td>
-                                    </tr>
-                                    @endforelse
-
-                                </tbody>
-                            </table>
-                        </div>
-
-                    </div>
+                    </form>
 
                 </td>
             </tr>
 
             @empty
             <tr>
-                <td colspan="8" class="text-center text-gray-500 py-6">Nenhum professor cadastrado</td>
+                <td colspan="5" class="text-center text-gray-500 py-6">Nenhum professor cadastrado</td>
             </tr>
             @endforelse
         </tbody>
@@ -449,51 +258,6 @@
         document.getElementById('formCadastro').reset();
     }
 
-
-    document.addEventListener("DOMContentLoaded", function() {
-
-        const botoes = document.querySelectorAll(".btn-ver-prof");
-
-        botoes.forEach(botao => {
-            botao.addEventListener("click", function() {
-
-                const id = this.dataset.id;
-                const detalhe = document.getElementById("detalhe-prof-" + id);
-
-                detalhe.classList.toggle("hidden");
-
-            });
-        });
-
-    });
-
-    document.querySelectorAll(".filtro-unico").forEach(select => {
-        select.addEventListener("change", function() {
-
-            const grade = this.value;
-            const profId = this.dataset.prof;
-
-            const container = document.querySelector("#detalhe-prof-" + profId);
-            const linhas = container.querySelectorAll(".linha-aluno");
-
-            linhas.forEach(linha => {
-
-                if (!grade) {
-                    linha.style.display = "";
-                    return;
-                }
-
-                if (linha.dataset.grade === grade) {
-                    linha.style.display = "";
-                } else {
-                    linha.style.display = "none";
-                }
-
-            });
-
-        });
-    });
-
     function bloquearSubmit(event, form) {
 
         if (!form.checkValidity()) {
@@ -512,12 +276,10 @@
         document.getElementById('cadastroForm').classList.add('hidden');
     }
 
-
     // Validação de nome
     function validarNome(input) {
         input.value = input.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
     }
-
 
     const tel = document.getElementById('prof_telefone');
 
@@ -535,6 +297,48 @@
             tel.value = f;
         });
     }
+
+    // FILTROS DE PROFESSORES
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const filtroNome = document.getElementById('filtroNomeProfessor');
+        const filtroGraduado = document.getElementById('filtroGraduado');
+        const limpar = document.getElementById('limparFiltroProfessor');
+        const linhas = document.querySelectorAll('.linha-professor');
+
+        function aplicarFiltroProfessor() {
+            const nome = filtroNome.value.toLowerCase().trim();
+            const graduado = filtroGraduado.value;
+
+            linhas.forEach(linha => {
+                const n = linha.dataset.nome || '';
+                const g = linha.dataset.graduado || '';
+                let mostrar = true;
+
+                if (nome && !n.includes(nome)) {
+                    mostrar = false;
+                }
+
+                if (graduado && g !== graduado) {
+                    mostrar = false;
+                }
+
+                linha.style.display = mostrar ? '' : 'none';
+            });
+        }
+
+        if (filtroNome) filtroNome.addEventListener('input', aplicarFiltroProfessor);
+        if (filtroGraduado) filtroGraduado.addEventListener('change', aplicarFiltroProfessor);
+
+        if (limpar) {
+            limpar.addEventListener('click', function() {
+                filtroNome.value = '';
+                filtroGraduado.value = '';
+                aplicarFiltroProfessor();
+            });
+        }
+
+    });
 </script>
 
 @endsection

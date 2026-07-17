@@ -108,9 +108,16 @@
                 <td class="py-3 px-4 text-center">
                     <div class="flex justify-center gap-2">
 
+                        <a href="{{ route('professor-aulas', Crypt::encrypt($grade->id_grade)) }}"
+                            style="background-color:#174ab9; color:white;"
+                            class="px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition duration-200 inline-block text-center">
+                            Aulas
+                        </a>
+
+
                         <a href="{{ route('professor-frequencia.dias', Crypt::encrypt($grade->id_grade)) }}"
                             class="px-4 py-2 rounded-lg shadow text-white"
-                            style="background-color: #174ab9;">
+                            style="background-color: #15367c;">
                             Frequência
                         </a>
 

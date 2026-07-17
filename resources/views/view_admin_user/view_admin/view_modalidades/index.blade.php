@@ -96,7 +96,7 @@
                         Editar
                     </a>
 
-                    <!-- Excluir -->
+                    <!-- Excluir 
                     <form action="{{ route('modalidades.destroy',  Crypt::encrypt($modalidade->id_modalidade)) }}"
                         method="POST"
                         onsubmit="return confirm('Deseja excluir esta modalidade?');">
@@ -107,7 +107,7 @@
                             class="px-4 py-2 rounded-lg shadow hover:bg-[#D65A3E] transition duration-200">
                             Excluir
                         </button>
-                    </form>
+                    </form>-->
                 </td>
             </tr>
 

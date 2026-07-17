@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
+use App\Rules\CpfValido;
 
 class ResponsavelController extends Controller
 {
@@ -47,7 +48,7 @@ class ResponsavelController extends Controller
         $request->validate([
             'resp_nome' => 'required|string|max:120',
             'resp_parentesco' => 'required|string|max:60',
-            'resp_cpf' => 'required|string|size:11',
+            'resp_cpf' => ['required', 'string', 'size:11', new CpfValido],
             'resp_telefone' => 'required|string|max:20',
             'resp_email' => 'required|email|max:150',
             'resp_cep' => 'required|digits:8',
@@ -128,7 +129,7 @@ class ResponsavelController extends Controller
         $request->validate([
             'resp_nome' => 'required|string|max:120',
             'resp_parentesco' => 'required|string|max:60',
-            'resp_cpf' => $cpfAlterado ? 'required|string|size:11' : 'nullable',
+            'resp_cpf' => ['required', 'string', 'size:11', new CpfValido],
             'resp_telefone' => 'required|string|max:20',
             'resp_email' => 'required|email|max:150',
             'resp_cep' => 'required|digits:8',
@@ -160,7 +161,8 @@ class ResponsavelController extends Controller
             ->route('responsaveis')
             ->with('success', 'Responsável atualizado com sucesso!');
     }
-    
+
+   
 
     // EXCLUIR RESPONSÁVEL
     public function destroy($id)

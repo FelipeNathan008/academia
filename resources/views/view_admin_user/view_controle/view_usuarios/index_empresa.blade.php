@@ -300,7 +300,7 @@
                                 tabela.innerHTML += `
                         <tr class="border-b hover:bg-gray-50">
                             <td class="py-2">${item.resp_nome}</td>
-                            <td class="py-2">${maskCPF(item.resp_cpf)}</td>
+                            <td class="py-2">${maskTelefone(item.resp_telefone)}</td>
                             <td class="py-2">
                                 <button 
                                     type="button"
@@ -552,6 +552,13 @@
         }
 
         function bloquearSubmit(event, form) {
+
+            // 1. Deixa a validação nativa do HTML5 (required, type=email, etc.) acontecer primeiro
+            if (!form.checkValidity()) {
+                return;
+            }
+
+            // 2. Valida a força da senha
             const senha = document.getElementById('senha').value;
 
             const forte = senha.length >= 8 &&
@@ -563,6 +570,13 @@
                 event.preventDefault();
                 alert('A senha não atende aos requisitos mínimos de segurança.');
                 return false;
+            }
+
+            // 3. Só bloqueia o botão (evita duplo clique) se passou em tudo
+            const btn = form.querySelector('button[type="submit"]');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = 'Salvando...';
             }
         }
     </script>

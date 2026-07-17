@@ -110,8 +110,7 @@
             @foreach($matricula->mensalidades as $mensalidade)
             @foreach($mensalidade->detalhes as $detalhe)
             @if(
-            \Carbon\Carbon::parse($detalhe->det_mensa_data_venc)->isPast() &&
-            $detalhe->det_mensa_status !== 'Pago'
+            $detalhe->det_mensa_status == 'Atrasado'
             )
             @php $atrasado = true; break 3; @endphp
             @endif

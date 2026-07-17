@@ -22,7 +22,7 @@
         <span class="text-sm text-gray-500">Total Geral</span>
     </div>
 
-    <a href="{{ route('matricula.index') }}"
+    <a href="{{ route('matricula.index', ['matricula' => 'Encerrada']) }}"
         class="block p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition">
 
         <h3 class="font-semibold text-lg mb-2">
@@ -44,8 +44,8 @@
         <span class="text-sm text-gray-500">Total de Matrículas Cadastradas</span>
     </div>
 
-    <a href="{{ route('matricula.index') }}"
-        class="block p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition">
+    <a href="{{ route('matricula.index', ['bolsista' => 'sim']) }}"
+     class="block p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition">
 
         <h3 class="font-semibold text-lg mb-2">
             Total de Alunos Bolsistas

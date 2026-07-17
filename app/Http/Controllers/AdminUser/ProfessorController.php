@@ -7,9 +7,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Professor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Traits\ProcessaFotoTrait;
 use App\Models\Graduacao;
 use App\Models\DetalhesProfessor;
 use App\Models\Modalidade;
+use App\Models\GradeHorario;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -18,6 +20,8 @@ use Illuminate\Support\Facades\DB;
 
 class ProfessorController extends Controller
 {
+    use ProcessaFotoTrait;
+
     public function index(Request $request)
     {
 
@@ -102,7 +106,9 @@ class ProfessorController extends Controller
         $professoresEmpresa = Professor::with('empresas')
             ->where('id_emp_id', $user->id_emp_id)
             ->get();
-        return view('view_admin_user.view_principal.view_professores.index',compact('professores', 'professoresEmpresa', 'graduacoes', 'detalhes', 'modalidades')
+        return view(
+            'view_admin_user.view_principal.view_professores.index',
+            compact('professores', 'professoresEmpresa', 'graduacoes', 'detalhes', 'modalidades')
         );
     }
 
@@ -121,16 +127,13 @@ class ProfessorController extends Controller
             'prof_nascimento' => 'required|date',
             'prof_telefone' => 'required|string|max:20',
             'prof_desc' => 'required|string',
-            'prof_foto' => 'nullable|image|max:2048',
+            'prof_foto' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
         ]);
 
-        // SÓ DEPOIS faz upload
         $filename = null;
 
         if ($request->hasFile('prof_foto')) {
-            $file = $request->file('prof_foto');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('images/professores'), $filename);
+            $filename = $this->processarFoto($request->file('prof_foto'), 'professores');
         }
 
         Professor::create([
@@ -146,6 +149,7 @@ class ProfessorController extends Controller
             ->route('professores')
             ->with('success', 'Professor cadastrado com sucesso!');
     }
+
     public function edit($id)
     {
         try {
@@ -184,21 +188,14 @@ class ProfessorController extends Controller
             'prof_nascimento' => 'required|date',
             'prof_telefone' => 'required|string|max:20',
             'prof_desc' => 'required|string',
-            'prof_foto' => 'nullable|image|max:2048',
+            'prof_foto' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
         ]);
-
 
         // FOTO
         if ($request->hasFile('prof_foto')) {
+            $this->removerFoto('professores', $professor->prof_foto);
 
-            if ($professor->prof_foto && file_exists(public_path('images/professores/' . $professor->prof_foto))) {
-                unlink(public_path('images/professores/' . $professor->prof_foto));
-            }
-
-            $file = $request->file('prof_foto');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('images/professores'), $filename);
-
+            $filename = $this->processarFoto($request->file('prof_foto'), 'professores');
             $professor->prof_foto = $filename;
         }
 
@@ -212,7 +209,6 @@ class ProfessorController extends Controller
         return redirect()->route('professores')
             ->with('success', 'Professor atualizado com sucesso!');
     }
-
     public function show($id)
     {
         try {
@@ -243,15 +239,28 @@ class ProfessorController extends Controller
         $professor = Professor::where('id_professor', $id)
             ->where('id_emp_id', $user->id_emp_id)
             ->firstOrFail();
-        $professor->detalhes()->delete();
 
-        if ($professor->prof_foto && file_exists(public_path('images/professores/' . $professor->prof_foto))) {
-            unlink(public_path('images/professores/' . $professor->prof_foto));
+        // Verifica se o professor possui alguma grade vinculada
+        $possuiGrade = GradeHorario::where('professor_id_professor', $professor->id_professor)
+            ->exists();
+
+        if ($possuiGrade) {
+            return redirect()
+                ->route('professores')
+                ->with('error', 'Não é possível excluir este professor, pois ele possui uma ou mais turmas (grades de horário) vinculadas.');
         }
 
+        // Remove graduações
+        $professor->detalhes()->delete();
+
+        // Remove foto
+        $this->removerFoto('professores', $professor->prof_foto);
+
+        // Remove professor
         $professor->delete();
 
-        return redirect()->route('professores')
-            ->with('success', 'Professor e graduações removidos com sucesso!');
+        return redirect()
+            ->route('professores')
+            ->with('success', 'Professor removido com sucesso!');
     }
 }

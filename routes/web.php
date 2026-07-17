@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminUser\{
     DashboardController,
     ResponsavelController,
     AlunoController,
+    AulaController,
     DetalhesAlunoController,
     MatriculaController,
     MensalidadeController,
@@ -25,7 +26,6 @@ use App\Http\Controllers\AdminUser\{
 
 use App\Http\Controllers\{
     ProfileController,
-    AulaController,
 };
 
 use App\Http\Controllers\ProfessorUser\{
@@ -39,10 +39,12 @@ use App\Http\Controllers\ProfessorUser\{
     ProfessorUserFinanceiroController,
     ProfessorUserDetalhesAlunoController,
     ProfessorUserFrequenciaController,
+    ProfessorUserAulaController,
 };
 
 use App\Http\Controllers\AlunoUser\{
     AlunoUserDashboardController,
+    AlunoUserAulaController,
     AlunoUserAlunoController,
     AlunoUserDetalhesAlunoController,
     AlunoUserResponsavelController,
@@ -133,6 +135,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/grades/aulas', [AulaController::class, 'grades'])->name('grades.aulas');
     Route::get('/grade/{id}/aulas', [AulaController::class, 'index'])->name('aulas');
     Route::post('/grade/{id}/aulas/store', [AulaController::class, 'store'])->name('aulas.store');
+    Route::get('/aulas/{id}', [AulaController::class, 'show'])->name('aulas.show');
+    Route::get('grade_horarios/{id}', [GradeHorarioController::class, 'show'])->name('grade_horarios.show');
     Route::get('/aulas/{id}/edit', [AulaController::class, 'edit'])->name('aulas.edit');
     Route::put('/aulas/{id}', [AulaController::class, 'update'])->name('aulas.update');
     Route::delete('/aulas/{id}', [AulaController::class, 'destroy'])->name('aulas.destroy');
@@ -182,6 +186,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/frequencia/{id}/edit', [FrequenciaAlunoController::class, 'edit'])->name('frequencia.edit');
     Route::put('/frequencia/{id}', [FrequenciaAlunoController::class, 'update'])->name('frequencia.update');
     Route::post('/frequencia', [FrequenciaAlunoController::class, 'store'])->name('frequencia.store');
+
 
     // CONTROLE //
     //USERS
@@ -293,6 +298,14 @@ Route::middleware(['auth', 'professor'])->group(function () {
     //FINANCEIRO
     Route::get('/professor/aluno/{id}/financeiro', [ProfessorUserFinanceiroController::class, 'index'])->name('professor-financeiro');
 
+    // AULA
+    Route::get('professor/grade/{id}/aulas', [ProfessorUserAulaController::class, 'index'])->name('professor-aulas');
+    Route::post('professor/grade/{id}/aulas/store', [ProfessorUserAulaController::class, 'store'])->name('professor-aulas.store');
+    Route::get('professor/aulas/{id}', [ProfessorUserAulaController::class, 'show'])->name('professor-aulas.show');
+    Route::get('professor/aulas/{id}/edit', [ProfessorUserAulaController::class, 'edit'])->name('professor-aulas.edit');
+    Route::put('professor/aulas/{id}', [ProfessorUserAulaController::class, 'update'])->name('professor-aulas.update');
+    Route::delete('professor/aulas/{id}', [ProfessorUserAulaController::class, 'destroy'])->name('professor-aulas.destroy');
+
     // FREQUENCIA
     Route::get('/professor/frequencia', [ProfessorUserFrequenciaController::class, 'listagemGrades'])->name('professor-frequencia');
     Route::get('/professor/frequencia/{id}/dias', [ProfessorUserFrequenciaController::class, 'listagemDias'])->name('professor-frequencia.dias');
@@ -325,6 +338,10 @@ Route::middleware(['auth', 'aluno'])->group(function () {
     // MATRÍCULA
     Route::get('/aluno/matriculas/{id}', [AlunoUserMatriculaController::class, 'index'])->name('aluno-matricula.index');
     Route::get('/aluno/matricula/show/{id}', [AlunoUserMatriculaController::class, 'show'])->name('aluno-matricula.show');
+
+    // AULA
+    Route::get('/aluno/aulas/{gradeId}', [AlunoUserAulaController::class, 'index'])->name('aluno-aulas.index');
+    Route::get('/aluno/aulas/detalhe/{id}', [AlunoUserAulaController::class, 'show'])->name('aluno-aulas.show');
 
     //FINANCEIRO
     Route::get('/aluno/financeiro/{id}', [AlunoUserFinanceiroController::class, 'index'])->name('aluno-financeiro.index');
