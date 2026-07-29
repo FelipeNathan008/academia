@@ -1,6 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\SuperAdmin\{
+    SuperAdminController,
+};
 use App\Http\Controllers\AdminUser\{
     DashboardController,
     ResponsavelController,
@@ -22,6 +26,7 @@ use App\Http\Controllers\AdminUser\{
     UsuariosController,
     DetalhesFilialController,
     EmpresaController,
+    PlanoController,
 };
 
 use App\Http\Controllers\{
@@ -60,6 +65,9 @@ Route::get('/', fn() => view('apresentacao'))->name('apresentacao');
 Route::get('/cadastro-empresa', fn() => view('cadastro_empresa'))->name('cadastro_empresa');
 Route::post('/cadastro-empresa/store', [EmpresaController::class, 'store'])
     ->name('cadastro_empresa.store');
+Route::get('/planos', function () {
+    return view('planos');
+})->name('planos.publico');
 
 // ROTAS COMUNS
 
@@ -84,6 +92,14 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/mensalidade/desfazer/{id}', [MensalidadeController::class, 'desfazerBaixa'])
         ->name('mensalidade.desfazerBaixa');
 });
+
+Route::middleware(['auth', 'superadmin'])->group(function () {
+
+    Route::get('/superadmin', [SuperAdminController::class, 'index'])->name('dashboard-superadmin');
+
+});
+
+
 Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/admin/principal', function () {
@@ -98,10 +114,20 @@ Route::middleware(['auth', 'admin'])->group(function () {
         return view('view_admin_user.controle');
     })->name('admin.controle');
 
+
+
+    Route::get('/admin/planos', [PlanoController::class, 'index'])->name('admin.planos');
+
     // DASHBOARD
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/mensalidades-atrasadas', [DashboardController::class, 'mensalidadesAtrasadas'])->name('dashboard.mensalidadesAtrasadas');
     Route::get('/dashboard/graduacoes', [DashboardController::class, 'graduacoes'])->name('dashboard.graduacoes');
+    Route::get('/dashboard/comprovantes', [DashboardController::class, 'comprovantesPendentes'])->name('dashboard.comprovantes');
+
+    //  MENSALIDADE
+    Route::get('/mensalidade/comprovante/{id}', [MensalidadeController::class, 'verComprovante'])->name('mensalidade.comprovante');
+    Route::put('/mensalidade/aprovar/{id}', [MensalidadeController::class, 'aprovar'])->name('mensalidade.aprovar');
+    Route::put('/mensalidade/rejeitar/{id}', [MensalidadeController::class, 'rejeitar'])->name('mensalidade.rejeitar');
 
     // RESPONSÁVEIS
     Route::get('/responsaveis', [ResponsavelController::class, 'index'])->name('responsaveis');
@@ -111,6 +137,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::delete('/responsaveis/{id}', [ResponsavelController::class, 'destroy'])->name('responsaveis.destroy');
 
     //ALUNOS
+    Route::get('/alunos', [AlunoController::class, 'indexListagem'])->name('alunos.index');
     Route::get('/responsaveis/{id}/alunos', [AlunoController::class, 'index'])->name('alunos');
     Route::post('/responsaveis/{id}/alunos', [AlunoController::class, 'store'])->name('alunos.store');
     Route::get('/alunos/{id}/editar', [AlunoController::class, 'edit'])->name('alunos.edit');
@@ -120,7 +147,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // MATRÍCULA
     Route::get('/professor/{id}/turmas', [MatriculaController::class, 'getTurmasPorProfessor']);
-    Route::get('/matriculas', [MatriculaController::class, 'indexSidebar'])->name('matricula.index');
     Route::get('/alunos/{id}/matricula', [MatriculaController::class, 'index'])->name('matricula');
     Route::get('/alunos/{id}/matricula/create', [MatriculaController::class, 'create'])->name('matricula.create');
     Route::post('/alunos/{id}/matricula', [MatriculaController::class, 'store'])->name('matricula.store');
@@ -225,6 +251,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // ADMIN geral
     // ADMINISTRAÇÃO
+
+    Route::get('/graduacoes/molde', [GraduacaoController::class, 'moldeIndex'])->name('graduacoes.molde.index');
+    Route::get('/graduacoes/molde/{id}', [GraduacaoController::class, 'moldeShow'])->name('graduacoes.molde.show');
+    Route::post('/graduacoes/molde/aplicar', [GraduacaoController::class, 'moldeAplicar'])->name('graduacoes.molde.aplicar');
+
     Route::get('/graduacoes', [GraduacaoController::class, 'index'])->name('graduacoes');
     Route::post('/graduacoes', [GraduacaoController::class, 'store'])->name('graduacoes.store');
     Route::get('/graduacoes/{id}/edit', [GraduacaoController::class, 'edit'])->name('graduacoes.edit');
@@ -263,6 +294,8 @@ Route::middleware(['auth', 'professor'])->group(function () {
     Route::get('/professor/dashboard', [ProfessorUserDashboardController::class, 'index'])->name('dashboard-professor');
     Route::get('/professor/mensalidades-atrasadas', [ProfessorUserDashboardController::class, 'mensalidadesAtrasadas'])
         ->name('dashboard-professor.mensalidadesAtrasadas');
+    Route::get('/professor/dashboard/comprovantes', [ProfessorUserDashboardController::class, 'comprovantesPendentes'])
+        ->name('dashboard-professor.comprovantes');
 
     //PROFESSOR
     Route::get('/professor/show', [ProfessorUserProfessorController::class, 'show'])->name('professor.show');
@@ -340,11 +373,18 @@ Route::middleware(['auth', 'aluno'])->group(function () {
     Route::get('/aluno/matricula/show/{id}', [AlunoUserMatriculaController::class, 'show'])->name('aluno-matricula.show');
 
     // AULA
+    Route::get('/aluno/grades', [AlunoUserAulaController::class, 'grades'])->name('aluno-grades.index');
     Route::get('/aluno/aulas/{gradeId}', [AlunoUserAulaController::class, 'index'])->name('aluno-aulas.index');
     Route::get('/aluno/aulas/detalhe/{id}', [AlunoUserAulaController::class, 'show'])->name('aluno-aulas.show');
 
     //FINANCEIRO
     Route::get('/aluno/financeiro/{id}', [AlunoUserFinanceiroController::class, 'index'])->name('aluno-financeiro.index');
+    Route::get('/aluno/financeiro/comprovante/{id}', [AlunoUserFinanceiroController::class, 'verComprovante'])
+        ->name('aluno-financeiro.comprovante.show');
+    Route::post('/aluno/financeiro/comprovante/{id}', [AlunoUserFinanceiroController::class, 'enviarComprovante'])
+        ->name('aluno-financeiro.comprovante');
+    Route::get('/aluno/financeiro/pagamento/{id}', [AlunoUserFinanceiroController::class, 'showPagamento'])
+        ->name('aluno-financeiro.pagamento.show');
 
     //FREQUENCIA
     Route::get('/aluno/frequencia/{id}', [AlunoUserFrequenciaController::class, 'visualizar'])->name('aluno-frequencia.visualizar');

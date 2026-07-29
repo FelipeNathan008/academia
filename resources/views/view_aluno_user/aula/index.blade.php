@@ -4,6 +4,8 @@
 
 @section('content')
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
+
 <!-- BREADCRUMB -->
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
@@ -13,30 +15,33 @@
             </a>
         </li>
         <li>/</li>
+         <li>
+            <a href="{{ route('aluno-grades.index') }}" class="hover:text-[#8E251F] transition">
+                Turmas
+            </a>
+        </li>
+        <li>/</li>
         <li class="text-gray-400">{{ $grade->professor->prof_nome ?? '-' }}</li>
         <li>/</li>
         <li class="font-semibold text-gray-700">Aulas</li>
     </ol>
 </nav>
 
-
 <!-- TOPO -->
 <div class="flex justify-between items-center mb-10">
 
     <div>
         <h2 class="text-3xl font-extrabold text-gray-800">
-           AULAS DA TURMA
+            AULAS DA TURMA
         </h2>
     </div>
 
-    <a href="{{route('aluno.index') }}"
+    <a href="{{ route('aluno-grades.index') }}"
         class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
         ← Voltar
     </a>
 
 </div>
-
-
 
 @php
 $diasNomes = [
@@ -83,11 +88,57 @@ $diasSelecionados = $grade->grade_dia_semana
     </div>
 </div>
 
+<!-- FILTRO -->
+<div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+    <div class="flex flex-wrap gap-6 items-end justify-center max-w-6xl mx-auto">
+
+        <div class="flex flex-col w-[220px]">
+            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                Filtrar por dia
+            </label>
+            <form method="GET" class="flex gap-2 items-end">
+
+                <input type="text"
+                    id="filtroDia"
+                    name="dia"
+                    autocomplete="off"
+                    value="{{ request('dia') }}"
+                    placeholder="Selecione uma data"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none cursor-pointer">
+
+                <button type="submit"
+                    class="h-[48px] px-6 rounded-xl bg-[#8E251F] text-white
+                           hover:bg-[#732920] transition shadow-md">
+                    Buscar
+                </button>
+
+                <a href="{{ route('aluno-aulas.index', $gradeId) }}"
+                    class="h-[48px] px-6 rounded-xl bg-gray-300 text-gray-800
+                           flex items-center justify-center
+                           hover:bg-gray-400 transition shadow-md">
+                    Limpar
+                </a>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+
 <!-- LISTAGEM -->
 <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
 
-    <h3 class="text-xl font-bold mb-6 text-gray-700">
-        AULAS DISPONÍVEIS
+    <h3 class="text-xl font-bold mb-6 text-gray-700 flex items-center gap-4 flex-wrap">
+        <span>AULAS DISPONÍVEIS</span>
+
+        <span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm">
+            Total: {{ $totalAulas }}
+        </span>
+
+        <span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm">
+            Filtrados: {{ $aulas->total() }}
+        </span>
     </h3>
 
     <table class="w-full text-left border-collapse">
@@ -125,12 +176,32 @@ $diasSelecionados = $grade->grade_dia_semana
             @empty
             <tr>
                 <td colspan="4" class="text-center py-6 text-gray-500">
-                    Nenhuma aula disponível para esta turma
+                    Nenhuma aula encontrada
                 </td>
             </tr>
             @endforelse
         </tbody>
     </table>
+
+    <div class="mt-6">
+        {{ $aulas->links() }}
+    </div>
+
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/pt.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        flatpickr('#filtroDia', {
+            dateFormat: 'Y-m-d',
+            altInput: true,
+            altFormat: 'd/m/Y',
+            allowInput: false,
+            locale: 'pt'
+        });
+    });
+</script>
 
 @endsection

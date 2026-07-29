@@ -65,7 +65,11 @@
 
             @php
             $parcelaAtrasada = $mensalidade->detalhes
-            ->where('det_mensa_status', 'Atrasado')
+            ->where('det_mensa_status', '!=', 'Pago')
+            ->filter(function ($detalhe) {
+            return \Carbon\Carbon::parse($detalhe->det_mensa_data_venc)
+            ->lt(\Carbon\Carbon::today());
+            })
             ->sortBy('det_mensa_data_venc')
             ->first();
             @endphp
@@ -167,7 +171,6 @@
                                         <th class="px-4 py-3">Forma</th>
                                         <th class="px-4 py-3">Status</th>
                                         <th class="px-4 py-3 text-right">Valor</th>
-                                        <th class="px-4 py-3 text-center">Ações</th>
                                     </tr>
                                 </thead>
 
@@ -205,6 +208,20 @@
                                             </span>
                                             @break
 
+                                            @case('Comprovante enviado')
+                                            <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg shadow"
+                                                style="background-color:#2563eb;">
+                                                Comprovante enviado
+                                            </span>
+                                            @break
+
+                                            @case('Rejeitado')
+                                            <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg shadow"
+                                                style="background-color:#b91c1c;">
+                                                Rejeitado
+                                            </span>
+                                            @break
+
                                             @case('Atrasado')
                                             <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg shadow"
                                                 style="background-color: #dc2626;">
@@ -236,44 +253,6 @@
 
                                         <td class="px-4 py-3 text-right font-semibold text-gray-800">
                                             R$ {{ number_format($detalhe->det_mensa_valor, 2, ',', '.') }}
-                                        </td>
-
-                                        <td class="px-4 py-3 text-center">
-
-                                            @if($detalhe->det_mensa_status != 'Pago')
-
-                                            <form action="{{ route('mensalidade.darBaixa', Crypt::encrypt(['id' => $detalhe->id_detalhes_mensalidade])) }}"
-                                                method="POST"
-                                                onsubmit="return confirm('Confirmar baixa da parcela?')">
-
-                                                @csrf
-                                                @method('PUT')
-
-                                                <button type="submit"
-                                                    style="background-color: #15803d; color: white;"
-                                                    class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200">
-                                                    Dar Baixa
-                                                </button>
-                                            </form>
-
-                                            @else
-
-                                            <form action="{{ route('mensalidade.desfazerBaixa', Crypt::encrypt(['id' => $detalhe->id_detalhes_mensalidade])) }}"
-                                                method="POST"
-                                                onsubmit="return confirm('Deseja desfazer a baixa desta parcela?')">
-
-                                                @csrf
-                                                @method('PUT')
-
-                                                <button type="submit"
-                                                    style="background-color: #af2020; color: white;"
-                                                    class="px-4 py-2 rounded-lg shadow hover:bg-[#b91c1c] transition duration-200">
-                                                    Desfazer
-                                                </button>
-                                            </form>
-
-                                            @endif
-
                                         </td>
 
                                     </tr>

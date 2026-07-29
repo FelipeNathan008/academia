@@ -57,7 +57,7 @@
     <form action="{{ route('professor-detalhes-aluno.store', Crypt::encrypt($aluno->id_aluno)) }}"
         method="POST"
         enctype="multipart/form-data"
-        onsubmit="bloquearSubmit(event, this)">
+        onsubmit="return validarSubmitGraduacao(event, this)">
         @csrf
         <input type="hidden" name="aluno_id_aluno" value="{{ $aluno->id_aluno }}">
 
@@ -71,7 +71,9 @@
                     <select id="modalidadeCadastro" class="w-full border rounded-lg px-3 py-2">
                         <option value="">Selecione a modalidade</option>
                         @foreach($modalidades as $modalidade)
-                        <option value="{{ $modalidade->id_modalidade }}">
+                        <option
+                            value="{{ $modalidade->id_modalidade }}"
+                            data-nome="{{ $modalidade->mod_nome }}">
                             {{ $modalidade->mod_nome }}
                         </option>
                         @endforeach
@@ -80,18 +82,45 @@
 
                 <div>
                     <label class="text-sm font-medium text-gray-600">Faixa</label>
-                    <select id="faixaCadastro" class="w-full border rounded-lg px-3 py-2" disabled>
+                    <select
+                        id="faixaCadastro"
+                        name="id_graduacao"
+                        class="w-full border rounded-lg px-3 py-2"
+                        required
+                        disabled>
                         <option value="">Selecione a faixa</option>
                     </select>
                 </div>
 
-                <div>
-                    <label class="text-sm font-medium text-gray-600">Grau</label>
-                    <select name="id_graduacao" id="grauCadastro"
-                        class="w-full border rounded-lg px-3 py-2"
-                        required disabled>
-                        <option value="">Selecione o grau</option>
-                    </select>
+
+                <div id="avisoApagarFrequencias"
+                    class="hidden md:col-span-2 mt-6 p-4 rounded-xl border-2 border-red-400 bg-red-50">
+
+                    <p class="text-sm font-bold text-red-700 mb-2">
+                        ⚠️ Atenção: ação irreversível
+                    </p>
+
+                    <p class="text-sm text-red-700">
+                        Ao cadastrar esta graduação,
+                        <strong>todas as frequências (presenças e faltas)</strong>
+                        da matrícula ativa do aluno em
+                        <strong id="nomeModalidadeAviso">-</strong>
+                        serão
+                        <strong>apagadas permanentemente</strong>
+                        para dar início à nova contagem de aulas da faixa seguinte.
+                        Não será possível recuperar esses dados depois.
+                    </p>
+
+                    <label class="flex items-center gap-2 mt-3 text-sm text-red-800 font-semibold">
+                        <input
+                            type="checkbox"
+                            name="confirma_apagar_frequencias"
+                            id="confirmaApagarFrequencias"
+                            value="1"
+                            required>
+
+                        Estou ciente e desejo continuar
+                    </label>
                 </div>
 
                 <div>
@@ -179,7 +208,6 @@
         <thead>
             <tr class="border-b text-gray-600 text-sm">
                 <th class="py-3 px-4">Graduação</th>
-                <th class="py-3 px-4">Grau</th>
                 <th class="py-3 px-4">Modalidade</th>
                 <th class="py-3 px-4">Data</th>
                 <th class="py-3 px-4">Ações</th>
@@ -199,7 +227,6 @@
                     {{ $det->graduacao->gradu_nome_cor }}
                 </td>
 
-                <td class="py-3 px-4">{{ $det->graduacao->gradu_grau }}</td>
                 <td class="py-3 px-4">{{ $det->graduacao->modalidade->mod_nome }}</td>
                 <td class="py-3 px-4">{{ \Carbon\Carbon::parse($det->det_data)->format('d/m/Y') }}</td>
 
@@ -243,7 +270,6 @@
         data-id="{{ $g->id_graduacao }}"
         data-modalidade="{{ $g->id_modalidade }}"
         data-faixa="{{ $g->gradu_nome_cor }}"
-        data-grau="{{ $g->gradu_grau }}"
         data-ordem="{{ $g->gradu_ordem }}">
     </div>
     @endforeach
@@ -251,12 +277,37 @@
 
 <script src="{{ asset('js/faixas.js') }}"></script>
 <script>
+    function validarSubmitGraduacao(event, form) {
+
+        if (!form.checkValidity()) {
+            return true;
+        }
+
+        const modalidadeNome =
+            document.getElementById('nomeModalidadeAviso').textContent;
+
+        const confirmado = confirm(
+            `Tem certeza que deseja cadastrar esta graduação?\n\n` +
+            `Todas as frequências da matrícula ativa em "${modalidadeNome}" serão APAGADAS PERMANENTEMENTE. Esta ação não pode ser desfeita.`
+        );
+
+        if (!confirmado) {
+            event.preventDefault();
+            return false;
+        }
+
+        bloquearSubmit(event, form);
+
+        return true;
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
 
-        // ── CADASTRO: modalidade → faixa → grau ──────────────────────────
+        const aviso = document.getElementById('avisoApagarFrequencias');
+        const nomeSpan = document.getElementById('nomeModalidadeAviso');
+        const checkboxConfirma = document.getElementById('confirmaApagarFrequencias');
         const modalidadeSelect = document.getElementById('modalidadeCadastro');
         const faixaSelect = document.getElementById('faixaCadastro');
-        const grauSelect = document.getElementById('grauCadastro');
 
         const graduacoes = Array.from(
             document.querySelectorAll('#graduacoes-data div')
@@ -264,57 +315,54 @@
             id: item.dataset.id,
             modalidade: item.dataset.modalidade,
             faixa: item.dataset.faixa,
-            grau: item.dataset.grau,
             ordem: Number(item.dataset.ordem)
         }));
 
         modalidadeSelect.addEventListener('change', function() {
-            faixaSelect.innerHTML = '<option value="">Selecione a faixa</option>';
-            grauSelect.innerHTML = '<option value="">Selecione o grau</option>';
-            grauSelect.disabled = true;
+
+            faixaSelect.innerHTML =
+                '<option value="">Selecione a faixa</option>';
 
             const modalidadeId = this.value;
+
             if (!modalidadeId) {
+
+                aviso.classList.add('hidden');
+                checkboxConfirma.checked = false;
+                checkboxConfirma.required = false;
+
                 faixaSelect.disabled = true;
+
                 return;
             }
 
             faixaSelect.disabled = false;
 
-            const faixas = [...new Set(
-                graduacoes
-                .filter(g => g.modalidade == modalidadeId)
-                .sort((a, b) => a.ordem - b.ordem)
-                .map(g => g.faixa)
-            )];
+            // popula faixas...
 
-            faixas.forEach(faixa => {
-                faixaSelect.innerHTML += `<option value="${faixa}">${faixa}</option>`;
-            });
-        });
+            const opcaoSelecionada = this.options[this.selectedIndex];
 
-        faixaSelect.addEventListener('change', function() {
-            grauSelect.innerHTML = '<option value="">Selecione o grau</option>';
+            nomeSpan.textContent = opcaoSelecionada.dataset.nome;
 
-            const modalidadeId = modalidadeSelect.value;
-            const faixa = this.value;
+            aviso.classList.remove('hidden');
+            checkboxConfirma.required = true;
 
-            if (!faixa) {
-                grauSelect.disabled = true;
-                return;
-            }
-
-            grauSelect.disabled = false;
+            faixaSelect.disabled = false;
 
             graduacoes
-                .filter(g => g.modalidade == modalidadeId && g.faixa == faixa)
+                .filter(g => g.modalidade == modalidadeId)
                 .sort((a, b) => a.ordem - b.ordem)
                 .forEach(g => {
-                    grauSelect.innerHTML += `<option value="${g.id}">Grau ${g.grau}</option>`;
+
+                    faixaSelect.innerHTML += `
+                <option value="${g.id}">
+                    ${g.faixa}
+                </option>`;
                 });
+
         });
 
-        // ── FILTROS ───────────────────────────────────────────────────────
+        // Filtros
         const filtroModalidade = document.getElementById('filtroModalidade');
         const filtroGraduacao = document.getElementById('filtroGraduacao');
         const limparBtn = document.getElementById('limparFiltrosGraduacao');

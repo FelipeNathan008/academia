@@ -14,8 +14,8 @@
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
         <li>
-            <a href="{{ route('professores') }}" class="hover:text-[#8E251F] transition">
-                Professores
+            <a href="{{ route('frequencia.listagem') }}" class="hover:text-[#8E251F] transition">
+                Frequência e Aulas
             </a>
         </li>
         <li>/</li>
@@ -28,7 +28,7 @@
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div class="flex items-center gap-4">
-        <a href="{{ route('grades.aulas') }}"
+        <a href="{{ route('frequencia.listagem') }}"
             class="flex items-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
             ← Voltar
         </a>
@@ -44,25 +44,46 @@
     </button>
 </div>
 
-<!-- CARD PROFESSOR -->
+
+
+<!-- CARD DA GRADE -->
 <div class="mb-8">
     <div class="bg-white border-l-8 border-[#174ab9] rounded-2xl shadow-lg p-6">
-        <p class="text-xs uppercase tracking-widest text-gray-500">Professor selecionado</p>
+        <p class="text-xs uppercase tracking-widest text-gray-500">
+            Grade selecionada
+        </p>
 
         <h3 class="text-2xl font-extrabold text-gray-800 mt-1">
-            {{ $grade->professor->prof_nome }}
+            {{ $grade->grade_modalidade ?? 'Modalidade não definida' }}
         </h3>
 
-        <p class="mt-2 text-sm text-gray-600">
-            Telefone:
-            <strong class="text-gray-800">
-                {{ $grade->professor->prof_telefone
-                    ? preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $grade->professor->prof_telefone)
-                    : '-' }}
-            </strong>
-        </p>
+        <div class="mt-4 space-y-3 text-sm text-gray-600">
+
+            <div>
+                <span class="font-semibold text-gray-800">Professor:</span><br>
+                {{ $grade->professor->prof_nome ?? '-' }}
+            </div>
+
+            <div>
+                <span class="font-semibold text-gray-800">Horário:</span><br>
+
+                @if($grade)
+                {{ ucfirst($grade->grade_turma) }}
+                <span class="text-xs text-gray-500 block">
+                    {{ \Carbon\Carbon::parse($grade->grade_inicio)->format('H:i') }}
+                    às
+                    {{ \Carbon\Carbon::parse($grade->grade_fim)->format('H:i') }}
+                </span>
+                @else
+                -
+                @endif
+            </div>
+
+        </div>
     </div>
 </div>
+
+
 
 @php
 $diasNomes = [
@@ -153,8 +174,6 @@ $diasSelecionados = $diasPermitidos
                             <option value="inativo" {{ old('aula_status') == 'inativo' ? 'selected' : '' }}>Inativo</option>
                         </select>
                     </div>
-
-                    </td>
                 </div>
 
                 <!-- Característica -->
@@ -257,15 +276,61 @@ $diasSelecionados = $diasPermitidos
     </form>
 </div>
 
-<!-- LISTAGEM -->
-<div class="bg-white rounded-2xl shadow-md p-6 mb-6">
 
-    <h3 class="text-xl font-bold mb-6 text-gray-700">
-        AULAS CADASTRADAS
+
+<!-- FILTRO -->
+<div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+    <div class="flex flex-wrap gap-6 items-end justify-center max-w-6xl mx-auto">
+
+        <div class="flex flex-col w-[220px]">
+            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                Filtrar por dia
+            </label>
+            <form method="GET" class="flex gap-2 items-end">
+
+                <input type="text"
+                    id="filtroDia"
+                    name="dia"
+                    autocomplete="off"
+                    value="{{ request('dia') }}"
+                    placeholder="Selecione uma data"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none cursor-pointer">
+
+                <button type="submit"
+                    class="h-[48px] px-6 rounded-xl bg-[#8E251F] text-white
+                           hover:bg-[#732920] transition shadow-md">
+                    Buscar
+                </button>
+
+                <a href="{{ route('aulas', $gradeId) }}"
+                    class="h-[48px] px-6 rounded-xl bg-gray-300 text-gray-800
+                           flex items-center justify-center
+                           hover:bg-gray-400 transition shadow-md">
+                    Limpar
+                </a>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<!-- LISTAGEM -->
+<div class="bg-white rounded-2xl shadow-md p-6 mb-6" id="containerAulas">
+    <h3 class="text-xl font-bold mb-6 text-gray-700 flex items-center gap-4 flex-wrap">
+        <span>AULAS CADASTRADAS</span>
+
+        <span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm">
+            Total: {{ $totalAulas }}
+        </span>
+
+        <span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm">
+            Filtrados: {{ $aulas->total() }}
+        </span>
     </h3>
 
     <table class="w-full text-left border-collapse">
-
         <thead>
             <tr class="border-b text-gray-600 text-sm">
                 <th class="py-3 px-4">Exercício</th>
@@ -311,7 +376,6 @@ $diasSelecionados = $diasPermitidos
                     @endif
                 </td>
 
-
                 <td class="py-3 px-4 flex gap-2">
 
                     <a href="{{ route('aulas.show', Crypt::encrypt($aula->id_aula)) }}"
@@ -347,9 +411,8 @@ $diasSelecionados = $diasPermitidos
             @empty
 
             <tr>
-                <td colspan="5"
-                    class="text-center py-6 text-gray-500">
-                    Nenhuma aula cadastrada para este professor
+                <td colspan="5" class="text-center py-6 text-gray-500">
+                    Nenhuma aula encontrada
                 </td>
             </tr>
 
@@ -358,7 +421,14 @@ $diasSelecionados = $diasPermitidos
         </tbody>
 
     </table>
+
+    <div class="mt-6">
+        {{ $aulas->links() }}
+    </div>
+
 </div>
+
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/pt.js"></script>
@@ -375,6 +445,16 @@ $diasSelecionados = $diasPermitidos
     function fecharCadastro() {
         document.getElementById('cadastroForm').classList.add('hidden');
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        flatpickr('#filtroDia', {
+            dateFormat: 'Y-m-d',
+            altInput: true,
+            altFormat: 'd/m/Y',
+            allowInput: false,
+            locale: 'pt'
+        });
+    });
 
     document.addEventListener('DOMContentLoaded', function() {
 

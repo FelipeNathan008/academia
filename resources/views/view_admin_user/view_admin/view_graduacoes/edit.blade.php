@@ -56,21 +56,7 @@
                     placeholder="Ex: Faixa Branca">
             </div>
 
-            <!-- Grau -->
-            <div>
-                <label class="text-sm font-medium text-gray-600">
-                    Grau
-                </label>
-
-                <input
-                    type="number"
-                    name="gradu_grau"
-                    value="{{ old('gradu_grau', $graduacao->gradu_grau) }}"
-                    required
-                    class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none"
-                    placeholder="Ex: 1">
-            </div>
-
+         
             <!-- Ordem -->
             <div>
                 <label class="text-sm font-medium text-gray-600">

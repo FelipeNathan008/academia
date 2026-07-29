@@ -268,6 +268,13 @@
                                         <td class="px-4 py-3">
                                             @switch($detalhe->det_mensa_status)
 
+                                            @case('Comprovante enviado')
+                                            <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg"
+                                                style="background-color: #2563eb;">
+                                                Comprovante enviado
+                                            </span>
+                                            @break
+
                                             @case('Pago')
                                             <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg shadow transition duration-200"
                                                 style="background-color: #15803d;">
@@ -279,6 +286,13 @@
                                             <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg shadow transition duration-200"
                                                 style="background-color: #dc2626;">
                                                 Atrasado
+                                            </span>
+                                            @break
+
+                                            @case('Rejeitado')
+                                            <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg shadow transition duration-200"
+                                                style="background-color: #e71f1f;">
+                                                Rejeitado
                                             </span>
                                             @break
 
@@ -313,41 +327,47 @@
                                         {{-- COLUNA AÇÕES --}}
                                         <td class="px-4 py-3 text-center">
 
-                                            @if($detalhe->det_mensa_status != 'Pago')
-
-                                            <form action="{{route('mensalidade.darBaixa', Crypt::encrypt($detalhe->id_detalhes_mensalidade)) }}"
+                                            @if($detalhe->det_mensa_status === 'Comprovante enviado')
+                                            <button
+                                                type="button"
+                                                class="btn-analisar px-4 py-2 rounded-lg shadow text-white hover:bg-blue-800 transition"
+                                                style="background-color:#174ab9;"
+                                                data-modal="modal-{{ $detalhe->id_detalhes_mensalidade }}">
+                                                Analisar
+                                            </button>
+                                            @endif
+                                            {{-- Dar baixa --}}
+                                            @if($detalhe->det_mensa_status !== 'Pago' && $detalhe->det_mensa_status !== 'Comprovante enviado')
+                                            <form action="{{ route('mensalidade.darBaixa', Crypt::encrypt($detalhe->id_detalhes_mensalidade)) }}"
                                                 method="POST"
                                                 onsubmit="return confirm('Confirmar baixa da parcela?')">
-
                                                 @csrf
                                                 @method('PUT')
 
                                                 <button type="submit"
-                                                    style="background-color: #15803d; color: white;"
+                                                    style="background-color:#15803d;color:white;"
                                                     class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200">
                                                     Dar Baixa
                                                 </button>
                                             </form>
-                                            @else
+                                            @endif
+
+                                            {{-- Desfazer --}}
+                                            @if(in_array($detalhe->det_mensa_status, ['Pago', 'Rejeitado']))
                                             <form action="{{ route('mensalidade.desfazerBaixa', Crypt::encrypt($detalhe->id_detalhes_mensalidade)) }}"
                                                 method="POST"
-                                                onsubmit="return confirm('Deseja desfazer a baixa desta parcela?')">
-
+                                                onsubmit="return confirm('Deseja desfazer esta operação?')">
                                                 @csrf
                                                 @method('PUT')
 
                                                 <button type="submit"
-                                                    style="background-color: #af2020; color: white;"
+                                                    style="background-color:#af2020;color:white;"
                                                     class="px-4 py-2 rounded-lg shadow hover:bg-[#b91c1c] transition duration-200">
                                                     Desfazer
                                                 </button>
                                             </form>
-
                                             @endif
-
                                         </td>
-
-
                                     </tr>
 
                                     @empty
@@ -379,7 +399,82 @@
 
     </table>
 
+</div> {{-- fecha o card "LISTAGEM DE MENSALIDADES" --}}
+
+{{-- MODAIS DE ANÁLISE DE COMPROVANTE (fora da tabela, um por detalhe) --}}
+@foreach ($mensalidades as $mensalidade)
+@foreach ($mensalidade->detalhes as $detalhe)
+@if($detalhe->det_mensa_status === 'Comprovante enviado')
+<div
+    id="modal-{{ $detalhe->id_detalhes_mensalidade }}"
+    class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl p-8 relative">
+        <button
+            class="fechar-modal absolute top-4 right-5 text-2xl text-gray-500 hover:text-red-600">
+            ×
+        </button>
+        <h2 class="text-2xl font-bold text-[#174ab9] mb-6">
+            Analisar Comprovante
+        </h2>
+        <div class="space-y-3 mb-8">
+            <div class="flex justify-between">
+                <span class="font-semibold">Aluno</span>
+                <span>{{ $aluno->aluno_nome }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="font-semibold">Mês</span>
+                <span>{{ ucfirst($detalhe->det_mensa_mes_vigente) }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="font-semibold">Valor</span>
+                <span>
+                    R$ {{ number_format($detalhe->det_mensa_valor,2,',','.') }}
+                </span>
+            </div>
+            <div class="flex justify-between">
+                <span class="font-semibold">Status</span>
+                <span class="text-blue-600 font-bold">
+                    {{ $detalhe->det_mensa_status }}
+                </span>
+            </div>
+        </div>
+
+        <a href="{{ route('mensalidade.comprovante', Crypt::encrypt($detalhe->id_detalhes_mensalidade)) }}"
+            target="_blank"
+            class="block w-full text-center mb-6 px-4 py-3 rounded-lg bg-[#174ab9] text-white hover:bg-blue-800 transition">
+            Ver comprovante
+        </a>
+        <div class="flex gap-3">
+            <form
+                class="flex-1"
+                method="POST"
+                action="{{ route('mensalidade.aprovar', Crypt::encrypt($detalhe->id_detalhes_mensalidade)) }}">
+                @csrf
+                @method('PUT')
+                <button
+                    onclick="return confirm('Aprovar comprovante?')"
+                    class="w-full py-3 rounded-lg text-white font-semibold bg-green-600 hover:bg-green-700">
+                    Aprovar
+                </button>
+            </form>
+            <form
+                class="flex-1"
+                method="POST"
+                action="{{ route('mensalidade.rejeitar', Crypt::encrypt($detalhe->id_detalhes_mensalidade)) }}">
+                @csrf
+                @method('PUT')
+                <button
+                    onclick="return confirm('Rejeitar comprovante?')"
+                    class="w-full py-3 rounded-lg text-white font-semibold bg-red-600 hover:bg-red-700">
+                    Rejeitar
+                </button>
+            </form>
+        </div>
+    </div>
 </div>
+@endif
+@endforeach
+@endforeach
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -410,6 +505,32 @@
             const linha = document.getElementById('editar-forma-' + id);
 
             linha.classList.toggle('hidden');
+        });
+    });
+
+    document.querySelectorAll('.btn-analisar').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const modal = document.getElementById(this.dataset.modal);
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        });
+    });
+
+    document.querySelectorAll('.fechar-modal').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const modal = this.closest('.fixed');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        });
+
+    });
+
+    document.querySelectorAll('.fixed').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('flex');
+                this.classList.add('hidden');
+            }
         });
     });
 </script>

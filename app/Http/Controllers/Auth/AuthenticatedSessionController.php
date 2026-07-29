@@ -38,6 +38,9 @@ class AuthenticatedSessionController extends Controller
         if ($user->role === 'aluno') {
             return redirect()->route('dashboard-aluno');
         }
+        if ($user->role === 'superadmin') {
+            return redirect()->route('dashboard-superadmin');
+        }
 
         abort(403);
     }

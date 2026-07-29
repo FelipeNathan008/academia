@@ -150,10 +150,58 @@
 </div>
 
 <!-- LISTAGEM EM CARDS -->
-<div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+<div class="bg-white rounded-2xl shadow-md p-6 mb-6"
+    id="containerAlunos"
+    data-aluno-inicial="{{ request('aluno') ? strtolower(request('aluno')) : '' }}">
+
     <h3 class="text-xl font-bold mb-6 text-gray-700">
         ALUNOS CADASTRADOS
     </h3>
+
+    <!-- FILTROS -->
+    <div class="flex justify-center mb-8">
+        <div class="flex flex-wrap gap-4 items-end justify-center">
+
+            <!-- Nome -->
+            <div class="flex flex-col w-[260px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Nome
+                </label>
+
+                <input type="text"
+                    id="filtroNomeAluno"
+                    placeholder="Buscar por nome..."
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+            </div>
+
+            <!-- Graduado -->
+            <div class="flex flex-col w-[200px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Graduado
+                </label>
+
+                <select id="filtroGraduadoAluno"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+
+                    <option value="">Todos</option>
+                    <option value="sim">Sim</option>
+                    <option value="nao">Não</option>
+
+                </select>
+            </div>
+
+            <!-- Limpar -->
+            <button id="limparFiltroAluno"
+                class="h-[48px] px-6 rounded-xl bg-gray-300
+                       text-gray-800 font-semibold hover:bg-gray-400
+                       transition shadow-md">
+                Limpar filtro
+            </button>
+
+        </div>
+    </div>
 
     <table class="w-full text-left border-collapse">
         <thead>
@@ -175,10 +223,12 @@
             : null;
 
             $hoje = \Carbon\Carbon::today();
+            $alunoGraduado = $aluno->detalhes->where('aluno_id_aluno', $aluno->id_aluno)->count() > 0;
             @endphp
 
-            <tr class="border-b hover:bg-gray-50 transition">
-                <!-- NOME -->
+            <tr class="border-b hover:bg-gray-50 transition linha-aluno"
+                data-nome="{{ strtolower($aluno->aluno_nome ?? '') }}"
+                data-graduado="{{ $alunoGraduado ? 'sim' : 'nao' }}">
 
                 <td class="py-3 px-4">
                     {{ $aluno->aluno_nome }}
@@ -286,24 +336,23 @@
 
                 <!-- Graduado -->
                 <td class="py-3 px-4">
-                    @if($aluno->detalhes->where('aluno_id_aluno',$aluno->id_aluno)->count() > 0)
+                    @if($alunoGraduado)
                     <span style="padding:2px 8px; font-size:0.75rem;
-                font-weight:600; border-radius:9999px;
-                color:#166534; background-color:#bbf7d0;"> 🥋 Sim
+font-weight:600; border-radius:9999px;
+color:#166534; background-color:#bbf7d0;"> 🥋 Sim
                     </span>
                     @else
                     <span style="
-                        padding:4px 10px;
-                        font-size:0.75rem;
-                        font-weight:600;
-                        border-radius:9999px;
-                        color:#7f1d1d;
-                        background-color:#fecaca;">
+        padding:4px 10px;
+        font-size:0.75rem;
+        font-weight:600;
+        border-radius:9999px;
+        color:#7f1d1d;
+        background-color:#fecaca;">
                         Não
                     </span>
                     @endif
                 </td>
-
                 <!-- AÇÕES -->
                 <td class="py-3 px-4 flex gap-2">
                     <a href="{{ route('detalhes-aluno.index', Crypt::encrypt($aluno->id_aluno)) }}"
@@ -360,6 +409,57 @@
 
 
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const filtroNome = document.getElementById('filtroNomeAluno');
+        const filtroGraduado = document.getElementById('filtroGraduadoAluno');
+        const limpar = document.getElementById('limparFiltroAluno');
+        const linhas = document.querySelectorAll('.linha-aluno');
+
+        function aplicarFiltroAluno() {
+            const nome = filtroNome.value.toLowerCase().trim();
+            const graduado = filtroGraduado.value;
+
+            linhas.forEach(linha => {
+                const n = linha.dataset.nome || '';
+                const g = linha.dataset.graduado || '';
+                let mostrar = true;
+
+                if (nome && !n.includes(nome)) {
+                    mostrar = false;
+                }
+
+                if (graduado && g !== graduado) {
+                    mostrar = false;
+                }
+
+                linha.style.display = mostrar ? '' : 'none';
+            });
+        }
+
+        if (filtroNome) filtroNome.addEventListener('input', aplicarFiltroAluno);
+        if (filtroGraduado) filtroGraduado.addEventListener('change', aplicarFiltroAluno);
+
+        if (limpar) {
+            limpar.addEventListener('click', function() {
+                filtroNome.value = '';
+                filtroGraduado.value = '';
+                aplicarFiltroAluno();
+            });
+        }
+
+        // Aplica filtro de aluno vindo da URL
+        // (ex: clique em "Ver Aluno" na tela de Matrícula/Modalidade)
+        const containerAlunos = document.getElementById('containerAlunos');
+        const alunoInicial = containerAlunos?.dataset.alunoInicial;
+
+        if (alunoInicial && filtroNome) {
+            filtroNome.value = alunoInicial;
+            aplicarFiltroAluno();
+        }
+
+    });
+
     function validarData(campo) {
         if (campo.validity.valueMissing) {
             campo.setCustomValidity('A data de nascimento é obrigatória');

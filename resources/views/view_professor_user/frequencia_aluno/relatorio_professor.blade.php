@@ -47,50 +47,51 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
         </h2>
     </div>
 
-    <!-- GRÁFICO -->
-    <div class="mb-6 bg-white rounded-2xl shadow-md p-6 w-full md:w-[900px] mx-auto">
+</div>
 
-        <form method="GET" class="mb-4 flex justify-center">
-            <div class="flex flex-col w-[220px]">
-                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
-                    Selecione Ano
-                </label>
+<!-- GRÁFICO -->
+<div class="mb-6 bg-white rounded-2xl shadow-md p-6 w-full md:w-[900px] mx-auto">
 
-                <select name="ano"
-                    onchange="this.form.submit()"
-                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+    <form method="GET" class="mb-4 flex justify-center">
+        <div class="flex flex-col w-[220px]">
+            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                Selecione Ano
+            </label>
+
+            <select name="ano"
+                onchange="this.form.submit()"
+                class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
                    focus:ring-2 focus:ring-[#174ab9] focus:outline-none text-center">
 
-                    @foreach($anosDisponiveis as $ano)
-                    <option value="{{ $ano }}"
-                        {{ $ano == $anoSelecionado ? 'selected' : '' }}>
-                        {{ $ano }}
-                    </option>
-                    @endforeach
+                @foreach($anosDisponiveis as $ano)
+                <option value="{{ $ano }}"
+                    {{ $ano == $anoSelecionado ? 'selected' : '' }}>
+                    {{ $ano }}
+                </option>
+                @endforeach
 
-                </select>
-            </div>
-        </form>
-
-        <div class="mb-4 text-center">
-            <h3 class="text-lg font-bold text-gray-700">
-                Frequência Mensal
-            </h3>
-
-            <p class="text-sm text-gray-500">
-                Comparativo mensal de presenças e faltas
-            </p>
+            </select>
         </div>
+    </form>
 
-        <div class="w-full h-[450px]">
-            <canvas id="graficoBarras"></canvas>
-        </div>
+    <div class="mb-4 text-center">
+        <h3 class="text-lg font-bold text-gray-700">
+            Frequência Mensal
+        </h3>
+
+        <p class="text-sm text-gray-500">
+            Comparativo mensal de presenças e faltas
+        </p>
+    </div>
+
+    <div class="w-full h-[450px]">
+        <canvas id="graficoBarras"></canvas>
     </div>
 </div>
 
 <!-- CARD DA GRADE -->
 <div class="mb-8">
-    <div class="bg-white border-l-8 border-[#8E251F] rounded-2xl shadow-lg p-6">
+    <div class="bg-white border-l-8 border-[#174ab9] rounded-2xl shadow-lg p-6">
 
         <p class="text-xs uppercase tracking-widest text-gray-500">
             Grade selecionada
@@ -122,6 +123,61 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
         </div>
 
     </div>
+</div>
+
+<!-- FILTROS -->
+<div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+
+    <div class="flex justify-center">
+        <div class="flex flex-wrap gap-6 items-end justify-center">
+
+            <!-- Ordenação por Presença -->
+            <div class="flex flex-col w-[250px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Ordenar por Presenças
+                </label>
+
+                <select id="filtroOrdenacao"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#174ab9] focus:outline-none text-center">
+
+                    <option value="">Padrão</option>
+                    <option value="maior">Maior número de presenças</option>
+                    <option value="menor">Menor número de presenças</option>
+
+                </select>
+            </div>
+
+            <!-- Meta -->
+            <div class="flex flex-col w-[200px]">
+
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Meta
+                </label>
+
+                <select id="filtroMeta"
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#174ab9] focus:outline-none text-center">
+
+                    <option value="">Todos</option>
+                    <option value="100">Meta Concluída (100%)</option>
+
+                </select>
+
+            </div>
+
+            <button id="limparFiltrosFrequencia"
+                class="h-[48px] px-6 rounded-xl bg-gray-300
+                       text-gray-800 font-semibold hover:bg-gray-400
+                       transition shadow-md">
+
+                Limpar filtros
+
+            </button>
+
+        </div>
+    </div>
+
 </div>
 
 <!-- TABELA -->
@@ -177,6 +233,11 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
             $barra = $meta > 0
             ? min(100, round(($presencas / $meta) * 100))
             : 0;
+
+            $marco1 = $meta > 0 ? ceil($meta * 0.25) : 0;
+            $marco2 = $meta > 0 ? ceil($meta * 0.50) : 0;
+            $marco3 = $meta > 0 ? ceil($meta * 0.75) : 0;
+            $marco4 = $meta;
             @endphp
 
             <tr class="border-b hover:bg-gray-50 transition linha-aluno"
@@ -211,7 +272,6 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
 
                 <!-- META -->
                 <td class="py-3 px-4">
-
                     <div class="mb-2">
                         @if($barra >= 100)
                         <span class="px-2 py-1 rounded-full text-xs font-semibold"
@@ -225,10 +285,41 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
                         </span>
                         @endif
                     </div>
+                    @php
+                    $marcos = [
+                    ceil($meta * 0.25),
+                    ceil($meta * 0.50),
+                    ceil($meta * 0.75),
+                    $meta,
+                    ];
+                    @endphp
+                    <div class="space-y-1">
 
-                    <div class="w-full bg-gray-200 rounded-full h-3 progress-container"
-                        data-barra="{{ $barra }}">
-                        <div class="h-3 rounded-full transition-all duration-500 progress-bar"></div>
+                        <div class="flex justify-between text-[10px] text-gray-500">
+                            @foreach($marcos as $m)
+                            <span>{{ $m }}</span>
+                            @endforeach
+                        </div>
+                        <div class="grid grid-cols-4 gap-1">
+                            @php $anterior = 0; @endphp
+                            @foreach($marcos as $m)
+
+                            @php
+                            $intervalo = max($m - $anterior, 1);
+                            $progressoSegmento = $meta > 0
+                            ? min(100, max(0, (($presencas - $anterior) / $intervalo) * 100))
+                            : 0;
+                            $completo = $progressoSegmento >= 100;
+                            $anterior = $m;
+                            @endphp
+                            <div class="h-3 rounded-full bg-gray-200 overflow-hidden">
+                                <div
+                                    class="h-3 rounded-full transition-all duration-500"
+                                    style="width: {{ $progressoSegmento }}%; background-color: {{ $completo ? '#15803d' : '#facc15' }};">
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
                     </div>
                 </td>
 
@@ -242,22 +333,22 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
                     @endif
                 </td>
             </tr>
-
             @endforeach
-
         </tbody>
-
     </table>
-
 </div>
-
+<div id="dados-frequencia"
+    data-frequencia='@json($frequenciaMensal)'
+    style="display:none;">
+</div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
 
-        const dadosBackend = @json($frequenciaMensal);
-
+        const dadosBackend = JSON.parse(
+            document.getElementById('dados-frequencia').dataset.frequencia
+        );
         const nomesMeses = [
             'Jan', 'Fev', 'Mar', 'Abr',
             'Mai', 'Jun', 'Jul', 'Ago',
@@ -330,18 +421,56 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
                     }
                 }
             });
+        }
+    });
+    const filtroOrdenacao = document.getElementById('filtroOrdenacao');
+    const filtroMeta = document.getElementById('filtroMeta');
+    const limpar = document.getElementById('limparFiltrosFrequencia');
+
+    function aplicarFiltros() {
+
+        const linhas = [...document.querySelectorAll('.linha-aluno')];
+
+        linhas.forEach(l => l.style.display = '');
+
+        if (filtroMeta.value === '100') {
+            linhas.forEach(l => {
+                if (parseInt(l.dataset.barra) < 100) {
+                    l.style.display = 'none';
+                }
+            });
+        }
+
+        if (filtroOrdenacao.value) {
+
+            linhas.sort((a, b) => {
+
+                const pa = parseInt(a.dataset.presencas);
+                const pb = parseInt(b.dataset.presencas);
+
+                return filtroOrdenacao.value === 'maior' ?
+                    pb - pa :
+                    pa - pb;
+
+            });
+
+            const tbody = document.querySelector('tbody');
+
+            linhas.forEach(l => tbody.appendChild(l));
 
         }
 
-        document.querySelectorAll(".progress-container").forEach(function(container) {
+    }
 
-            const barra = parseInt(container.dataset.barra);
-            const bar = container.querySelector(".progress-bar");
+    filtroOrdenacao.addEventListener('change', aplicarFiltros);
+    filtroMeta.addEventListener('change', aplicarFiltros);
 
-            bar.style.width = barra + "%";
-            bar.style.backgroundColor = barra >= 100 ? "#15803d" : "#facc15";
+    limpar.addEventListener('click', function() {
 
-        });
+        filtroOrdenacao.value = '';
+        filtroMeta.value = '';
+
+        aplicarFiltros();
 
     });
 </script>

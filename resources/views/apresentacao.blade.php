@@ -86,6 +86,22 @@
             transform: scale(1.05);
         }
 
+        .btn-planos {
+            display: inline-block;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(90deg, #15803d, #16a34a);
+            border-radius: 8px;
+            text-decoration: none;
+            transition: .3s;
+        }
+
+        .btn-planos:hover {
+            transform: scale(1.05);
+            background: linear-gradient(90deg, #166534, #15803d);
+        }
     </style>
 </head>
 
@@ -98,13 +114,19 @@
             Aqui você poderá acompanhar alunos, turmas, graduações e controlar
             informações importantes de forma prática e organizada.
         </p>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-top:20px;">
 
-        <div>
-            <a href="{{ route('login') }}" class="btn-login">Login</a>
-        </div>
+            <a href="{{ route('login') }}" class="btn-login">
+                Login
+            </a>
 
-        <div style="margin-top: 10px;">
-            <a href="{{ route('cadastro_empresa') }}" class="btn-cadastro">Cadastrar</a>
+            <a href="{{ route('planos.publico') }}" class="btn-planos">
+                Ver Planos
+            </a>
+
+            <a href="{{ route('cadastro_empresa') }}" class="btn-cadastro">
+                Cadastrar
+            </a>
 
         </div>
 

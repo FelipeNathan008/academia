@@ -17,10 +17,19 @@
         <h2 class="text-3xl font-extrabold text-gray-800">Graduações</h2>
     </div>
 
-    <button onclick="toggleCadastro()"
-        class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow-md hover:bg-[#732920] hover:shadow-lg transition-all">
-        + Cadastrar Graduação
-    </button>
+    <div class="flex gap-3">
+        <a href="{{ route('graduacoes.molde.index') }}"
+            style="background-color: #174AB9; color: #fff; padding: 12px 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,.15); text-decoration: none; transition: .2s;"
+            onmouseover="this.style.backgroundColor='#123C96'; this.style.boxShadow='0 6px 12px rgba(0,0,0,.2)'"
+            onmouseout="this.style.backgroundColor='#174AB9'; this.style.boxShadow='0 4px 6px rgba(0,0,0,.15)'">
+            📋 Copiar molde
+        </a>
+
+        <button onclick="toggleCadastro()"
+            class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow-md hover:bg-[#732920] hover:shadow-lg transition-all">
+            + Cadastrar Graduação
+        </button>
+    </div>
 </div>
 
 <!-- FORMULÁRIO DE CADASTRO -->
@@ -57,13 +66,13 @@
                         placeholder="Ex: Faixa Branca">
                 </div>
 
-                <!-- Grau -->
+                <!-- Grau 
                 <div>
                     <label class="text-sm font-medium text-gray-600">Grau</label>
                     <input type="number" name="gradu_grau" required
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none"
                         placeholder="Ex: 1">
-                </div>
+                </div> -->
 
                 <div>
                     <label class="text-sm font-medium text-gray-600">
@@ -150,7 +159,7 @@
                 </select>
             </div>
 
-            <!-- Grau -->
+            <!-- Grau 
             <div class="flex flex-col w-[150px]">
                 <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
                     Grau
@@ -165,7 +174,7 @@
                     </option>
                     @endforeach
                 </select>
-            </div>
+            </div> -->
 
             <!-- Limpar -->
             <button id="limparFiltros"
@@ -190,7 +199,6 @@
             <tr class="border-b border-gray-300 text-gray-600 text-sm">
                 <th class="py-3 px-4">Modalidade</th>
                 <th class="py-3 px-4">Nome / Cor</th>
-                <th class="py-3 px-4">Grau</th>
                 <th class="py-3 px-4">Ordem</th>
                 <th class="py-3 px-4">Meta (aulas)</th>
                 <th class="py-3 px-4">Ações</th>
@@ -198,11 +206,16 @@
         </thead>
 
         <tbody>
+            <tr id="msgSelecioneModalidade">
+                <td colspan="5" class="text-center py-6 text-gray-500">
+                    🔍 Selecione uma <strong>modalidade</strong> no filtro acima para visualizar as graduações cadastradas, ou cadastre a primeira.
+                </td>
+            </tr>
+
             @forelse ($graduacoes as $graduacao)
             <tr class="border-b hover:bg-gray-50 transition linha-graduacao"
                 data-modalidade="{{ $graduacao->id_modalidade }}"
-                data-nome="{{ strtolower($graduacao->gradu_nome_cor) }}"
-                data-grau="{{ $graduacao->gradu_grau }}">
+                data-nome="{{ strtolower($graduacao->gradu_nome_cor) }}">
 
                 <td class="py-3 px-4">
                     {{ $graduacao->modalidade->mod_nome ?? '-' }}
@@ -227,7 +240,6 @@
                     {{ $graduacao->gradu_nome_cor }}
                 </td>
 
-                <td class="py-3 px-4">{{ $graduacao->gradu_grau }}</td>
 
                 <td class="py-3 px-4">
                     {{ $graduacao->gradu_ordem ?? '-'}}
@@ -261,8 +273,8 @@
             </tr>
 
             @empty
-            <tr>
-                <td colspan="4" class="text-center text-gray-500 py-6">
+            <tr class="linha-vazia-geral">
+                <td colspan="5" class="text-center text-gray-500 py-6">
                     Nenhuma graduação cadastrada
                 </td>
             </tr>
@@ -289,7 +301,6 @@
 
     const filtroModalidade = document.getElementById('filtroModalidade');
     const filtroNome = document.getElementById('filtroNome');
-    const filtroGrau = document.getElementById('filtroGrau');
     const limparBtn = document.getElementById('limparFiltros');
     const linhas = document.querySelectorAll('.linha-graduacao');
 
@@ -307,10 +318,12 @@
 
             filtroModalidade.value = modalidadeSalva;
 
-            // dispara o evento para preencher Nome e Grau
+            // dispara o evento para preencher Nome
             filtroModalidade.dispatchEvent(
                 new Event('change')
             );
+        } else {
+            aplicarFiltro();
         }
     });
 
@@ -318,13 +331,18 @@
 
         const modalidade = filtroModalidade.value;
         const nome = filtroNome.value;
-        const grau = filtroGrau.value;
+
+        const msgSelecione = document.getElementById('msgSelecioneModalidade');
+
+        // Mostra a mensagem só quando nenhuma modalidade foi selecionada
+        if (msgSelecione) {
+            msgSelecione.style.display = modalidade ? 'none' : '';
+        }
 
         linhas.forEach(linha => {
 
             const modalidadeLinha = linha.dataset.modalidade;
             const nomeLinha = linha.dataset.nome;
-            const grauLinha = linha.dataset.grau;
 
             let mostrar = true;
 
@@ -341,10 +359,6 @@
                 mostrar = false;
             }
 
-            if (grau && grauLinha !== grau) {
-                mostrar = false;
-            }
-
             linha.style.display = mostrar ? '' : 'none';
         });
     }
@@ -354,38 +368,30 @@
         const modalidade = this.value;
 
         filtroNome.innerHTML = '<option value="">Todas</option>';
-        filtroGrau.innerHTML = '<option value="">Todos</option>';
 
         filtroNome.value = '';
-        filtroGrau.value = '';
 
         if (!modalidade) {
 
             filtroNome.disabled = true;
-            filtroGrau.disabled = true;
 
             filtroNome.innerHTML =
                 '<option value="">Primeiro selecione uma modalidade</option>';
 
-            filtroGrau.innerHTML =
-                '<option value="">Primeiro selecione uma modalidade</option>';
 
             aplicarFiltro();
             return;
         }
 
         filtroNome.disabled = false;
-        filtroGrau.disabled = false;
 
         const nomes = new Set();
-        const graus = new Set();
 
         linhas.forEach(linha => {
 
             if (linha.dataset.modalidade === modalidade) {
 
                 nomes.add(linha.dataset.nome);
-                graus.add(linha.dataset.grau);
             }
         });
 
@@ -398,20 +404,10 @@
             `;
         });
 
-        [...graus].sort((a, b) => a - b).forEach(grau => {
-
-            filtroGrau.innerHTML += `
-                <option value="${grau}">
-                    ${grau}
-                </option>
-            `;
-        });
-
         aplicarFiltro();
     });
 
     filtroNome.addEventListener('change', aplicarFiltro);
-    filtroGrau.addEventListener('change', aplicarFiltro);
 
     limparBtn.addEventListener('click', function() {
 
@@ -420,17 +416,14 @@
         filtroModalidade.value = '';
 
         filtroNome.disabled = true;
-        filtroGrau.disabled = true;
 
         filtroNome.innerHTML =
             '<option value="">Primeiro selecione uma modalidade</option>';
 
-        filtroGrau.innerHTML =
-            '<option value="">Primeiro selecione uma modalidade</option>';
+
 
         aplicarFiltro();
     });
-    aplicarFiltro();
 
     function toggleCadastro() {
 

@@ -7,7 +7,8 @@ use App\Models\Aluno;
 use App\Models\DetalhesAluno;
 use App\Models\Graduacao;
 use App\Models\Modalidade;
-use App\Models\Responsavel;
+use Illuminate\Support\Facades\DB;
+use App\Models\Matricula;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -38,7 +39,7 @@ class DetalhesAlunoController extends Controller
             ->where('aluno_id_aluno', $id)
             ->where('id_emp_id', $user->id_emp_id)
             ->get()
-            ->sortByDesc('graduacao.gradu_ordem'); 
+            ->sortByDesc('graduacao.gradu_ordem');
 
         $graduacoesTotais = Graduacao::with('modalidade')
             ->ordem()
@@ -70,10 +71,9 @@ class DetalhesAlunoController extends Controller
 
         return response()->file(public_path($filePath));
     }
-    
+
     public function store(Request $request, $id)
     {
-
         try {
             $id = Crypt::decrypt($id);
         } catch (DecryptException $e) {
@@ -95,9 +95,12 @@ class DetalhesAlunoController extends Controller
                 'before_or_equal:today'
             ],
             'det_certificado'   => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            // exige que o usuário confirme ciência do apagamento das frequências
+            'confirma_apagar_frequencias' => 'required|accepted',
         ], [
             'det_data.after_or_equal' => 'Não é possível informar uma data anterior ao nascimento do aluno.',
             'det_data.before_or_equal' => 'Não é possível informar uma data futura.',
+            'confirma_apagar_frequencias.accepted' => 'Você precisa confirmar que está ciente de que as frequências serão apagadas.',
         ]);
 
         $jaExiste = DetalhesAluno::where('aluno_id_aluno', $id)
@@ -111,29 +114,63 @@ class DetalhesAlunoController extends Controller
             ]);
         }
 
-        $user = Auth::user();
+        $graduacao = Graduacao::with('modalidade')->findOrFail($request->id_graduacao);
+        $modalidadeNome = $graduacao->modalidade->mod_nome;
 
-        $dados = [
-            'aluno_id_aluno' => $id,
-            'id_graduacao'   => $request->id_graduacao,
-            'det_data'       => $request->det_data,
-            'id_emp_id'      => $user->id_emp_id,
-        ];
+        // Matrícula(s) ativa(s) do aluno na modalidade da graduação selecionada
+        $matriculasAtivas = Matricula::where('aluno_id_aluno', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->where('matri_status', 'Matriculado')
+            ->whereHas('grade', function ($q) use ($modalidadeNome) {
+                $q->where('grade_modalidade', $modalidadeNome);
+            })
+            ->get();
 
-        if ($request->hasFile('det_certificado')) {
-            $file = $request->file('det_certificado');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('images/alunos-certificados'), $filename);
-            $dados['det_certificado'] = 'images/alunos-certificados/' . $filename;
+        DB::beginTransaction();
+
+        try {
+            $totalFrequenciasApagadas = 0;
+
+            foreach ($matriculasAtivas as $matricula) {
+                $totalFrequenciasApagadas += $matricula->frequencias()->count();
+                $matricula->frequencias()->delete();
+            }
+
+            $dados = [
+                'aluno_id_aluno' => $id,
+                'id_graduacao'   => $request->id_graduacao,
+                'det_data'       => $request->det_data,
+                'id_emp_id'      => $user->id_emp_id,
+            ];
+
+            if ($request->hasFile('det_certificado')) {
+                $file = $request->file('det_certificado');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('images/alunos-certificados'), $filename);
+                $dados['det_certificado'] = 'images/alunos-certificados/' . $filename;
+            }
+
+            DetalhesAluno::create($dados);
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return back()->withErrors([
+                'id_graduacao' => 'Erro ao processar a graduação. Nada foi alterado. Tente novamente.'
+            ]);
         }
 
-        DetalhesAluno::create($dados); // Agora vai salvar o caminho corretamente
+        $mensagem = 'Graduação cadastrada com sucesso!';
+
+        if ($totalFrequenciasApagadas > 0) {
+            $mensagem .= " {$totalFrequenciasApagadas} registro(s) de frequência da matrícula ativa desta modalidade foram apagados.";
+        }
 
         return redirect()
             ->route('detalhes-aluno.index', Crypt::encrypt($id))
-            ->with('success', 'Graduação cadastrada com sucesso!');
+            ->with('success', $mensagem);
     }
-
 
     public function edit($id)
     {

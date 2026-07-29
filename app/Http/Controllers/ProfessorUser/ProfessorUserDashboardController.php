@@ -64,7 +64,23 @@ class ProfessorUserDashboardController extends Controller
             ]);
 
         // MENSALIDADES ATRASADAS
-        $mensalidadesAtrasadas = DetalhesMensalidade::where('det_mensa_status', 'Atrasado')
+        $mensalidadesAtrasadas = DetalhesMensalidade::where('id_emp_id', $user->id_emp_id)
+            ->whereDate('det_mensa_data_venc', '<', Carbon::today())
+            ->whereIn('det_mensa_status', [
+                'Em aberto',
+                'Atrasado',
+                'Comprovante enviado',
+                'Rejeitado'
+            ])
+            ->whereHas('mensalidade.matricula.grade', function ($q) use ($professor) {
+                $q->where('professor_id_professor', $professor->id_professor);
+            })
+            ->count();
+
+        $comprovantesPendentes = DetalhesMensalidade::where(
+            'det_mensa_status',
+            'Comprovante enviado'
+        )
             ->where('id_emp_id', $user->id_emp_id)
             ->whereHas('mensalidade.matricula.grade', function ($q) use ($professor) {
                 $q->where('professor_id_professor', $professor->id_professor);
@@ -78,8 +94,36 @@ class ProfessorUserDashboardController extends Controller
             'totalBolsistas',
             'receitaMensal',
             'receitaMensalPago',
-            'mensalidadesAtrasadas'
+            'mensalidadesAtrasadas',
+            'comprovantesPendentes'
         ));
+    }
+
+    public function comprovantesPendentes()
+    {
+        $user = Auth::user();
+
+        $professor = $user->professor;
+
+        if (!$professor) {
+            abort(403);
+        }
+
+        $comprovantes = DetalhesMensalidade::with([
+            'mensalidade.matricula.aluno.responsavel'
+        ])
+            ->where('id_emp_id', $user->id_emp_id)
+            ->where('det_mensa_status', 'Comprovante enviado')
+            ->whereHas('mensalidade.matricula.grade', function ($q) use ($professor) {
+                $q->where('professor_id_professor', $professor->id_professor);
+            })
+            ->orderByDesc('det_mensa_comprovante_enviado_em')
+            ->get();
+
+        return view(
+            'view_professor_user.dashboard.comprovantes_pendentes',
+            compact('comprovantes')
+        );
     }
 
     public function mensalidadesAtrasadas()
@@ -107,16 +151,29 @@ class ProfessorUserDashboardController extends Controller
             'matricula.grade.professor',
             'detalhes',
         ])
-            ->whereHas('detalhes', function ($query) {
-                $query->where('det_mensa_status', 'Atrasado');
+            ->whereHas('detalhes', function ($query) use ($user) {
+                $query->where('id_emp_id', $user->id_emp_id)
+                    ->whereDate('det_mensa_data_venc', '<', Carbon::today())
+                    ->whereIn('det_mensa_status', [
+                        'Em aberto',
+                        'Atrasado',
+                        'Comprovante enviado',
+                        'Rejeitado'
+                    ]);
             })
             ->whereHas('matricula.grade', function ($query) use ($professor) {
                 $query->where('professor_id_professor', $professor->id_professor);
             })
             ->get();
 
-        $mensalidadesAtrasadas = DetalhesMensalidade::where('det_mensa_status', 'Atrasado')
-            ->where('id_emp_id', $user->id_emp_id)
+        $mensalidadesAtrasadas = DetalhesMensalidade::where('id_emp_id', $user->id_emp_id)
+            ->whereDate('det_mensa_data_venc', '<', Carbon::today())
+            ->whereIn('det_mensa_status', [
+                'Em aberto',
+                'Atrasado',
+                'Comprovante enviado',
+                'Rejeitado'
+            ])
             ->whereHas('mensalidade.matricula.grade', function ($q) use ($professor) {
                 $q->where('professor_id_professor', $professor->id_professor);
             })

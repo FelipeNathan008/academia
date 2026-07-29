@@ -74,7 +74,10 @@
 
 <!-- FORMULÁRIO -->
 <div id="cadastroForm" class="hidden mb-10">
-    <form action="{{ route('detalhes-aluno.store', Crypt::encrypt($aluno->id_aluno)) }}" method="POST" onsubmit="bloquearSubmit(event, this)" enctype="multipart/form-data">
+    <form action="{{ route('detalhes-aluno.store', Crypt::encrypt($aluno->id_aluno)) }}"
+        method="POST"
+        onsubmit="return validarSubmitGraduacao(event, this)"
+        enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="aluno_id_aluno" value="{{ $aluno->id_aluno }}">
 
@@ -92,7 +95,7 @@
                         <option value="">Selecione a modalidade</option>
 
                         @foreach($modalidades as $modalidade)
-                        <option value="{{ $modalidade->id_modalidade }}">
+                        <option value="{{ $modalidade->id_modalidade }}" data-nome="{{ $modalidade->mod_nome }}">
                             {{ $modalidade->mod_nome }}
                         </option>
                         @endforeach
@@ -104,25 +107,33 @@
                         Faixa
                     </label>
 
-                    <select id="faixaCadastro"
-                        class="w-full border rounded-lg px-3 py-2"
+                    <select
+                        id="faixaCadastro"
+                        name="id_graduacao"
+                        required class="w-full border rounded-lg px-3 py-2"
                         disabled>
                         <option value="">Selecione a faixa</option>
                     </select>
                 </div>
 
-                <div>
-                    <label class="text-sm font-medium text-gray-600">
-                        Grau
-                    </label>
+                <div id="avisoApagarFrequencias"
+                    class="hidden md:col-span-2 mt-6 p-4 rounded-xl border-2 border-red-400 bg-red-50">
 
-                    <select name="id_graduacao"
-                        id="grauCadastro"
-                        class="w-full border rounded-lg px-3 py-2"
-                        required
-                        disabled>
-                        <option value="">Selecione o grau</option>
-                    </select>
+                    <p class="text-sm font-bold text-red-700 mb-2">
+                        ⚠️ Atenção: ação irreversível
+                    </p>
+
+                    <p class="text-sm text-red-700">
+                        Ao cadastrar esta graduação, <strong>todas as frequências (presenças e faltas)</strong>
+                        da matrícula ativa do aluno em <strong id="nomeModalidadeAviso">-</strong> serão
+                        <strong>apagadas permanentemente</strong> para dar início à nova contagem de aulas
+                        da faixa seguinte. Não será possível recuperar esses dados depois.
+                    </p>
+
+                    <label class="flex items-center gap-2 mt-3 text-sm text-red-800 font-semibold">
+                        <input type="checkbox" name="confirma_apagar_frequencias" id="confirmaApagarFrequencias" value="1" required>
+                        Estou ciente e desejo continuar
+                    </label>
                 </div>
 
                 <div>
@@ -221,7 +232,6 @@
         <thead>
             <tr class="border-b text-gray-600 text-sm">
                 <th class="py-3 px-4">Graduação</th>
-                <th class="py-3 px-4">Grau</th>
                 <th class="py-3 px-4">Modalidade</th>
                 <th class="py-3 px-4">Data</th>
                 <th class="py-3 px-4">Ações</th>
@@ -230,11 +240,11 @@
 
         <tbody>
             <tr id="msgSelecioneModalidade">
-                <td colspan="5" class="text-center py-6 text-gray-500">
+                <td colspan="4" class="text-center py-6 text-gray-500">
                     🔍 Selecione uma <strong>modalidade</strong> no filtro acima para visualizar as graduações cadastradas, ou cadastre a primeira.
                 </td>
             </tr>
-            
+
             @foreach ($lista as $det)
             <tr class="border-b hover:bg-gray-50 transition linha-graduacao"
                 data-modalidade="{{ $det->graduacao->id_modalidade }}"
@@ -247,10 +257,6 @@
                     </span>
 
                     {{ $det->graduacao->gradu_nome_cor }}
-                </td>
-
-                <td class="py-3 px-4">
-                    {{ $det->graduacao->gradu_grau }}
                 </td>
 
                 <td class="py-3 px-4">
@@ -306,19 +312,43 @@
         data-id="{{ $g->id_graduacao }}"
         data-modalidade="{{ $g->id_modalidade }}"
         data-faixa="{{ $g->gradu_nome_cor }}"
-        data-grau="{{ $g->gradu_grau }}"
         data-ordem="{{ $g->gradu_ordem }}">
     </div>
     @endforeach
 </div>
 <script src="{{ asset('js/faixas.js') }}"></script>
 <script>
+    function validarSubmitGraduacao(event, form) {
+
+        if (!form.checkValidity()) {
+            return true; // deixa o navegador mostrar os campos obrigatórios
+        }
+
+        const modalidadeNome = document.getElementById('nomeModalidadeAviso').textContent;
+
+        const confirmado = confirm(
+            `Tem certeza que deseja cadastrar esta graduação?\n\n` +
+            `Todas as frequências da matrícula ativa em "${modalidadeNome}" serão ` +
+            `APAGADAS PERMANENTEMENTE. Esta ação não pode ser desfeita.`
+        );
+
+        if (!confirmado) {
+            event.preventDefault();
+            return false;
+        }
+
+        bloquearSubmit(event, form);
+        return true;
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
 
         // CADASTRO DE GRADUAÇÃO
         const modalidadeSelect = document.getElementById('modalidadeCadastro');
         const faixaSelect = document.getElementById('faixaCadastro');
-        const grauSelect = document.getElementById('grauCadastro');
+        const aviso = document.getElementById('avisoApagarFrequencias');
+        const nomeSpan = document.getElementById('nomeModalidadeAviso');
+        const checkboxConfirma = document.getElementById('confirmaApagarFrequencias');
 
         const graduacoes = Array.from(
             document.querySelectorAll('#graduacoes-data div')
@@ -326,74 +356,47 @@
             id: item.dataset.id,
             modalidade: item.dataset.modalidade,
             faixa: item.dataset.faixa,
-            grau: item.dataset.grau,
             ordem: Number(item.dataset.ordem)
         }));
 
         modalidadeSelect.addEventListener('change', function() {
 
+            // ---- popula as faixas ----
             faixaSelect.innerHTML =
                 '<option value="">Selecione a faixa</option>';
-
-            grauSelect.innerHTML =
-                '<option value="">Selecione o grau</option>';
-
-            grauSelect.disabled = true;
 
             const modalidadeId = this.value;
 
             if (!modalidadeId) {
                 faixaSelect.disabled = true;
-                return;
-            }
+            } else {
+                faixaSelect.disabled = false;
 
-            faixaSelect.disabled = false;
-
-            const faixas = [...new Set(
                 graduacoes
-                .filter(g => g.modalidade == modalidadeId)
-                .sort((a, b) => a.ordem - b.ordem)
-                .map(g => g.faixa)
-            )];
-
-            faixas.forEach(faixa => {
-                faixaSelect.innerHTML += `
-                <option value="${faixa}">
-                    ${faixa}
-                </option>
-            `;
-            });
-        });
-
-        faixaSelect.addEventListener('change', function() {
-
-            grauSelect.innerHTML =
-                '<option value="">Selecione o grau</option>';
-
-            const modalidadeId = modalidadeSelect.value;
-            const faixa = this.value;
-
-            if (!faixa) {
-                grauSelect.disabled = true;
-                return;
-            }
-
-            grauSelect.disabled = false;
-
-            graduacoes
-                .filter(g =>
-                    g.modalidade == modalidadeId &&
-                    g.faixa == faixa
-                )
-                .sort((a, b) => a.ordem - b.ordem)
-                .forEach(g => {
-
-                    grauSelect.innerHTML += `
+                    .filter(g => g.modalidade == modalidadeId)
+                    .sort((a, b) => a.ordem - b.ordem)
+                    .forEach(g => {
+                        faixaSelect.innerHTML += `
                     <option value="${g.id}">
-                        Grau ${g.grau}
+                        ${g.faixa}
                     </option>
                 `;
-                });
+                    });
+            }
+
+            // ---- mostra/atualiza o aviso de apagar frequências ----
+            if (!modalidadeId) {
+                aviso.classList.add('hidden');
+                checkboxConfirma.checked = false;
+                checkboxConfirma.required = false;
+                return;
+            }
+
+            const opcaoSelecionada = this.options[this.selectedIndex];
+            nomeSpan.textContent = opcaoSelecionada.dataset.nome;
+
+            aviso.classList.remove('hidden');
+            checkboxConfirma.required = true;
         });
 
         // ======================================
@@ -405,20 +408,14 @@
         const limparBtn = document.getElementById('limparFiltrosGraduacao');
         const linhas = document.querySelectorAll('.linha-graduacao');
 
-        const modalidadeSalva = localStorage.getItem(
-            'graduacao_aluno_modalidade'
-        );
+        const modalidadeSalva = localStorage.getItem('graduacao_aluno_modalidade');
 
         if (modalidadeSalva) {
             filtroModalidade.value = modalidadeSalva;
         }
 
-        // salva modalidade
         filtroModalidade.addEventListener('change', function() {
-            localStorage.setItem(
-                'graduacao_aluno_modalidade',
-                this.value
-            );
+            localStorage.setItem('graduacao_aluno_modalidade', this.value);
         });
 
         function aplicarFiltro() {
@@ -428,7 +425,6 @@
 
             const msgSelecione = document.getElementById('msgSelecioneModalidade');
 
-            // Mostra a mensagem só quando nenhuma modalidade foi selecionada
             if (msgSelecione) {
                 msgSelecione.style.display = modalidade ? 'none' : '';
             }
@@ -440,17 +436,9 @@
 
                 let mostrar = true;
 
-                if (!modalidade) {
-                    mostrar = false;
-                }
-
-                if (modalidade && modalidadeLinha !== modalidade) {
-                    mostrar = false;
-                }
-
-                if (graduacao && graduacaoLinha !== graduacao) {
-                    mostrar = false;
-                }
+                if (!modalidade) mostrar = false;
+                if (modalidade && modalidadeLinha !== modalidade) mostrar = false;
+                if (graduacao && graduacaoLinha !== graduacao) mostrar = false;
 
                 linha.style.display = mostrar ? '' : 'none';
             });
@@ -460,18 +448,13 @@
 
             const modalidade = this.value;
 
-            filtroGraduacao.innerHTML =
-                '<option value="">Todas</option>';
-
+            filtroGraduacao.innerHTML = '<option value="">Todas</option>';
             filtroGraduacao.value = '';
 
             if (!modalidade) {
-
                 filtroGraduacao.disabled = true;
-
                 filtroGraduacao.innerHTML =
                     '<option value="">Primeiro selecione uma modalidade</option>';
-
                 aplicarFiltro();
                 return;
             }
@@ -481,55 +464,35 @@
             const graduacoesDisponiveis = new Set();
 
             linhas.forEach(linha => {
-
-                if (
-                    linha.dataset.modalidade === modalidade
-                ) {
-                    graduacoesDisponiveis.add(
-                        linha.dataset.graduacao
-                    );
+                if (linha.dataset.modalidade === modalidade) {
+                    graduacoesDisponiveis.add(linha.dataset.graduacao);
                 }
             });
 
-            [...graduacoesDisponiveis]
-            .sort()
-                .forEach(graduacao => {
-
-                    filtroGraduacao.innerHTML += `
+            [...graduacoesDisponiveis].sort().forEach(graduacao => {
+                filtroGraduacao.innerHTML += `
                 <option value="${graduacao}">
                     ${graduacao.charAt(0).toUpperCase() + graduacao.slice(1)}
                 </option>
             `;
-                });
+            });
 
             aplicarFiltro();
         });
 
-        filtroGraduacao.addEventListener(
-            'change',
-            aplicarFiltro
-        );
+        filtroGraduacao.addEventListener('change', aplicarFiltro);
 
         limparBtn.addEventListener('click', function() {
-
-            localStorage.removeItem(
-                'graduacao_aluno_modalidade'
-            );
-
+            localStorage.removeItem('graduacao_aluno_modalidade');
             filtroModalidade.value = '';
-
             filtroGraduacao.disabled = true;
-
             filtroGraduacao.innerHTML =
                 '<option value="">Primeiro selecione uma modalidade</option>';
-
             aplicarFiltro();
         });
 
         if (filtroModalidade.value) {
-            filtroModalidade.dispatchEvent(
-                new Event('change')
-            );
+            filtroModalidade.dispatchEvent(new Event('change'));
         } else {
             aplicarFiltro();
         }

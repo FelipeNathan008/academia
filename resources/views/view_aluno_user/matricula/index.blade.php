@@ -156,13 +156,13 @@
                 </td>
 
                 <td class="py-3 px-4">
-
+                    @if($matricula->matri_status != 'Encerrada')
                     <a href="{{ route('aluno-aulas.index', Crypt::encrypt($matricula->grade_id_grade)) }}"
                         style="background-color: #10388f; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition duration-200 text-center inline-block">
                         Aulas
                     </a>
-
+                    @endif
                     <a href="{{ route('aluno-matricula.show', Crypt::encrypt($matricula->id_matricula)) }}"
                         style="background-color: #224eac; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition duration-200 text-center inline-block">

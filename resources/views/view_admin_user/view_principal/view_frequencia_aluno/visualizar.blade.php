@@ -20,7 +20,7 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
     <ol class="flex items-center gap-2">
         <li>
             <a href="{{ route('frequencia.listagem') }}" class="hover:text-[#8E251F] transition">
-                Frequência
+                Frequência e Aulas
             </a>
         </li>
         <li>/</li>
@@ -46,45 +46,47 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
     </div>
 
 
-    <!-- GRÁFICO -->
-    <div class="mb-6 bg-white rounded-2xl shadow-md p-6 w-full md:w-[900px] mx-auto">
+</div>
 
-        <form method="GET" class="mb-4 flex justify-center">
-            <div class="flex flex-col w-[220px]">
-                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
-                    Selecione Ano
-                </label>
+<!-- GRÁFICO -->
+<div class="mb-6 bg-white rounded-2xl shadow-md p-6 w-full md:w-[900px] mx-auto">
 
-                <select name="ano"
-                    onchange="this.form.submit()"
-                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+    <form method="GET" class="mb-4 flex justify-center">
+        <div class="flex flex-col w-[220px]">
+            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                Selecione Ano
+            </label>
+
+            <select name="ano"
+                onchange="this.form.submit()"
+                class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
                    focus:ring-2 focus:ring-[#174ab9] focus:outline-none text-center">
 
-                    @foreach($anosDisponiveis as $ano)
-                    <option value="{{ $ano }}"
-                        {{ $ano == $anoSelecionado ? 'selected' : '' }}>
-                        {{ $ano }}
-                    </option>
-                    @endforeach
+                @foreach($anosDisponiveis as $ano)
+                <option value="{{ $ano }}"
+                    {{ $ano == $anoSelecionado ? 'selected' : '' }}>
+                    {{ $ano }}
+                </option>
+                @endforeach
 
-                </select>
-            </div>
-        </form>
-        <div class="mb-4 text-center">
-            <h3 class="text-lg font-bold text-gray-700">
-                Frequência Mensal
-            </h3>
-
-            <p class="text-sm text-gray-500">
-                Comparativo mensal de presenças e faltas
-            </p>
+            </select>
         </div>
+    </form>
+    <div class="mb-4 text-center">
+        <h3 class="text-lg font-bold text-gray-700">
+            Frequência Mensal
+        </h3>
 
-        <div class="w-full h-[450px]">
-            <canvas id="graficoBarras"></canvas>
-        </div>
+        <p class="text-sm text-gray-500">
+            Comparativo mensal de presenças e faltas
+        </p>
+    </div>
+
+    <div class="w-full h-[450px]">
+        <canvas id="graficoBarras"></canvas>
     </div>
 </div>
+
 <!-- CARD DA GRADE -->
 <div class="mb-8">
     <div class="bg-white border-l-8 border-[#174ab9] rounded-2xl shadow-lg p-6">
@@ -211,6 +213,11 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
             $barra = $meta > 0
             ? min(100, round(($presencas / $meta) * 100))
             : 0;
+
+            $marco1 = $meta > 0 ? ceil($meta * 0.25) : 0;
+            $marco2 = $meta > 0 ? ceil($meta * 0.50) : 0;
+            $marco3 = $meta > 0 ? ceil($meta * 0.75) : 0;
+            $marco4 = $meta;
             @endphp
             <tr class="border-b hover:bg-gray-50 transition linha-aluno"
                 data-presencas="{{ $presencas }}"
@@ -240,6 +247,7 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
                 </td>
 
                 <!-- META -->
+                <!-- META -->
                 <td class="py-3 px-4">
 
                     <div class="mb-2">
@@ -256,10 +264,43 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
                         @endif
                     </div>
 
-                    <div
-                        class="w-full bg-gray-200 rounded-full h-3 progress-container"
-                        data-barra="{{ $barra }}">
-                        <div class="h-3 rounded-full transition-all duration-500 progress-bar"></div>
+                    @php
+                    $marcos = [
+                    ceil($meta * 0.25),
+                    ceil($meta * 0.50),
+                    ceil($meta * 0.75),
+                    $meta,
+                    ];
+                    @endphp
+
+                    <div class="space-y-1">
+
+                        <div class="flex justify-between text-[10px] text-gray-500">
+                            @foreach($marcos as $m)
+                            <span>{{ $m }}</span>
+                            @endforeach
+                        </div>
+
+                        <div class="grid grid-cols-4 gap-1">
+                            @php $anterior = 0; @endphp
+                            @foreach($marcos as $m)
+                            @php
+                            $intervalo = max($m - $anterior, 1);
+                            $progressoSegmento = $meta > 0
+                            ? min(100, max(0, (($presencas - $anterior) / $intervalo) * 100))
+                            : 0;
+                            $completo = $progressoSegmento >= 100;
+                            $anterior = $m;
+                            @endphp
+
+                            <div class="h-3 rounded-full bg-gray-200 overflow-hidden">
+                                <div class="h-3 rounded-full transition-all duration-500"
+                                    style="width: {{ $progressoSegmento }}%; background-color: {{ $completo ? '#15803d' : '#facc15' }};">
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+
                     </div>
 
                 </td>
@@ -280,7 +321,10 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
         </tbody>
     </table>
 </div>
-
+<div id="dados-frequencia"
+    data-frequencia='@json($frequenciaMensal)'
+    style="display:none;">
+</div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
@@ -290,8 +334,9 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
         // DADOS DO GRÁFICO
         // =========================
 
-        const dadosBackend = @json($frequenciaMensal);
-
+        const dadosBackend = JSON.parse(
+            document.getElementById('dados-frequencia').dataset.frequencia
+        );
         const nomesMeses = [
             'Jan', 'Fev', 'Mar', 'Abr',
             'Mai', 'Jun', 'Jul', 'Ago',
@@ -386,20 +431,58 @@ $totalFaltasGeral += $matricula->frequencias->where('freq_presenca','Falta')->co
         // =========================
         // BARRAS DE PROGRESSO
         // =========================
+        // =========================
+        // FILTROS
+        // =========================
 
-        document.querySelectorAll(".progress-container").forEach(function(container) {
+        const tbody = document.querySelector("tbody");
+        const linhasOriginais = [...tbody.querySelectorAll(".linha-aluno")];
 
-            const barra = parseInt(container.dataset.barra);
+        const filtroOrdenacao = document.getElementById("filtroOrdenacao");
+        const filtroMeta = document.getElementById("filtroMeta");
+        const limpar = document.getElementById("limparFiltrosFrequencia");
 
-            const bar = container.querySelector(".progress-bar");
+        function aplicarFiltros() {
 
-            bar.style.width = barra + "%";
+            let linhas = [...linhasOriginais];
 
-            if (barra >= 100) {
-                bar.style.backgroundColor = "#15803d";
-            } else {
-                bar.style.backgroundColor = "#facc15";
+            // Meta concluída
+            if (filtroMeta.value === "100") {
+                linhas = linhas.filter(linha => parseInt(linha.dataset.barra) >= 100);
             }
+
+            // Ordenação
+            if (filtroOrdenacao.value === "maior") {
+
+                linhas.sort((a, b) =>
+                    parseInt(b.dataset.presencas) - parseInt(a.dataset.presencas)
+                );
+
+            } else if (filtroOrdenacao.value === "menor") {
+
+                linhas.sort((a, b) =>
+                    parseInt(a.dataset.presencas) - parseInt(b.dataset.presencas)
+                );
+
+            }
+
+            tbody.innerHTML = "";
+
+            linhas.forEach(linha => tbody.appendChild(linha));
+
+        }
+
+        filtroOrdenacao.addEventListener("change", aplicarFiltros);
+        filtroMeta.addEventListener("change", aplicarFiltros);
+
+        limpar.addEventListener("click", function() {
+
+            filtroOrdenacao.value = "";
+            filtroMeta.value = "";
+
+            tbody.innerHTML = "";
+
+            linhasOriginais.forEach(linha => tbody.appendChild(linha));
 
         });
 

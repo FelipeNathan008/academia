@@ -16,13 +16,47 @@ use Illuminate\Support\Facades\Auth;
 class FrequenciaAlunoController extends Controller
 {
 
-    public function listagemGrades()
+    public function listagemGrades(Request $request)
     {
         $user = Auth::user();
-        $grades = GradeHorario::with('matriculas')
-            ->where('id_emp_id', $user->id_emp_id)
-            ->get();
-        return view('view_admin_user.view_principal.view_frequencia_aluno.listagem', compact('grades'));
+
+        // Base query para os selects de filtro (sempre com todas as opções disponíveis)
+        $todasGrades = GradeHorario::where('id_emp_id', $user->id_emp_id)->with('professor')->get();
+
+        $query = GradeHorario::with(['matriculas', 'professor'])
+            ->where('id_emp_id', $user->id_emp_id);
+
+        // FILTRO POR TURMA
+        if ($request->filled('turma')) {
+            $query->where('grade_turma', $request->turma);
+        }
+
+        // FILTRO POR MODALIDADE
+        if ($request->filled('modalidade')) {
+            $query->where('grade_modalidade', $request->modalidade);
+        }
+
+        // FILTRO POR PROFESSOR
+        if ($request->filled('professor')) {
+            $query->whereHas('professor', function ($q) use ($request) {
+                $q->where('prof_nome', $request->professor);
+            });
+        }
+
+        $totalGrades = GradeHorario::where('id_emp_id', $user->id_emp_id)->count();
+
+        $grades = $query
+            ->orderBy('grade_turma')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('view_admin_user.view_principal.view_frequencia_aluno.listagem', [
+            'grades' => $grades,
+            'totalGrades' => $totalGrades,
+            'turmas' => $todasGrades->pluck('grade_turma')->filter()->unique()->values(),
+            'modalidades' => $todasGrades->pluck('grade_modalidade')->filter()->unique()->values(),
+            'professores' => $todasGrades->pluck('professor.prof_nome')->filter()->unique()->values(),
+        ]);
     }
 
     public function listagemDias(Request $request, $gradeId)

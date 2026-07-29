@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ProfessorUserAulaController extends Controller
 {
-    public function index($gradeId)
+    public function index(Request $request, $gradeId)
     {
         try {
             $id = Crypt::decrypt($gradeId);
@@ -31,13 +31,28 @@ class ProfessorUserAulaController extends Controller
             ->where('professor_id_professor', $professor->id_professor)
             ->firstOrFail();
 
-        $aulas = Aula::where('id_grade_horario', $id)
+        $query = Aula::where('id_grade_horario', $id);
+
+        // FILTRO POR DIA
+        if ($request->filled('dia')) {
+            $dia = $request->dia;
+
+            $query->whereDate('aula_inicio', '<=', $dia)
+                ->whereDate('aula_fim', '>=', $dia);
+        }
+
+        $totalAulas = Aula::where('id_grade_horario', $id)->count();
+
+        $aulas = $query
             ->orderBy('aula_inicio', 'desc')
-            ->get();
+            ->paginate(10)
+            ->withQueryString();
 
         return view('view_professor_user.aula.index', [
             'grade' => $grade,
-            'aulas' => $aulas
+            'aulas' => $aulas,
+            'totalAulas' => $totalAulas,
+            'gradeId' => $gradeId,
         ]);
     }
 

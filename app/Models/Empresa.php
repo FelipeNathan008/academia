@@ -17,7 +17,17 @@ class Empresa extends Model
         'emp_telefone_responsavel',
         'emp_cpf',
         'emp_tipo',
-        'emp_foto'
+        'emp_foto',
+        'emp_chave_pix',
+        'emp_nome_recebedor',
+        'emp_cidade',
+        'emp_degustacao_inicio',
+        'emp_degustacao_fim',
+    ];
+
+    protected $casts = [
+        'emp_degustacao_inicio' => 'date',
+        'emp_degustacao_fim' => 'date',
     ];
 
     public function filiais()

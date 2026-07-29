@@ -104,6 +104,45 @@
                     </div>
                 </div>
 
+                <!-- PIX -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <div>
+                        <label class="text-sm text-gray-600">Chave PIX</label>
+                        <input
+                            type="text"
+                            name="emp_chave_pix"
+                            value="{{ old('emp_chave_pix', $empresa->emp_chave_pix) }}"
+                            placeholder="CPF, telefone, e-mail ou chave aleatória"
+                            required
+                            class="w-full border rounded-lg px-4 py-2 mt-1">
+                    </div>
+
+                    <div>
+                        <label class="text-sm text-gray-600">Nome do Recebedor</label>
+                        <input
+                            type="text"
+                            name="emp_nome_recebedor"
+                            value="{{ old('emp_nome_recebedor', $empresa->emp_nome_recebedor) }}"
+                            maxlength="25"
+                            required
+                            class="w-full border rounded-lg px-4 py-2 mt-1">
+                    </div>
+
+                    <div>
+                        <label class="text-sm text-gray-600">Cidade</label>
+                        <input
+                            type="text"
+                            name="emp_cidade"
+                            value="{{ old('emp_cidade', $empresa->emp_cidade) }}"
+                            maxlength="15"
+                            style="text-transform: uppercase;"
+                            required
+                            class="w-full border rounded-lg px-4 py-2 mt-1">
+                    </div>
+
+                </div>
+
                 <!-- FOTO -->
                 <div>
                     <label class="text-sm text-gray-600">Logo</label>
@@ -129,48 +168,157 @@
     </form>
 </div>
 
-<!-- DETALHES -->
-<div class="bg-white rounded-2xl shadow-md p-6">
-    <h3 class="text-xl font-bold mb-6 text-gray-700">Informações</h3>
+<div class="space-y-8">
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- DADOS DA EMPRESA -->
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden">
 
-        <div>
-            <p class="text-gray-500 text-sm">Responsável</p>
-            <p class="font-semibold">{{ $empresa->emp_nome_responsavel }}</p>
+        <div class="px-6 py-4 border-b bg-gray-50">
+            <h3 class="text-lg font-bold text-gray-700">
+                Dados da Empresa
+            </h3>
         </div>
 
-        <div>
-            <p class="text-gray-500 text-sm">Email</p>
-            <p class="font-semibold">{{ $empresa->emp_email_responsavel }}</p>
-        </div>
+        <div class="grid md:grid-cols-2 gap-6 p-6">
 
-        <div>
-            <p class="text-gray-500 text-sm">Telefone</p>
-            <p class="font-semibold">{{ $empresa->emp_telefone_responsavel }}</p>
-        </div>
+            <div>
+                <p class="text-xs uppercase text-gray-500">Nome</p>
+                <p class="font-semibold text-gray-800">{{ $empresa->emp_nome }}</p>
+            </div>
 
-        <div>
-            <p class="text-gray-500 text-sm">CPF</p>
-            <p class="font-semibold">{{ $empresa->emp_cpf }}</p>
-        </div>
+            <div>
+                <p class="text-xs uppercase text-gray-500">Apelido</p>
+                <p class="font-semibold text-gray-800">{{ $empresa->emp_apelido }}</p>
+            </div>
 
-        <div>
-            <p class="text-gray-500 text-sm">Tipo</p>
-            <p class="font-semibold">{{ $empresa->emp_tipo }}</p>
-        </div>
+            <div>
+                <p class="text-xs uppercase text-gray-500">Responsável</p>
+                <p class="font-semibold text-gray-800">{{ $empresa->emp_nome_responsavel }}</p>
+            </div>
 
-        <div>
-            <p class="text-gray-500 text-sm">Logo</p>
-            @if($empresa->emp_foto)
-            <img src="{{ asset('images/empresas/' . $empresa->emp_foto) }}"
-                class="w-16 h-16 object-cover rounded">
-            @else
-            -
-            @endif
+            <div>
+                <p class="text-xs uppercase text-gray-500">Email</p>
+                <p class="font-semibold text-gray-800">{{ $empresa->emp_email_responsavel }}</p>
+            </div>
+
+            <div>
+                <p class="text-xs uppercase text-gray-500">Telefone</p>
+                <p class="font-semibold text-gray-800">{{ $empresa->emp_telefone_responsavel }}</p>
+            </div>
+
+            <div>
+                <p class="text-xs uppercase text-gray-500">CPF</p>
+                <p class="font-semibold text-gray-800">{{ $empresa->emp_cpf }}</p>
+            </div>
+
+            <div>
+                <p class="text-xs uppercase text-gray-500">Tipo</p>
+                <span class="inline-flex px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold">
+                    {{ $empresa->emp_tipo }}
+                </span>
+            </div>
+
+            <div>
+                <p class="text-xs uppercase text-gray-500">Logo</p>
+
+                @if($empresa->emp_foto)
+                <img
+                    src="{{ asset('images/empresas/'.$empresa->emp_foto) }}"
+                    class="w-20 h-20 rounded-xl object-cover border">
+                @else
+                <span class="text-gray-400">Sem logo</span>
+                @endif
+            </div>
+
         </div>
 
     </div>
+
+    <!-- PIX -->
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+
+        <div class="px-6 py-4 border-b bg-green-50">
+
+            <h3 class="text-lg font-bold text-green-800">
+                Dados para Recebimento PIX
+            </h3>
+        </div>
+        <div class="grid md:grid-cols-2 gap-6 p-6">
+            <div class="md:col-span-2">
+                <p class="text-xs uppercase text-gray-500">
+                    Chave PIX
+                </p>
+                <p class="font-mono break-all text-green-700">
+                    {{ $empresa->emp_chave_pix }}
+                </p>
+            </div>
+            <div>
+                <p class="text-xs uppercase text-gray-500">
+                    Nome do Recebedor
+                </p>
+
+                <p class="font-semibold">
+                    {{ $empresa->emp_nome_recebedor }}
+                </p>
+            </div>
+
+            <div>
+                <p class="text-xs uppercase text-gray-500">
+                    Cidade
+                </p>
+                <p class="font-semibold">
+                    {{ $empresa->emp_cidade }}
+                </p>
+            </div>
+        </div>
+
+    </div>
+    <!-- DEGUSTAÇÃO -->
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+
+        <div class="px-6 py-4 border-b bg-yellow-50">
+            <h3 class="text-lg font-bold text-yellow-700">
+                Período de Degustação
+            </h3>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6 p-6">
+            <div>
+                <p class="text-xs uppercase text-gray-500">
+                    Início
+                </p>
+
+                <p class="font-semibold">
+                    {{ \Carbon\Carbon::parse($empresa->emp_degustacao_inicio)->format('d/m/Y') }}
+                </p>
+            </div>
+            <div>
+                <p class="text-xs uppercase text-gray-500">
+                    Fim
+                </p>
+
+                <p class="font-semibold">
+                    {{ \Carbon\Carbon::parse($empresa->emp_degustacao_fim)->format('d/m/Y') }}
+                </p>
+            </div>
+
+            <div>
+                <p class="text-xs uppercase text-gray-500">
+                    Status
+                </p>
+                @if(\Carbon\Carbon::today()->lte(\Carbon\Carbon::parse($empresa->emp_degustacao_fim)))
+                <span class="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
+                    Em degustação
+                </span>
+                @else
+
+                <span class="inline-flex px-3 py-1 rounded-full bg-red-100 text-red-700 font-semibold">
+                    Encerrada
+                </span>
+                @endif
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <!-- JS -->

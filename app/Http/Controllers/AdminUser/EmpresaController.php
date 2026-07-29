@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Carbon\Carbon;
 
 
 class EmpresaController extends Controller
@@ -32,10 +33,12 @@ class EmpresaController extends Controller
             'emp_email_responsavel' => 'required|email|max:255',
             'emp_telefone_responsavel' => 'required|max:20',
             'emp_cpf' => 'required|max:14',
+            'emp_chave_pix' => 'required|string|max:255',
+            'emp_nome_recebedor' => 'required|string|max:25',
+            'emp_cidade' => 'required|string|max:15',
             'emp_tipo' => 'required|string|max:150',
             'emp_foto' => 'nullable|image|max:2048'
         ]);
-
         $filename = null;
 
         if ($request->hasFile('emp_foto')) {
@@ -53,12 +56,21 @@ class EmpresaController extends Controller
             'emp_email_responsavel' => $request->emp_email_responsavel,
             'emp_telefone_responsavel' => $request->emp_telefone_responsavel,
             'emp_cpf' => $request->emp_cpf,
+            'emp_chave_pix' => $request->emp_chave_pix,
+            'emp_nome_recebedor' => strtoupper($request->emp_nome_recebedor),
+            'emp_cidade' => strtoupper($request->emp_cidade),
             'emp_tipo' => $request->emp_tipo,
-            'emp_foto' => $filename
+            'emp_foto' => $filename,
+
+            'emp_degustacao_inicio' => Carbon::today(),
+            'emp_degustacao_fim' => Carbon::today()->addDays(15),
         ]);
-        return redirect()->route('register', [
-            'empresa_id' => Crypt::encryptString($empresa->id_empresa)
-        ]);
+
+        return redirect()
+            ->route('register', [
+                'empresa_id' => Crypt::encryptString($empresa->id_empresa)
+            ])
+            ->with('empresa_cadastrada', true);
     }
 
     public function edit(string $id)
@@ -84,8 +96,11 @@ class EmpresaController extends Controller
             'emp_email_responsavel' => 'required|email|max:255',
             'emp_telefone_responsavel' => 'required|max:20',
             'emp_cpf' => 'required|max:14',
-            'emp_tipo' => 'required|max:150',
-            'emp_foto' => 'nullable|image|max:2048'
+            'emp_chave_pix' => 'required|string|max:255',
+            'emp_nome_recebedor' => 'required|string|max:25',
+            'emp_cidade' => 'required|string|max:15',
+            'emp_tipo' => 'required|string|max:150',
+            'emp_foto' => 'nullable|image|max:2048',
         ]);
 
         if ($request->hasFile('emp_foto')) {
@@ -108,6 +123,9 @@ class EmpresaController extends Controller
         $empresa->emp_telefone_responsavel = $request->emp_telefone_responsavel;
         $empresa->emp_cpf = $request->emp_cpf;
         $empresa->emp_tipo = $request->emp_tipo;
+        $empresa->emp_chave_pix = $request->emp_chave_pix;
+        $empresa->emp_nome_recebedor = strtoupper($request->emp_nome_recebedor);
+        $empresa->emp_cidade = strtoupper($request->emp_cidade);
 
         $empresa->save();
 

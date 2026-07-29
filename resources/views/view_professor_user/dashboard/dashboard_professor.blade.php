@@ -81,6 +81,33 @@
         </span>
     </a>
 
+    <a href="{{ route('dashboard-professor.comprovantes') }}"
+        class="block p-6 rounded-xl shadow-sm
+    {{ $comprovantesPendentes > 0
+        ? 'bg-red-50 border border-red-300'
+        : 'bg-white' }}">
+
+        <h3 class="font-semibold text-lg mb-2">
+            Comprovantes Pendentes
+        </h3>
+
+        <p class="text-2xl font-bold
+    {{ $comprovantesPendentes > 0 ? 'text-red-600' : '' }}">
+            {{ $comprovantesPendentes }}
+        </p>
+
+        @if($comprovantesPendentes > 0)
+        <span class="text-red-600 font-semibold">
+            🔔 Aguardando aprovação →
+        </span>
+        @else
+        <span class="text-gray-500">
+            Nenhum comprovante pendente
+        </span>
+        @endif
+
+    </a>
+
 </div>
 
 @endsection

@@ -89,7 +89,7 @@
                     Filtrar
                 </button>
 
-                <a href="{{ route('matricula.index') }}"
+                <a href="{{ route('alunos.index') }}"
                     class="h-[48px] px-6 rounded-xl bg-gray-300 text-gray-800
                            flex items-center justify-center
                            hover:bg-gray-400 transition shadow-md">
@@ -272,7 +272,7 @@
                 <td class="py-3 px-4 flex gap-2">
 
                     @if($aluno->responsavel)
-                    <a href="{{ route('alunos', Crypt::encrypt($aluno->responsavel->id_responsavel)) }}"
+                    <a href="{{ route('alunos', Crypt::encrypt($aluno->responsavel->id_responsavel)) }}?aluno={{ urlencode($aluno->aluno_nome) }}"
                         style="background-color: #174ab9; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
                         Ver Aluno

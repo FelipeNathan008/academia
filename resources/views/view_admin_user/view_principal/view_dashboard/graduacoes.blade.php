@@ -155,13 +155,7 @@
                 </select>
             </div>
 
-            @if($modalidadeSelecionada && $faixaSelecionada)
-            <a href="{{ route('dashboard.graduacoes', ['modalidade' => $modalidadeSelecionada]) }}"
-                class="h-[48px] px-5 rounded-xl bg-gray-200 text-gray-700 font-semibold
-           hover:bg-gray-300 transition flex items-center justify-center">
-                ✕ Limpar faixa
-            </a>
-            @endif
+
 
 
         </form>
@@ -275,6 +269,13 @@
         <p class="text-sm text-gray-400 mb-6">
             Alunos cuja última graduação em "{{ $modalidadeSelecionada }}" é esta faixa.
         </p>
+        @if($modalidadeSelecionada && $faixaSelecionada)
+        <a href="{{ route('dashboard.graduacoes', ['modalidade' => $modalidadeSelecionada]) }}"
+            class="h-[48px] px-5 rounded-xl bg-gray-200 text-gray-700 font-semibold
+           hover:bg-gray-300 transition flex items-center justify-center">
+            ✕ Limpar faixa
+        </a>
+        @endif
 
         @if($alunosDaFaixa->isEmpty())
 
@@ -296,9 +297,46 @@
             </thead>
 
             <tbody>
-                @foreach ($alunosDaFaixa as $aluno)
-                <tr class="border-b hover:bg-gray-50 transition">
+                <div class="flex justify-center mb-8">
 
+                    <div class="flex flex-wrap gap-4 items-end justify-center">
+
+                        <div class="flex flex-col w-[300px]">
+
+                            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                                Nome do Aluno
+                            </label>
+
+                            <input
+                                type="text"
+                                id="filtroNomeAluno"
+                                placeholder="Buscar por nome..."
+                                class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                       focus:ring-2 focus:ring-[#8E251F]
+                       focus:outline-none text-center">
+
+                        </div>
+
+                        <button
+                            id="limparFiltroAluno"
+                            class="h-[48px] px-6 rounded-xl
+                   bg-gradient-to-r from-gray-100 to-gray-200
+                   border border-gray-300
+                   text-gray-700 font-semibold
+                   hover:from-red-50 hover:to-red-100
+                   hover:border-red-300
+                   hover:text-red-700
+                   transition-all duration-200
+                   shadow-sm hover:shadow-md">
+                            Limpar filtro
+                        </button>
+                    </div>
+                </div>
+                @foreach ($alunosDaFaixa as $aluno)
+
+                <tr
+                    class="linha-aluno border-b hover:bg-gray-50"
+                    data-nome="{{ strtolower($aluno->aluno_nome) }}">
                     <td class="py-3 px-4 font-semibold text-gray-800">
                         {{ $aluno->aluno_nome }}
                     </td>
@@ -325,8 +363,7 @@
                     </td>
 
                     <td class="py-3 px-4 text-center">
-                        <a href="{{ route('alunos', Crypt::encrypt($aluno->responsavel_id_responsavel)) }}"
-                            style="background-color: #174ab9; color: white;"
+                        <a href="{{ route('alunos', ['id' => Crypt::encrypt($aluno->responsavel_id_responsavel),'aluno' => $aluno->aluno_nome,]) }}" style="background-color: #174ab9; color: white;"
                             class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 inline-block">
                             Ver Aluno
                         </a>
@@ -378,6 +415,97 @@
             const faixa = card.dataset.faixaNome;
             card.style.borderLeftColor = CORES_BORDER[faixa] || '#d1d5db';
         });
+
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const filtro = document.getElementById("filtroNomeAluno");
+        const limpar = document.getElementById("limparFiltroAluno");
+        const linhas = document.querySelectorAll(".linha-aluno");
+
+        function aplicarFiltro() {
+
+            const nome = filtro.value.toLowerCase().trim();
+
+            linhas.forEach(linha => {
+
+                const aluno = linha.dataset.nome;
+
+                linha.style.display =
+                    aluno.includes(nome) ?
+                    "" :
+                    "none";
+
+            });
+
+        }
+
+        filtro.addEventListener("input", aplicarFiltro);
+
+        limpar.addEventListener("click", () => {
+
+            filtro.value = "";
+
+            aplicarFiltro();
+
+        });
+
+        //Filtro vindo da URL
+        const inicial = new URLSearchParams(window.location.search).get('aluno');
+
+        if (inicial) {
+
+            filtro.value = inicial.toLowerCase();
+
+            aplicarFiltro();
+
+        }
+
+    });
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const filtro = document.getElementById("filtroNomeAluno");
+        const limpar = document.getElementById("limparFiltroAluno");
+        const linhas = document.querySelectorAll(".linha-aluno");
+
+        function aplicarFiltro() {
+
+            const nome = filtro.value.toLowerCase().trim();
+
+            linhas.forEach(linha => {
+
+                const aluno = linha.dataset.nome;
+
+                linha.style.display =
+                    aluno.includes(nome) ?
+                    "" :
+                    "none";
+
+            });
+
+        }
+
+        filtro.addEventListener("input", aplicarFiltro);
+
+        limpar.addEventListener("click", () => {
+
+            filtro.value = "";
+
+            aplicarFiltro();
+
+        });
+
+        //Filtro vindo da URL
+        const inicial = new URLSearchParams(window.location.search).get('aluno');
+
+        if (inicial) {
+
+            filtro.value = inicial.toLowerCase();
+
+            aplicarFiltro();
+
+        }
 
     });
 </script>

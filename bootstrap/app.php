@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', \App\Http\Middleware\PreventBackHistory::class);
 
         $middleware->alias([
+            'superadmin' => \App\Http\Middleware\SuperAdminMiddleware::class,
             'admin'                => \App\Http\Middleware\AdminMiddleware::class,
             'professor'            => \App\Http\Middleware\ProfessorMiddleware::class,
             'aluno'                => \App\Http\Middleware\AlunoMiddleware::class,

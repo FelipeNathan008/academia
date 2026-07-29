@@ -56,4 +56,8 @@ class Matricula extends Model
             'id_matricula'
         );
     }
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class, 'id_emp_id', 'id_empresa');
+    }
 }

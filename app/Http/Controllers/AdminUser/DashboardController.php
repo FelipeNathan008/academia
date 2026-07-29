@@ -18,7 +18,8 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        DetalhesMensalidade::where('det_mensa_status', 'Em aberto')
+        DetalhesMensalidade::where('id_emp_id', $user->id_emp_id)
+            ->where('det_mensa_status', 'Em aberto')
             ->whereDate('det_mensa_data_venc', '<', Carbon::today())
             ->update([
                 'det_mensa_status' => 'Atrasado'
@@ -29,13 +30,26 @@ class DashboardController extends Controller
             'matricula.grade.professor',
             'detalhes',
         ])
-            ->whereHas('detalhes', function ($query) {
-                $query->where('det_mensa_status', 'Atrasado');
+            ->whereHas('detalhes', function ($query) use ($user) {
+                $query->where('id_emp_id', $user->id_emp_id)
+                    ->whereDate('det_mensa_data_venc', '<', Carbon::today())
+                    ->whereIn('det_mensa_status', [
+                        'Em aberto',
+                        'Atrasado',
+                        'Comprovante enviado',
+                        'Rejeitado'
+                    ]);
             })
             ->get();
 
-        $mensalidadesAtrasadas = DetalhesMensalidade::where('det_mensa_status', 'Atrasado')
-            ->where('id_emp_id', $user->id_emp_id)
+        $mensalidadesAtrasadas = DetalhesMensalidade::where('id_emp_id', $user->id_emp_id)
+            ->whereDate('det_mensa_data_venc', '<', Carbon::today())
+            ->whereIn('det_mensa_status', [
+                'Em aberto',
+                'Atrasado',
+                'Comprovante enviado',
+                'Rejeitado'
+            ])
             ->count();
 
         return view('view_admin_user.view_principal.view_dashboard.mensalidades_atrasadas', compact('mensalidades', 'mensalidadesAtrasadas'));
@@ -240,7 +254,20 @@ class DashboardController extends Controller
             ->whereDate('det_mensa_data_venc', '<', Carbon::today())
             ->update(['det_mensa_status' => 'Atrasado']);
 
-        $mensalidadesAtrasadas = DetalhesMensalidade::where('det_mensa_status', 'Atrasado')
+        $mensalidadesAtrasadas = DetalhesMensalidade::where('id_emp_id', $user->id_emp_id)
+            ->whereDate('det_mensa_data_venc', '<', Carbon::today())
+            ->whereIn('det_mensa_status', [
+                'Em aberto',
+                'Atrasado',
+                'Comprovante enviado',
+                'Rejeitado'
+            ])
+            ->count();
+
+        $comprovantesPendentes = DetalhesMensalidade::where(
+            'det_mensa_status',
+            'Comprovante enviado'
+        )
             ->where('id_emp_id', $user->id_emp_id)
             ->count();
 
@@ -258,6 +285,25 @@ class DashboardController extends Controller
             'receitaMensal'          => $receitaMensal,
             'receitaMensalPago'      => $receitaMensalPago,
             'mensalidadesAtrasadas'  => $mensalidadesAtrasadas,
+            'comprovantesPendentes'  => $comprovantesPendentes,
         ]);
+    }
+
+    public function comprovantesPendentes()
+    {
+        $user = Auth::user();
+
+        $comprovantes = DetalhesMensalidade::with([
+            'mensalidade.matricula.aluno'
+        ])
+            ->where('id_emp_id', $user->id_emp_id)
+            ->where('det_mensa_status', 'Comprovante enviado')
+            ->orderByDesc('det_mensa_comprovante_enviado_em')
+            ->get();
+
+        return view(
+            'view_admin_user.view_principal.view_dashboard.comprovantes_pendentes',
+            compact('comprovantes')
+        );
     }
 }

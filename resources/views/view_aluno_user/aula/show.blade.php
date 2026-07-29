@@ -32,7 +32,7 @@
         INFORMAÇÕES DA AULA
     </h2>
 
-    <a href="{{ url()->previous() ?? route('aluno.aulas', Crypt::encrypt($aula->gradeHorario->id_grade)) }}"
+    <a href="{{ route('aluno-aulas.index', Crypt::encrypt($aula->gradeHorario->id_grade)) }}"
         class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
         ← Voltar
     </a>
@@ -69,15 +69,15 @@
                 <p class="text-lg font-semibold text-gray-800">
                     @php
                     $dias = [
-                        1 => 'Domingo', 2 => 'Segunda', 3 => 'Terça',
-                        4 => 'Quarta', 5 => 'Quinta', 6 => 'Sexta', 7 => 'Sábado',
+                    1 => 'Domingo', 2 => 'Segunda', 3 => 'Terça',
+                    4 => 'Quarta', 5 => 'Quinta', 6 => 'Sexta', 7 => 'Sábado',
                     ];
 
                     $diasGrade = $aula->gradeHorario->grade_dia_semana
-                        ? collect(explode(',', $aula->gradeHorario->grade_dia_semana))
-                            ->map(fn($dia) => $dias[(int) trim($dia)] ?? $dia)
-                            ->implode(' e ')
-                        : '-';
+                    ? collect(explode(',', $aula->gradeHorario->grade_dia_semana))
+                    ->map(fn($dia) => $dias[(int) trim($dia)] ?? $dia)
+                    ->implode(' e ')
+                    : '-';
                     @endphp
                     {{ $diasGrade }}
                 </p>
@@ -99,24 +99,51 @@
                 <p class="text-xs uppercase text-gray-400">Horário da Turma</p>
                 <p class="text-lg font-semibold text-gray-800">
                     @if($aula->gradeHorario->grade_inicio && $aula->gradeHorario->grade_fim)
-                        {{ \Carbon\Carbon::parse($aula->gradeHorario->grade_inicio)->format('H:i') }}
-                        às
-                        {{ \Carbon\Carbon::parse($aula->gradeHorario->grade_fim)->format('H:i') }}
+                    {{ \Carbon\Carbon::parse($aula->gradeHorario->grade_inicio)->format('H:i') }}
+                    às
+                    {{ \Carbon\Carbon::parse($aula->gradeHorario->grade_fim)->format('H:i') }}
                     @else
-                        -
+                    -
                     @endif
                 </p>
             </div>
 
             <div>
-                <p class="text-xs uppercase text-gray-400">Link</p>
+                <p class="text-xs uppercase text-gray-400 mb-2">Vídeo</p>
+
                 @if($aula->aula_link)
-                    <a href="{{ $aula->aula_link }}" target="_blank"
-                        class="text-lg font-semibold text-[#174ab9] hover:underline break-all">
-                        {{ $aula->aula_link }}
-                    </a>
+
+                @php
+                preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/', $aula->aula_link, $matches);
+                $videoId = $matches[1] ?? null;
+                @endphp
+
+                @if($videoId)
+                <div class="rounded-xl overflow-hidden border shadow-md">
+                    <iframe
+                        class="w-full aspect-video"
+                        src="https://www.youtube.com/embed/{{ $videoId }}"
+                        title="Vídeo da Aula"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+
+                <a href="{{ $aula->aula_link }}"
+                    target="_blank"
+                    class="mt-2 inline-block text-sm text-[#174ab9] hover:underline">
+                    Abrir no YouTube
+                </a>
                 @else
-                    <p class="text-gray-500">Sem link</p>
+                <a href="{{ $aula->aula_link }}"
+                    target="_blank"
+                    class="text-lg font-semibold text-[#174ab9] hover:underline break-all">
+                    {{ $aula->aula_link }}
+                </a>
+                @endif
+
+                @else
+                <p class="text-gray-500">Sem vídeo</p>
                 @endif
             </div>
         </div>

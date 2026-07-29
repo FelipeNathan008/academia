@@ -19,6 +19,7 @@
     </ol>
 </nav>
 
+
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div class="flex items-center gap-4">
@@ -69,7 +70,6 @@ $diasNomes = [
 7 => 'Sábado',
 ];
 
-// Dias permitidos pela grade (1=Domingo ... 7=Sábado)
 $diasPermitidos = collect(explode(',', $grade->grade_dia_semana))
 ->map(fn($d) => (int) trim($d))
 ->filter()
@@ -249,43 +249,59 @@ $diasSelecionados = $diasPermitidos
     </form>
 </div>
 
-<!-- LISTAGEM -->
-<div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+<!-- FILTRO -->
+<div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+    <div class="flex flex-wrap gap-6 items-end justify-center max-w-6xl mx-auto">
 
-    <h3 class="text-xl font-bold mb-6 text-gray-700">
-        AULAS CADASTRADAS
-    </h3>
-
-    <!-- FILTRO POR NOME -->
-    <div class="flex justify-center mb-8">
-        <div class="flex flex-wrap gap-4 items-end justify-center">
-
-            <div class="flex flex-col w-[300px]">
-                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
-                    Nome do Exercício
-                </label>
+        <div class="flex flex-col w-[220px]">
+            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                Filtrar por dia
+            </label>
+            <form method="GET" class="flex gap-2 items-end">
 
                 <input type="text"
-                    id="filtroNomeAula"
+                    id="filtroDia"
+                    name="dia"
                     autocomplete="off"
-                    placeholder="Buscar por nome..."
+                    value="{{ request('dia') }}"
+                    placeholder="Selecione uma data"
                     class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
-            </div>
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none cursor-pointer">
 
-            <!-- Limpar -->
-            <button id="limparFiltroNome"
-                class="h-[48px] px-6 rounded-xl bg-gray-300
-                       text-gray-800 font-semibold hover:bg-gray-400
-                       transition shadow-md">
-                Limpar filtro
-            </button>
+                <button type="submit"
+                    class="h-[48px] px-6 rounded-xl bg-[#8E251F] text-white
+                           hover:bg-[#732920] transition shadow-md">
+                    Buscar
+                </button>
 
+                <a href="{{ route('professor-aulas', $gradeId) }}"
+                    class="h-[48px] px-6 rounded-xl bg-gray-300 text-gray-800
+                           flex items-center justify-center
+                           hover:bg-gray-400 transition shadow-md">
+                    Limpar
+                </a>
+
+            </form>
         </div>
+
     </div>
+</div>
+
+<!-- LISTAGEM -->
+<div class="bg-white rounded-2xl shadow-md p-6 mb-6" id="containerAulas">
+    <h3 class="text-xl font-bold mb-6 text-gray-700 flex items-center gap-4 flex-wrap">
+        <span>AULAS CADASTRADAS</span>
+
+        <span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm">
+            Total: {{ $totalAulas }}
+        </span>
+
+        <span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm">
+            Filtrados: {{ $aulas->total() }}
+        </span>
+    </h3>
 
     <table class="w-full text-left border-collapse">
-
         <thead>
             <tr class="border-b text-gray-600 text-sm">
                 <th class="py-3 px-4">Exercício</th>
@@ -300,8 +316,7 @@ $diasSelecionados = $diasPermitidos
 
             @forelse ($aulas as $aula)
 
-            <tr class="border-b hover:bg-gray-50 transition linha-aula"
-                data-nome="{{ strtolower($aula->aula_nome_exercicio ?? '') }}">
+            <tr class="border-b hover:bg-gray-50 transition">
 
                 <td class="py-3 px-4">
                     {{ $aula->aula_nome_exercicio }}
@@ -367,23 +382,21 @@ $diasSelecionados = $diasPermitidos
             @empty
 
             <tr>
-                <td colspan="5"
-                    class="text-center py-6 text-gray-500">
-                    Nenhuma aula cadastrada para esta grade
+                <td colspan="5" class="text-center py-6 text-gray-500">
+                    Nenhuma aula encontrada
                 </td>
             </tr>
 
             @endforelse
 
-            <tr id="msgNenhumaAulaFiltro" class="hidden">
-                <td colspan="5" class="text-center py-6 text-gray-500">
-                    Nenhuma aula encontrada com esse nome
-                </td>
-            </tr>
-
         </tbody>
 
     </table>
+
+    <div class="mt-6">
+        {{ $aulas->links() }}
+    </div>
+
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
@@ -401,6 +414,16 @@ $diasSelecionados = $diasPermitidos
     function fecharCadastro() {
         document.getElementById('cadastroForm').classList.add('hidden');
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        flatpickr('#filtroDia', {
+            dateFormat: 'Y-m-d',
+            altInput: true,
+            altFormat: 'd/m/Y',
+            allowInput: false,
+            locale: 'pt'
+        });
+    });
 
     document.addEventListener('DOMContentLoaded', function() {
 
@@ -465,50 +488,6 @@ $diasSelecionados = $diasPermitidos
             inicioPicker,
             fimPicker
         };
-
-        // ======================================
-        // FILTRO POR NOME NA LISTAGEM
-        // ======================================
-
-        const filtroNome = document.getElementById('filtroNomeAula');
-        const limparNome = document.getElementById('limparFiltroNome');
-        const linhasAulas = document.querySelectorAll('.linha-aula');
-        const msgNenhumaAula = document.getElementById('msgNenhumaAulaFiltro');
-
-        function aplicarFiltroNome() {
-
-            const nome = filtroNome.value.toLowerCase().trim();
-
-            let algumaVisivel = false;
-
-            linhasAulas.forEach(linha => {
-
-                const nomeAula = linha.dataset.nome || '';
-                const mostrar = !nome || nomeAula.includes(nome);
-
-                linha.style.display = mostrar ? '' : 'none';
-
-                if (mostrar) {
-                    algumaVisivel = true;
-                }
-            });
-
-            if (msgNenhumaAula) {
-                msgNenhumaAula.classList.toggle('hidden', algumaVisivel || linhasAulas.length === 0);
-            }
-        }
-
-        if (filtroNome) {
-            filtroNome.addEventListener('input', aplicarFiltroNome);
-        }
-
-        if (limparNome) {
-            limparNome.addEventListener('click', function() {
-                filtroNome.value = '';
-                aplicarFiltroNome();
-            });
-        }
-
     });
 
     function validarSubmit(event, form) {

@@ -64,6 +64,11 @@ class User extends Authenticatable
         return $this->belongsTo(Professor::class, 'professor_id', 'id_professor');
     }
 
+    public function isSuperAdmin()
+    {
+        return $this->role === 'superadmin';
+    }
+
     public function responsavel()
     {
         return $this->belongsTo(Responsavel::class, 'responsavel_id', 'id_responsavel');

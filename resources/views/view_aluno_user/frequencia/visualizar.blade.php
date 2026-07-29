@@ -6,30 +6,29 @@
 
 <!-- BREADCRUMB -->
 <nav class="mb-6 text-sm text-gray-500">
-    <ol class="flex items-center gap-2 flex-wrap">
+    <ol class="flex items-center gap-2">
         <li>
             <a href="{{ route('aluno.index') }}" class="hover:text-[#8E251F] transition">
-                Alunos
+                Meus Alunos
             </a>
         </li>
         <li>/</li>
         <li>
-            <a href="{{ route('aluno.show', Crypt::encrypt($matricula->aluno->id_aluno)) }}"
-                class="hover:text-[#8E251F] transition">
-                {{ $matricula->aluno->aluno_nome }}
+            <a href="{{ route('aluno-grades.index') }}" class="hover:text-[#8E251F] transition">
+                Turmas
             </a>
         </li>
         <li>/</li>
-        <li class="font-semibold text-gray-700">
-            Frequência
-        </li>
+        <li class="text-gray-400">{{ $grade->professor->prof_nome ?? '-' }}</li>
+        <li>/</li>
+        <li class="font-semibold text-gray-700">Frequência</li>
     </ol>
 </nav>
 
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
     <div class="flex items-center gap-4">
-        <a href="{{ route('aluno.index') }}"
+        <a href="{{ route('aluno-grades.index') }}"
             class="flex items-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
             ← Voltar
         </a>

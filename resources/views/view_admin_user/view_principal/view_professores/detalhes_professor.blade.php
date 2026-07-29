@@ -83,24 +83,13 @@
                         Faixa
                     </label>
 
-                    <select id="faixaCadastro"
-                        class="w-full border rounded-lg px-3 py-2"
-                        disabled>
-                        <option value="">Selecione a faixa</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="text-sm font-medium text-gray-600">
-                        Grau
-                    </label>
-
-                    <select name="id_graduacao"
-                        id="grauCadastro"
+                    <select
+                        id="faixaCadastro"
+                        name="id_graduacao"
                         class="w-full border rounded-lg px-3 py-2"
                         required
                         disabled>
-                        <option value="">Selecione o grau</option>
+                        <option value="">Selecione a faixa</option>
                     </select>
                 </div>
 
@@ -134,38 +123,41 @@
     <div class="flex justify-center">
         <div class="flex flex-wrap gap-6 items-end justify-center">
 
-            <!-- Graduação -->
-            <div class="flex flex-col w-[250px]">
-                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
-                    Graduação
-                </label>
-                <select id="filtroGraduacao"
-                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
-                    <option value="">Todas</option>
-                    @foreach($graduacoesTotais->pluck('gradu_nome_cor')->unique() as $cor)
-                    <option value="{{ strtolower($cor) }}">
-                        {{ $cor }}
-                    </option>
-                    @endforeach
-                </select>
-            </div>
-
             <!-- Modalidade -->
             <div class="flex flex-col w-[250px]">
                 <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
                     Modalidade
                 </label>
+
                 <select id="filtroModalidade"
-                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                    focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
-                    <option value="">Todas</option>
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+
+                    <option value="">Selecione uma modalidade</option>
 
                     @foreach($modalidades as $modalidade)
                     <option value="{{ $modalidade->id_modalidade }}">
                         {{ $modalidade->mod_nome }}
                     </option>
                     @endforeach
+
+                </select>
+            </div>
+
+            <!-- Graduação -->
+            <div class="flex flex-col w-[250px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
+                    Graduação
+                </label>
+
+                <select id="filtroGraduacao"
+                    disabled
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+               focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
+
+                    <option value="">
+                        Primeiro selecione uma modalidade
+                    </option>
+
                 </select>
             </div>
 
@@ -188,116 +180,74 @@
     <h3 class="text-xl font-bold mb-6 text-gray-700">Graduações Cadastradas</h3>
 
     @php
-    $ordem = [
-    'cinza e branca' => 1,
-    'cinza' => 2,
-    'cinza e preta' => 3,
-
-    'amarela e branca' => 4,
-    'amarela' => 5,
-    'amarela e preta' => 6,
-
-    'laranja e branca' => 7,
-    'laranja' => 8,
-    'laranja e preta' => 9,
-
-    'verde e branca' => 10,
-    'verde' => 11,
-    'verde e preta' => 12,
-
-    'branca' => 13,
-    'azul' => 14,
-    'roxa' => 15,
-    'marrom' => 16,
-    'preta' => 17,
-    ];
-
-    $lista = $graduacoes->sort(function ($a, $b) use ($ordem) {
-
-    $faixaA = strtolower($a->det_gradu_nome_cor);
-    $faixaB = strtolower($b->det_gradu_nome_cor);
-
-    $ordA = $ordem[$faixaA] ?? 99;
-    $ordB = $ordem[$faixaB] ?? 99;
-
-    $grauA = intval($a->det_grau);
-    $grauB = intval($b->det_grau);
-
-    return $ordA === $ordB
-    ? $grauB <=> $grauA // grau maior primeiro
-        : $ordB <=> $ordA; // faixa invertida
-            });
-            @endphp
+    $lista = $graduacoes;
+    @endphp
 
 
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="border-b text-gray-600 text-sm">
-                        <th class="py-3 px-4">Graduação</th>
-                        <th class="py-3 px-4">Grau</th>
-                        <th class="py-3 px-4">Modalidade</th>
-                        <th class="py-3 px-4">Data</th>
-                        <th class="py-3 px-4">Ações</th>
-                    </tr>
-                </thead>
+    <table class="w-full text-left border-collapse">
+        <thead>
+            <tr class="border-b text-gray-600 text-sm">
+                <th class="py-3 px-4">Graduação</th>
+                <th class="py-3 px-4">Modalidade</th>
+                <th class="py-3 px-4">Data</th>
+                <th class="py-3 px-4">Ações</th>
+            </tr>
+        </thead>
 
-                <tbody>
-                    @forelse ($lista as $det)
-                    <tr class="border-b hover:bg-gray-50 transition linha-graduacao"
-                        data-graduacao="{{ strtolower($det->graduacao->gradu_nome_cor) }}"
-                        data-modalidade="{{ $det->graduacao->id_modalidade }}">
+        <tbody>
+            <tr id="msgSelecioneModalidade">
+                <td colspan="5" class="text-center py-6 text-gray-500">
+                    🔍 Selecione uma <strong>modalidade</strong> no filtro acima para visualizar as graduações cadastradas, ou cadastre a primeira.
+                </td>
+            </tr>
 
-                        <td class="py-3 px-4">
-                            <span class="bolinha-faixa"
-                                data-faixa="{{ strtolower($det->graduacao->gradu_nome_cor) }}"
-                                style="display:inline-block;width:16px;height:16px;border-radius:50%;margin-right:8px;border:2px solid #000;">
-                            </span>
+            @foreach ($lista as $det)
+            <tr class="border-b hover:bg-gray-50 transition linha-graduacao"
+                data-modalidade="{{ $det->graduacao->id_modalidade }}"
+                data-graduacao="{{ strtolower($det->graduacao->gradu_nome_cor) }}">
 
-                            {{ $det->graduacao->gradu_nome_cor }}
-                        </td>
+                <td class="py-3 px-4">
+                    <span class="bolinha-faixa"
+                        data-faixa="{{ strtolower($det->graduacao->gradu_nome_cor) }}"
+                        style="display:inline-block;width:16px;height:16px;border-radius:50%;margin-right:8px;border:2px solid #000;">
+                    </span>
 
-                        <td class="py-3 px-4">
-                            {{ $det->graduacao->gradu_grau }}
-                        </td>
+                    {{ $det->graduacao->gradu_nome_cor }}
+                </td>
 
-                        <td class="py-3 px-4">
-                            {{ $det->graduacao->modalidade->mod_nome }}
-                        </td>
-                        <td class="py-3 px-4">{{ \Carbon\Carbon::parse($det->det_data)->format('d/m/Y') }}</td>
+                <td class="py-3 px-4">
+                    {{ $det->graduacao->modalidade->mod_nome }}
+                </td>
+                <td class="py-3 px-4">{{ \Carbon\Carbon::parse($det->det_data)->format('d/m/Y') }}</td>
 
-                        <td class="py-3 px-4 flex gap-2">
+                <td class="py-3 px-4 flex gap-2">
 
-                            @if($det->det_certificado)
-                            <a href="{{ route('certificado.show', ['path' => Crypt::encrypt($det->det_certificado)]) }}"
-                                target="_blank"
-                                style="background-color: #174ab9; color: white;"
-                                class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
-                                Ver Certificado
-                            </a>
-                            @endif
+                    @if($det->det_certificado)
+                    <a href="{{ route('certificado.show', ['path' => Crypt::encrypt($det->det_certificado)]) }}"
+                        target="_blank"
+                        style="background-color: #174ab9; color: white;"
+                        class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
+                        Ver Certificado
+                    </a>
+                    @endif
 
-                            <a href="{{ route('detalhes-professor.edit', Crypt::encrypt($det->id_det_professor)) }}"
-                                style="background-color: #8E251F; color: white;"
-                                class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
-                                Editar
-                            </a>
+                    <a href="{{ route('detalhes-professor.edit', Crypt::encrypt($det->id_det_professor)) }}"
+                        style="background-color: #8E251F; color: white;"
+                        class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
+                        Editar
+                    </a>
 
-                            <form action="{{ route('detalhes-professor.destroy', Crypt::encrypt($det->id_det_professor)) }}" method="POST" onsubmit="return confirm('Deseja remover esta graduação?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Excluir</button>
-                            </form>
-                        </td>
+                    <form action="{{ route('detalhes-professor.destroy', Crypt::encrypt($det->id_det_professor)) }}" method="POST" onsubmit="return confirm('Deseja remover esta graduação?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Excluir</button>
+                    </form>
+                </td>
 
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="text-center py-6 text-gray-500">Nenhuma graduação cadastrada</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
 </div>
 <div id="graduacoes-data" style="display:none;">
     @foreach($graduacoesTotais as $g)
@@ -305,7 +255,6 @@
         data-id="{{ $g->id_graduacao }}"
         data-modalidade="{{ $g->id_modalidade }}"
         data-faixa="{{ $g->gradu_nome_cor }}"
-        data-grau="{{ $g->gradu_grau }}"
         data-ordem="{{ $g->gradu_ordem }}">
     </div>
     @endforeach
@@ -332,6 +281,187 @@
                 }
             });
         }
+
+        // CADASTRO DE GRADUAÇÃO
+        const modalidadeSelect = document.getElementById('modalidadeCadastro');
+        const faixaSelect = document.getElementById('faixaCadastro');
+
+        const graduacoes = Array.from(
+            document.querySelectorAll('#graduacoes-data div')
+        ).map(item => ({
+            id: item.dataset.id,
+            modalidade: item.dataset.modalidade,
+            faixa: item.dataset.faixa,
+            ordem: Number(item.dataset.ordem)
+        }));
+
+        modalidadeSelect.addEventListener('change', function() {
+
+            faixaSelect.innerHTML =
+                '<option value="">Selecione a faixa</option>';
+
+            const modalidadeId = this.value;
+
+            if (!modalidadeId) {
+                faixaSelect.disabled = true;
+                return;
+            }
+
+            faixaSelect.disabled = false;
+
+            graduacoes
+                .filter(g => g.modalidade == modalidadeId)
+                .sort((a, b) => a.ordem - b.ordem)
+                .forEach(g => {
+
+                    faixaSelect.innerHTML += `
+            <option value="${g.id}">
+                ${g.faixa}
+            </option>
+        `;
+                });
+        });
+
+
+        // ======================================
+        // FILTROS
+        // ======================================
+
+        const filtroModalidade = document.getElementById('filtroModalidade');
+        const filtroGraduacao = document.getElementById('filtroGraduacao');
+        const limparBtn = document.getElementById('limparFiltrosGraduacao');
+        const linhas = document.querySelectorAll('.linha-graduacao');
+
+        const modalidadeSalva = localStorage.getItem(
+            'graduacao_professor_modalidade'
+        );
+
+        if (modalidadeSalva) {
+            filtroModalidade.value = modalidadeSalva;
+        }
+
+        // salva modalidade
+        filtroModalidade.addEventListener('change', function() {
+            localStorage.setItem(
+                'graduacao_professor_modalidade',
+                this.value
+            );
+        });
+
+        function aplicarFiltro() {
+
+            const modalidade = filtroModalidade.value;
+            const graduacao = filtroGraduacao.value;
+
+            const msgSelecione = document.getElementById('msgSelecioneModalidade');
+
+            // Mostra a mensagem só quando nenhuma modalidade foi selecionada
+            if (msgSelecione) {
+                msgSelecione.style.display = modalidade ? 'none' : '';
+            }
+
+            linhas.forEach(linha => {
+
+                const modalidadeLinha = linha.dataset.modalidade;
+                const graduacaoLinha = linha.dataset.graduacao;
+
+                let mostrar = true;
+
+                if (!modalidade) {
+                    mostrar = false;
+                }
+
+                if (modalidade && modalidadeLinha !== modalidade) {
+                    mostrar = false;
+                }
+
+                if (graduacao && graduacaoLinha !== graduacao) {
+                    mostrar = false;
+                }
+
+                linha.style.display = mostrar ? '' : 'none';
+            });
+        }
+
+        filtroModalidade.addEventListener('change', function() {
+
+            const modalidade = this.value;
+
+            filtroGraduacao.innerHTML =
+                '<option value="">Todas</option>';
+
+            filtroGraduacao.value = '';
+
+            if (!modalidade) {
+
+                filtroGraduacao.disabled = true;
+
+                filtroGraduacao.innerHTML =
+                    '<option value="">Primeiro selecione uma modalidade</option>';
+
+                aplicarFiltro();
+                return;
+            }
+
+            filtroGraduacao.disabled = false;
+
+            const graduacoesDisponiveis = new Set();
+
+            linhas.forEach(linha => {
+
+                if (
+                    linha.dataset.modalidade === modalidade
+                ) {
+                    graduacoesDisponiveis.add(
+                        linha.dataset.graduacao
+                    );
+                }
+            });
+
+            [...graduacoesDisponiveis]
+            .sort()
+                .forEach(graduacao => {
+
+                    filtroGraduacao.innerHTML += `
+                        <option value="${graduacao}">
+                            ${graduacao.charAt(0).toUpperCase() + graduacao.slice(1)}
+                        </option>
+                    `;
+                });
+
+            aplicarFiltro();
+        });
+
+        filtroGraduacao.addEventListener(
+            'change',
+            aplicarFiltro
+        );
+
+        limparBtn.addEventListener('click', function() {
+
+            localStorage.removeItem(
+                'graduacao_professor_modalidade'
+            );
+
+            filtroModalidade.value = '';
+
+            filtroGraduacao.disabled = true;
+
+            filtroGraduacao.innerHTML =
+                '<option value="">Primeiro selecione uma modalidade</option>';
+
+            aplicarFiltro();
+        });
+
+        if (filtroModalidade.value) {
+            filtroModalidade.dispatchEvent(
+                new Event('change')
+            );
+        } else {
+            aplicarFiltro();
+        }
+
+        aplicarCoresFaixas();
 
     });
 
@@ -360,132 +490,6 @@
     function fecharCadastro() {
         document.getElementById('cadastroForm').classList.add('hidden');
     }
-
-    // CADASTRO DE GRADUAÇÃO
-    const modalidadeSelect = document.getElementById('modalidadeCadastro');
-    const faixaSelect = document.getElementById('faixaCadastro');
-    const grauSelect = document.getElementById('grauCadastro');
-
-    const graduacoes = Array.from(
-        document.querySelectorAll('#graduacoes-data div')
-    ).map(item => ({
-        id: item.dataset.id,
-        modalidade: item.dataset.modalidade,
-        faixa: item.dataset.faixa,
-        grau: item.dataset.grau,
-        ordem: Number(item.dataset.ordem)
-    }));
-
-    modalidadeSelect.addEventListener('change', function() {
-
-        faixaSelect.innerHTML =
-            '<option value="">Selecione a faixa</option>';
-
-        grauSelect.innerHTML =
-            '<option value="">Selecione o grau</option>';
-
-        grauSelect.disabled = true;
-
-        const modalidadeId = this.value;
-
-        if (!modalidadeId) {
-            faixaSelect.disabled = true;
-            return;
-        }
-
-        faixaSelect.disabled = false;
-
-        const faixas = [...new Set(
-            graduacoes
-            .filter(g => g.modalidade == modalidadeId)
-            .sort((a, b) => a.ordem - b.ordem)
-            .map(g => g.faixa)
-        )];
-
-        faixas.forEach(faixa => {
-            faixaSelect.innerHTML += `
-                <option value="${faixa}">
-                    ${faixa}
-                </option>
-            `;
-        });
-    });
-
-    faixaSelect.addEventListener('change', function() {
-
-        grauSelect.innerHTML =
-            '<option value="">Selecione o grau</option>';
-
-        const modalidadeId = modalidadeSelect.value;
-        const faixa = this.value;
-
-        if (!faixa) {
-            grauSelect.disabled = true;
-            return;
-        }
-
-        grauSelect.disabled = false;
-
-        graduacoes
-            .filter(g =>
-                g.modalidade == modalidadeId &&
-                g.faixa == faixa
-            )
-            .sort((a, b) => a.ordem - b.ordem)
-            .forEach(g => {
-
-                grauSelect.innerHTML += `
-                    <option value="${g.id}">
-                        Grau ${g.grau}
-                    </option>
-                `;
-            });
-    });
-
-
-    document.addEventListener('DOMContentLoaded', function() {
-
-        const filtroGraduacao = document.getElementById('filtroGraduacao');
-        const filtroModalidade = document.getElementById('filtroModalidade');
-        const limparBtn = document.getElementById('limparFiltrosGraduacao');
-        const linhas = document.querySelectorAll('.linha-graduacao');
-
-        function aplicarFiltro() {
-
-            const graduacao = filtroGraduacao.value;
-            const modalidade = filtroModalidade.value;
-
-            linhas.forEach(linha => {
-
-                const graduacaoLinha = linha.dataset.graduacao || '';
-                const modalidadeLinha = linha.dataset.modalidade || '';
-
-                let mostrar = true;
-
-                if (graduacao && graduacaoLinha !== graduacao) {
-                    mostrar = false;
-                }
-
-                if (modalidade && modalidadeLinha !== modalidade) {
-                    mostrar = false;
-                }
-
-                linha.style.display = mostrar ? '' : 'none';
-            });
-        }
-
-        filtroGraduacao.addEventListener('change', aplicarFiltro);
-        filtroModalidade.addEventListener('change', aplicarFiltro);
-
-        limparBtn.addEventListener('click', function() {
-            filtroGraduacao.value = '';
-            filtroModalidade.value = '';
-            aplicarFiltro();
-        });
-
-        aplicarCoresFaixas(); // <- FALTAVA ISSO
-
-    });
 </script>
 
 @endsection

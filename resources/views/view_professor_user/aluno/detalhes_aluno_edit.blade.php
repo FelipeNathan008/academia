@@ -67,17 +67,12 @@
 
             <div>
                 <label class="text-sm font-medium text-gray-600">Faixa</label>
-                <select id="faixaEdicao" class="w-full border rounded-lg px-3 py-2">
-                    <option value="">Selecione a faixa</option>
-                </select>
-            </div>
-
-            <div>
-                <label class="text-sm font-medium text-gray-600">Grau</label>
-                <select name="id_graduacao" id="grauEdicao"
+                <select
+                    id="faixaEdicao"
+                    name="id_graduacao"
                     class="w-full border rounded-lg px-3 py-2"
                     required>
-                    <option value="">Selecione o grau</option>
+                    <option value="">Selecione a faixa</option>
                 </select>
             </div>
 
@@ -133,7 +128,6 @@
         data-id="{{ $g->id_graduacao }}"
         data-modalidade="{{ $g->id_modalidade }}"
         data-faixa="{{ $g->gradu_nome_cor }}"
-        data-grau="{{ $g->gradu_grau }}"
         data-ordem="{{ $g->gradu_ordem }}">
     </div>
     @endforeach
@@ -144,7 +138,6 @@
 
         const modalidadeSelect = document.getElementById('modalidadeEdicao');
         const faixaSelect = document.getElementById('faixaEdicao');
-        const grauSelect = document.getElementById('grauEdicao');
 
         const graduacoes = Array.from(
             document.querySelectorAll('#graduacoes-data div')
@@ -152,66 +145,41 @@
             id: item.dataset.id,
             modalidade: item.dataset.modalidade,
             faixa: item.dataset.faixa,
-            grau: item.dataset.grau,
             ordem: Number(item.dataset.ordem)
         }));
 
         const graduacaoAtual = "{{ $detalhe->id_graduacao }}";
-        const faixaAtual = "{{ $detalhe->graduacao->gradu_nome_cor }}";
 
         modalidadeSelect.addEventListener('change', function() {
-            faixaSelect.innerHTML = '<option value="">Selecione a faixa</option>';
-            grauSelect.innerHTML = '<option value="">Selecione o grau</option>';
+
+            faixaSelect.innerHTML =
+                '<option value="">Selecione a faixa</option>';
 
             const modalidadeId = this.value;
 
             if (!modalidadeId) {
                 faixaSelect.disabled = true;
-                grauSelect.disabled = true;
                 return;
             }
 
             faixaSelect.disabled = false;
 
-            const faixas = [...new Set(
-                graduacoes
+            graduacoes
                 .filter(g => g.modalidade == modalidadeId)
                 .sort((a, b) => a.ordem - b.ordem)
-                .map(g => g.faixa)
-            )];
-
-            faixas.forEach(faixa => {
-                const selected = faixa == faixaAtual ? 'selected' : '';
-                faixaSelect.innerHTML += `<option value="${faixa}" ${selected}>${faixa}</option>`;
-            });
-
-            faixaSelect.dispatchEvent(new Event('change'));
-        });
-
-        faixaSelect.addEventListener('change', function() {
-            grauSelect.innerHTML = '<option value="">Selecione o grau</option>';
-
-            const modalidadeId = modalidadeSelect.value;
-            const faixa = this.value;
-
-            if (!faixa) {
-                grauSelect.disabled = true;
-                return;
-            }
-
-            grauSelect.disabled = false;
-
-            graduacoes
-                .filter(g => g.modalidade == modalidadeId && g.faixa == faixa)
-                .sort((a, b) => a.ordem - b.ordem)
                 .forEach(g => {
-                    const selected = g.id == graduacaoAtual ? 'selected' : '';
-                    grauSelect.innerHTML +=
-                        `<option value="${g.id}" ${selected}>Grau ${g.grau}</option>`;
+
+                    const selected =
+                        g.id == graduacaoAtual ? 'selected' : '';
+
+                    faixaSelect.innerHTML += `
+                <option value="${g.id}" ${selected}>
+                    ${g.faixa}
+                </option>`;
                 });
+
         });
 
-        // Dispara o change para pré-selecionar os valores atuais
         modalidadeSelect.dispatchEvent(new Event('change'));
     });
 

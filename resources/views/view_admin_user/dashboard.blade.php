@@ -16,13 +16,15 @@
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
 
+
+
     <div class="p-6 bg-white rounded-xl shadow-sm">
         <h3 class="font-semibold text-lg mb-2">Total de Alunos Matriculados</h3>
         <p class="text-2xl font-bold mb-2">{{ $totalAlunosMatriculados }}</p>
         <span class="text-sm text-gray-500">Total Geral</span>
     </div>
 
-    <a href="{{ route('matricula.index', ['matricula' => 'Encerrada']) }}"
+    <a href="{{ route('alunos.index', ['matricula' => 'Encerrada']) }}"
         class="block p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition">
 
         <h3 class="font-semibold text-lg mb-2">
@@ -44,8 +46,8 @@
         <span class="text-sm text-gray-500">Total de Matrículas Cadastradas</span>
     </div>
 
-    <a href="{{ route('matricula.index', ['bolsista' => 'sim']) }}"
-     class="block p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition">
+    <a href="{{ route('alunos.index', ['bolsista' => 'sim']) }}"
+        class="block p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition">
 
         <h3 class="font-semibold text-lg mb-2">
             Total de Alunos Bolsistas
@@ -72,6 +74,33 @@
         </p>
         <span class="text-sm text-gray-500">Mês atual</span>
     </div>
+
+    <a href="{{ route('dashboard.comprovantes') }}"
+        class="block p-6 rounded-xl shadow-sm
+          {{ $comprovantesPendentes > 0
+                ? 'bg-red-50 border border-red-300'
+                : 'bg-white' }}">
+
+        <h3 class="font-semibold text-lg mb-2">
+            Comprovantes Pendentes
+        </h3>
+        <p class="text-2xl font-bold
+      {{ $comprovantesPendentes > 0 ? 'text-red-600' : '' }}">
+            {{ $comprovantesPendentes }}
+        </p>
+        @if($comprovantesPendentes > 0)
+
+        <span class="text-red-600 font-semibold">
+            🔔 Aguardando aprovação →
+        </span>
+        @else
+        <span class="text-gray-500">
+            Nenhum comprovante pendente
+        </span>
+        @endif
+
+    </a>
+
     <a href="{{ route('dashboard.mensalidadesAtrasadas') }}"
         class="block p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition">
 

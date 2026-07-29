@@ -11,7 +11,7 @@
     <ol class="flex items-center gap-2">
         <li>
             <a href="{{ route('frequencia.listagem') }}" class="hover:text-[#8E251F] transition">
-                Frequência
+                Frequência e Aulas
             </a>
         </li>
         <li>/</li>

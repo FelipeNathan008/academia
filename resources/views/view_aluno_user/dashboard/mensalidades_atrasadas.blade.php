@@ -65,7 +65,11 @@
 
             @php
             $parcelaAtrasada = $mensalidade->detalhes
-            ->where('det_mensa_status', 'Atrasado')
+            ->where('det_mensa_status', '!=', 'Pago')
+            ->filter(function ($detalhe) {
+            return \Carbon\Carbon::parse($detalhe->det_mensa_data_venc)
+            ->lt(\Carbon\Carbon::today());
+            })
             ->sortBy('det_mensa_data_venc')
             ->first();
             @endphp
@@ -204,10 +208,24 @@
                                             </span>
                                             @break
 
+                                            @case('Comprovante enviado')
+                                            <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg"
+                                                style="background-color: #2563eb;">
+                                                Comprovante enviado
+                                            </span>
+                                            @break
+
                                             @case('Atrasado')
                                             <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg shadow"
                                                 style="background-color: #dc2626;">
                                                 Atrasado
+                                            </span>
+                                            @break
+
+                                            @case('Rejeitado')
+                                            <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg shadow transition duration-200"
+                                                style="background-color: #e71f1f;">
+                                                Rejeitado
                                             </span>
                                             @break
 

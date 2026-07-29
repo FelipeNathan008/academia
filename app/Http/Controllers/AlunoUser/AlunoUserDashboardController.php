@@ -134,14 +134,23 @@ class AlunoUserDashboardController extends Controller
             })
             ->sum('det_mensa_valor');
 
+        // Atualiza apenas mensalidades em aberto
         DetalhesMensalidade::where('det_mensa_status', 'Em aberto')
             ->whereDate('det_mensa_data_venc', '<', Carbon::today())
             ->whereHas('mensalidade.matricula', function ($q) use ($alunosIds) {
                 $q->whereIn('aluno_id_aluno', $alunosIds);
             })
-            ->update(['det_mensa_status' => 'Atrasado']);
+            ->update([
+                'det_mensa_status' => 'Atrasado'
+            ]);
 
-        $mensalidadesAtrasadas = DetalhesMensalidade::where('det_mensa_status', 'Atrasado')
+        // Conta qualquer mensalidade vencida que ainda não foi paga
+        $mensalidadesAtrasadas = DetalhesMensalidade::whereDate(
+            'det_mensa_data_venc',
+            '<',
+            Carbon::today()
+        )
+            ->where('det_mensa_status', '!=', 'Pago')
             ->whereHas('mensalidade.matricula', function ($q) use ($alunosIds) {
                 $q->whereIn('aluno_id_aluno', $alunosIds);
             })
@@ -181,6 +190,7 @@ class AlunoUserDashboardController extends Controller
             $responsavel->id_responsavel
         )->pluck('id_aluno');
 
+        // Atualiza apenas mensalidades em aberto
         DetalhesMensalidade::where('det_mensa_status', 'Em aberto')
             ->whereDate('det_mensa_data_venc', '<', Carbon::today())
             ->whereHas('mensalidade.matricula', function ($q) use ($alunosIds) {
@@ -196,14 +206,20 @@ class AlunoUserDashboardController extends Controller
             'detalhes',
         ])
             ->whereHas('detalhes', function ($query) {
-                $query->where('det_mensa_status', 'Atrasado');
+                $query->whereDate('det_mensa_data_venc', '<', Carbon::today())
+                    ->where('det_mensa_status', '!=', 'Pago');
             })
             ->whereHas('matricula', function ($query) use ($alunosIds) {
                 $query->whereIn('aluno_id_aluno', $alunosIds);
             })
             ->get();
 
-        $mensalidadesAtrasadas = DetalhesMensalidade::where('det_mensa_status', 'Atrasado')
+        $mensalidadesAtrasadas = DetalhesMensalidade::whereDate(
+            'det_mensa_data_venc',
+            '<',
+            Carbon::today()
+        )
+            ->where('det_mensa_status', '!=', 'Pago')
             ->whereHas('mensalidade.matricula', function ($q) use ($alunosIds) {
                 $q->whereIn('aluno_id_aluno', $alunosIds);
             })

@@ -12,9 +12,8 @@
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
         <li>
-            <a href="{{ route('professores') }}"
-                class="hover:text-[#8E251F] transition">
-                Professores
+            <a href="{{ route('frequencia.listagem') }}" class="hover:text-[#8E251F] transition">
+                Frequência e Aulas
             </a>
         </li>
         <li>/</li>
@@ -32,25 +31,25 @@
 </nav>
 
 @php
-    $diasNomes = [
-        1 => 'Domingo',
-        2 => 'Segunda',
-        3 => 'Terça',
-        4 => 'Quarta',
-        5 => 'Quinta',
-        6 => 'Sexta',
-        7 => 'Sábado',
-    ];
+$diasNomes = [
+1 => 'Domingo',
+2 => 'Segunda',
+3 => 'Terça',
+4 => 'Quarta',
+5 => 'Quinta',
+6 => 'Sexta',
+7 => 'Sábado',
+];
 
-    // Dias permitidos pela grade (1=Domingo ... 7=Sábado)
-    $diasPermitidos = collect(explode(',', $aula->gradeHorario->grade_dia_semana))
-        ->map(fn($d) => (int) trim($d))
-        ->filter()
-        ->values();
+// Dias permitidos pela grade (1=Domingo ... 7=Sábado)
+$diasPermitidos = collect(explode(',', $aula->gradeHorario->grade_dia_semana))
+->map(fn($d) => (int) trim($d))
+->filter()
+->values();
 
-    $diasSelecionados = $diasPermitidos
-        ->map(fn($dia) => $diasNomes[$dia] ?? $dia)
-        ->implode(' e ');
+$diasSelecionados = $diasPermitidos
+->map(fn($dia) => $diasNomes[$dia] ?? $dia)
+->implode(' e ');
 @endphp
 
 <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-md p-8"
@@ -224,9 +223,9 @@
 
         const editarAulaForm = document.getElementById('editarAulaForm');
 
-        const diasPermitidos = editarAulaForm.dataset.diasPermitidos
-            ? editarAulaForm.dataset.diasPermitidos.split(',').map(Number).filter(Boolean)
-            : [];
+        const diasPermitidos = editarAulaForm.dataset.diasPermitidos ?
+            editarAulaForm.dataset.diasPermitidos.split(',').map(Number).filter(Boolean) :
+            [];
 
         const diasNomes = {
             1: 'Domingo',

@@ -169,6 +169,13 @@
                 Graduação
             </a>
 
+            <a href="{{ route('admin.planos') }}"
+                class="header-link {{ request()->routeIs(
+                        'admin.planos'
+                        
+                ) ? 'active' : '' }}">
+                Planos
+            </a>
 
         </div>
 
@@ -179,7 +186,7 @@
         <div class="header-menu">
             <a href="{{ route('dashboard-professor') }}"
                 class="header-link {{ request()->routeIs(
-                        'dashboard-professor',
+                        'dashboard-professor', 'dashboard-professor.comprovantes', 'dashboard-professor.mensalidadesAtrasadas',
                 ) ? 'active' : '' }}">
                 Dashboard
             </a>
@@ -218,7 +225,7 @@
         <div class="header-menu">
             <a href="{{ route('professor-agenda') }}"
                 class="header-link {{ request()->routeIs(
-                        'professor-agenda',
+                        'professor-agenda', 'professor-agenda.show'
                 ) ? 'active' : '' }}">
                 Horários
             </a>
@@ -230,7 +237,7 @@
         <div class="header-menu">
             <a href="{{ route('dashboard-aluno') }}"
                 class="header-link {{ request()->routeIs(
-                        'dashboard-aluno',
+                        'dashboard-aluno', 'dashboard-aluno.mensalidadesAtrasadas',
                 ) ? 'active' : '' }}">
                 Dashboard
             </a>
@@ -254,9 +261,14 @@
             </a>
         </div>
 
-
-
-
+        <div class="header-menu">
+            <a href="{{ route('aluno-grades.index') }}"
+                class="header-link {{ request()->routeIs(
+                        'aluno-grades.index', 'aluno-frequencia.visualizar', 'aluno-aulas.index'
+                ) ? 'active' : '' }}">
+                Frequência / Aulas
+            </a>
+        </div>
 
         @endif
 

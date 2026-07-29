@@ -8,9 +8,8 @@
 <nav class="mb-6 text-sm text-gray-500">
     <ol class="flex items-center gap-2">
         <li>
-            <a href="{{ route('professores') }}"
-                class="hover:text-[#8E251F] transition">
-                Professores
+            <a href="{{ route('frequencia.listagem') }}" class="hover:text-[#8E251F] transition">
+                Frequência e Aulas
             </a>
         </li>
         <li>/</li>
@@ -135,19 +134,43 @@
             </div>
 
             <div>
-                <p class="text-xs uppercase text-gray-400">Link</p>
+                <p class="text-xs uppercase text-gray-400 mb-2">Vídeo</p>
 
                 @if($aula->aula_link)
+
+                @php
+                preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/', $aula->aula_link, $matches);
+                $videoId = $matches[1] ?? null;
+                @endphp
+
+                @if($videoId)
+                <div class="rounded-xl overflow-hidden border shadow-md">
+                    <iframe
+                        class="w-full aspect-video"
+                        src="https://www.youtube.com/embed/{{ $videoId }}"
+                        title="Vídeo da Aula"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+
+                <a href="{{ $aula->aula_link }}"
+                    target="_blank"
+                    class="mt-2 inline-block text-sm text-[#174ab9] hover:underline">
+                    Abrir no YouTube
+                </a>
+                @else
                 <a href="{{ $aula->aula_link }}"
                     target="_blank"
                     class="text-lg font-semibold text-[#174ab9] hover:underline break-all">
                     {{ $aula->aula_link }}
                 </a>
+                @endif
+
                 @else
-                <p class="text-gray-500">Sem link</p>
+                <p class="text-gray-500">Sem vídeo</p>
                 @endif
             </div>
-
         </div>
 
     </div>

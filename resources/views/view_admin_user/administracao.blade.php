@@ -48,7 +48,7 @@
         <a href="{{ route('professores.alunos') }}"
             style="background-color: #ca8a04; color: white;"
             class="px-4 py-3 rounded-xl shadow hover:opacity-90 transition text-center font-semibold">
-            5 - Professores / Alunos
+            5 - Professores
         </a>
 
         <a href="{{ route('horario_treino') }}"

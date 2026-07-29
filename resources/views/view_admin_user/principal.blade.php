@@ -32,7 +32,7 @@
             Matrícula
         </a>
 
-        <a href="{{ route('matricula.index') }}"
+        <a href="{{ route('alunos.index') }}"
             style="background-color: #7c3aed; color: white;"
             class="px-4 py-3 rounded-xl shadow hover:opacity-90 transition text-center font-semibold">
             Alunos
@@ -47,14 +47,9 @@
         <a href="{{ route('frequencia.listagem') }}"
             style="background-color: #dc2626; color: white;"
             class="px-4 py-3 rounded-xl shadow hover:opacity-90 transition text-center font-semibold">
-            Frequência dos Alunos
+            Frequência / Aulas dos Alunos
         </a>
 
-        <a href="{{ route('grades.aulas') }}"
-            style="background-color: #0d4270; color: white;"
-            class="px-4 py-3 rounded-xl shadow hover:opacity-90 transition text-center font-semibold">
-            Aula dos Alunos
-        </a>
     </div>
 
 </div>

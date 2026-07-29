@@ -12,6 +12,46 @@ use Illuminate\Support\Facades\Auth;
 
 class AulaController extends Controller
 {
+
+    public function index(Request $request, $gradeId)
+    {
+        try {
+            $id = Crypt::decrypt($gradeId);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $user = Auth::user();
+
+        $grade = GradeHorario::with('professor')
+            ->where('id_grade', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->firstOrFail();
+
+        $query = Aula::where('id_grade_horario', $id);
+
+        // FILTRO POR DIA
+        if ($request->filled('dia')) {
+            $dia = $request->dia;
+
+            $query->whereDate('aula_inicio', '<=', $dia)
+                ->whereDate('aula_fim', '>=', $dia);
+        }
+
+        $totalAulas = Aula::where('id_grade_horario', $id)->count();
+
+        $aulas = $query
+            ->orderBy('aula_inicio', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('view_admin_user.view_principal.view_aula.index', [
+            'grade' => $grade,
+            'aulas' => $aulas,
+            'totalAulas' => $totalAulas,
+            'gradeId' => $gradeId,
+        ]);
+    }
     public function grades(Request $request)
     {
         $user = Auth::user();
@@ -40,28 +80,7 @@ class AulaController extends Controller
         return view('view_admin_user.view_principal.view_aula.grades', compact('grades', 'professorFiltroNome'));
     }
 
-    public function index($gradeId)
-    {
-        try {
-            $id = Crypt::decrypt($gradeId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
 
-        $user = Auth::user();
-
-        $grade = GradeHorario::with('professor')
-            ->where('id_grade', $id)
-            ->where('id_emp_id', $user->id_emp_id)
-            ->firstOrFail();
-
-        $aulas = Aula::where('id_grade_horario', $id)->get();
-
-        return view('view_admin_user.view_principal.view_aula.index', [
-            'grade' => $grade,
-            'aulas' => $aulas
-        ]);
-    }
 
     public function store(Request $request, $gradeId)
     {
