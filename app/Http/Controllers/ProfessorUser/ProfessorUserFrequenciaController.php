@@ -4,9 +4,8 @@ namespace App\Http\Controllers\professorUser;
 
 use App\Http\Controllers\Controller;
 use App\Models\DetalhesAluno;
-use App\Models\Graduacao;
-use App\Models\FrequenciaAluno;
 use App\Models\GradeHorario;
+use App\Models\FrequenciaAluno;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Crypt;
@@ -24,14 +23,14 @@ class ProfessorUserFrequenciaController extends Controller
             abort(403);
         }
 
-        $grades = \App\Models\GradeHorario::with(['professor', 'matriculas'])
+        $grades = GradeHorario::with(['professor', 'matriculas'])
             ->where('professor_id_professor', $professor->id_professor)
             ->get();
 
         return view('view_professor_user.frequencia_aluno.listagem_professor', compact('grades'));
     }
 
-    public function listagemDias(string $gradeId)
+    public function listagemDias(Request $request, string $gradeId)
     {
         try {
             $gradeId = Crypt::decrypt($gradeId);
@@ -46,6 +45,8 @@ class ProfessorUserFrequenciaController extends Controller
             abort(403);
         }
 
+        $filtroData = $request->get('data');
+
         $grade = GradeHorario::with([
             'professor',
             'matriculas' => function ($query) use ($user) {
@@ -59,20 +60,44 @@ class ProfessorUserFrequenciaController extends Controller
             ->where('id_emp_id', $user->id_emp_id)
             ->firstOrFail();
 
-        $grade->matriculas = $grade->matriculas
-            ->sortBy(function ($matricula) {
-                return $matricula->aluno->aluno_nome ?? '';
+        $grade->setRelation(
+            'matriculas',
+            $grade->matriculas
+                ->sortBy(fn($matricula) => $matricula->aluno->aluno_nome ?? '')
+                ->values()
+        );
+
+        // Datas paginadas
+        $datasPaginadas = FrequenciaAluno::where('grade_horario_id_grade', $grade->id_grade)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->when($filtroData, function ($query) use ($filtroData) {
+                $query->whereDate('freq_data_aula', $filtroData);
             })
-            ->values();
+            ->select('freq_data_aula')
+            ->distinct()
+            ->orderByDesc('freq_data_aula')
+            ->paginate(15)
+            ->withQueryString();
+
+        $datasDaPagina = $datasPaginadas->getCollection()->pluck('freq_data_aula');
 
         $dias = FrequenciaAluno::with('matricula.aluno')
             ->where('grade_horario_id_grade', $grade->id_grade)
             ->where('id_emp_id', $user->id_emp_id)
+            ->whereIn('freq_data_aula', $datasDaPagina)
             ->orderByDesc('freq_data_aula')
             ->get()
             ->groupBy('freq_data_aula');
 
-        return view('view_professor_user.frequencia_aluno.frequencia_dias_professor', compact('dias', 'grade'));
+        return view(
+            'view_professor_user.frequencia_aluno.frequencia_dias_professor',
+            compact(
+                'dias',
+                'grade',
+                'datasPaginadas',
+                'filtroData'
+            )
+        );
     }
 
     public function store(Request $request)

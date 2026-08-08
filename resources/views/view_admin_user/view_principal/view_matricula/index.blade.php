@@ -151,7 +151,29 @@
                         class="w-full border rounded-lg px-4 py-2 mt-1" />
                 </div>
 
+                <div>
+                    <label class="text-sm font-medium text-gray-600">
+                        Dia do vencimento
+                    </label>
 
+                    <select
+                        name="matri_dia_vencimento"
+                        required
+                        class="w-full border rounded-lg px-4 py-2 mt-1">
+
+                        <option value="">Selecione</option>
+
+                        @for($i = 1; $i <= 31; $i++)
+                            <option
+                            value="{{ $i }}"
+                            {{ old('matri_dia_vencimento') == $i ? 'selected' : '' }}>
+                            Dia {{ $i }}
+                            </option>
+                            @endfor
+
+                    </select>
+                </div>
+                
                 <!-- TURMA -->
                 <div>
                     <label class="text-sm font-medium text-gray-600">Turma</label>

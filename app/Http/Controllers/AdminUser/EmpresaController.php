@@ -37,15 +37,23 @@ class EmpresaController extends Controller
             'emp_nome_recebedor' => 'required|string|max:25',
             'emp_cidade' => 'required|string|max:15',
             'emp_tipo' => 'required|string|max:150',
-            'emp_foto' => 'nullable|image|max:2048'
+            'emp_foto' => 'nullable|image|max:2048',
+
+            // Endereço
+            'emp_end_cep'          => 'required|string|max:9',
+            'emp_end_logradouro'   => 'required|string|max:255',
+            'emp_end_numero'       => 'required|string|max:10',
+            'emp_end_complemento'  => 'nullable|string|max:100',
+            'emp_end_bairro'       => 'required|string|max:120',
+            'emp_end_cidade'       => 'required|string|max:120',
+            'emp_end_estado'       => 'required|string|size:2',
         ]);
+
         $filename = null;
 
         if ($request->hasFile('emp_foto')) {
-
             $file = $request->file('emp_foto');
             $filename = time() . '_' . $file->getClientOriginalName();
-
             $file->move(public_path('images/empresas'), $filename);
         }
 
@@ -62,8 +70,17 @@ class EmpresaController extends Controller
             'emp_tipo' => $request->emp_tipo,
             'emp_foto' => $filename,
 
+            'emp_end_cep'         => $request->emp_end_cep,
+            'emp_end_logradouro'  => $request->emp_end_logradouro,
+            'emp_end_numero'      => $request->emp_end_numero,
+            'emp_end_complemento' => $request->emp_end_complemento,
+            'emp_end_bairro'      => $request->emp_end_bairro,
+            'emp_end_cidade'      => $request->emp_end_cidade,
+            'emp_end_estado'      => strtoupper($request->emp_end_estado),
+
             'emp_degustacao_inicio' => Carbon::today(),
             'emp_degustacao_fim' => Carbon::today()->addDays(15),
+            'emp_status' => 'Degustação',
         ]);
 
         return redirect()
@@ -72,6 +89,7 @@ class EmpresaController extends Controller
             ])
             ->with('empresa_cadastrada', true);
     }
+
 
     public function edit(string $id)
     {
@@ -83,10 +101,11 @@ class EmpresaController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $id = Crypt::decrypt(urldecode($id));;
+            $id = Crypt::decrypt(urldecode($id));
         } catch (DecryptException $e) {
             abort(404);
         }
+
         $empresa = Empresa::findOrFail($id);
 
         $request->validate([
@@ -101,10 +120,17 @@ class EmpresaController extends Controller
             'emp_cidade' => 'required|string|max:15',
             'emp_tipo' => 'required|string|max:150',
             'emp_foto' => 'nullable|image|max:2048',
+
+            'emp_end_cep'          => 'required|string|max:9',
+            'emp_end_logradouro'   => 'required|string|max:255',
+            'emp_end_numero'       => 'required|string|max:10',
+            'emp_end_complemento'  => 'nullable|string|max:100',
+            'emp_end_bairro'       => 'required|string|max:120',
+            'emp_end_cidade'       => 'required|string|max:120',
+            'emp_end_estado'       => 'required|string|size:2',
         ]);
 
         if ($request->hasFile('emp_foto')) {
-
             if ($empresa->emp_foto && file_exists(public_path('images/empresas/' . $empresa->emp_foto))) {
                 unlink(public_path('images/empresas/' . $empresa->emp_foto));
             }
@@ -126,6 +152,14 @@ class EmpresaController extends Controller
         $empresa->emp_chave_pix = $request->emp_chave_pix;
         $empresa->emp_nome_recebedor = strtoupper($request->emp_nome_recebedor);
         $empresa->emp_cidade = strtoupper($request->emp_cidade);
+
+        $empresa->emp_end_cep = $request->emp_end_cep;
+        $empresa->emp_end_logradouro = $request->emp_end_logradouro;
+        $empresa->emp_end_numero = $request->emp_end_numero;
+        $empresa->emp_end_complemento = $request->emp_end_complemento;
+        $empresa->emp_end_bairro = $request->emp_end_bairro;
+        $empresa->emp_end_cidade = $request->emp_end_cidade;
+        $empresa->emp_end_estado = strtoupper($request->emp_end_estado);
 
         $empresa->save();
 

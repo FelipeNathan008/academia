@@ -80,7 +80,6 @@
                     <tr class="border-b border-gray-300 text-gray-600 text-xs uppercase tracking-wide">
                         <th class="py-3 px-4 w-10"></th>
                         <th class="py-3 px-4">Nome / Cor</th>
-                        <th class="py-3 px-4 w-28">Grau</th>
                         <th class="py-3 px-4 w-28">Ordem</th>
                         <th class="py-3 px-4 w-32">Meta (aulas)</th>
                     </tr>
@@ -113,12 +112,10 @@
                                     value="{{ $g->gradu_nome_cor }}">
                             </div>
                         </td>
-
-                        <td class="py-2 px-4">
-                            <input type="number" name="graduacoes[{{ $i }}][gradu_grau]"
-                                value="{{ $g->gradu_grau }}" required
-                                class="w-full border rounded-lg px-3 py-1.5 text-sm">
-                        </td>
+                        
+                        <input type="hidden"
+                            name="graduacoes[{{ $i }}][gradu_grau]"
+                            value="0">
 
                         <td class="py-2 px-4">
                             <input type="number" name="graduacoes[{{ $i }}][gradu_ordem]"

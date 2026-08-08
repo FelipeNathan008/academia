@@ -115,6 +115,22 @@
     <div class="header-left">
 
 
+        {{-- MENU ADMIN --}}
+        @if(auth()->user()->role === 'superadmin')
+
+        <div class="header-menu">
+
+            <a href="{{ route('superadmin.planos') }}"
+                class="header-link {{ request()->routeIs(
+                        'superadmin.planos'
+                        ) ? 'active' : '' }}">
+                Planos
+            </a>
+
+        </div>
+
+        @endif
+
 
         {{-- MENU ADMIN --}}
         @if(auth()->user()->role === 'admin')

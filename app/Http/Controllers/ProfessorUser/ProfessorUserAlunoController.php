@@ -115,7 +115,7 @@ class ProfessorUserAlunoController extends Controller
             ],
             'aluno_parentesco' => 'required|string|max:60',
             'aluno_desc' => 'required|string',
-            'aluno_foto' => 'nullable|image|max:2048',
+            'aluno_foto' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
         ]);
 
         // FOTO
@@ -145,7 +145,7 @@ class ProfessorUserAlunoController extends Controller
         $aluno->save();
 
         return redirect()
-            ->route('professor-alunos')
+            ->route('professor-aluno.index')
             ->with('success', 'Aluno atualizado com sucesso!');
     }
     public function show(string $id)

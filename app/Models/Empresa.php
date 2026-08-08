@@ -23,6 +23,14 @@ class Empresa extends Model
         'emp_cidade',
         'emp_degustacao_inicio',
         'emp_degustacao_fim',
+        'emp_status',
+
+        'contrato_empresa_nome',
+        'contrato_empresa_email',
+        'contrato_empresa_responsavel',
+        'contrato_empresa_cpf',
+        'contrato_empresa_telefone',
+        'contrato_empresa_tipo',
     ];
 
     protected $casts = [
@@ -33,5 +41,15 @@ class Empresa extends Model
     public function filiais()
     {
         return $this->hasMany(Filial::class, 'id_emp_id', 'id_empresa');
+    }
+
+    public function contrato()
+    {
+        return $this->hasOne(Contrato::class, 'empresa_id', 'id_empresa');
+    }
+
+    public function contratos()
+    {
+        return $this->hasMany(Contrato::class, 'empresa_id', 'id_empresa');
     }
 }

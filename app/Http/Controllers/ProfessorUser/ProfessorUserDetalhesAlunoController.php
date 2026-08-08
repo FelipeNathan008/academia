@@ -113,6 +113,23 @@ class ProfessorUserDetalhesAlunoController extends Controller
         $graduacao = Graduacao::with('modalidade')->findOrFail($request->id_graduacao);
         $modalidadeNome = $graduacao->modalidade->mod_nome;
 
+        // Verifica se existe matrícula ATIVA na modalidade da graduação
+        $matriculaAtiva = Matricula::where('aluno_id_aluno', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->where('matri_status', 'Matriculado')
+            ->whereHas('grade', function ($q) use ($modalidadeNome) {
+                $q->where('grade_modalidade', $modalidadeNome);
+            })
+            ->exists();
+
+        if (!$matriculaAtiva) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'id_graduacao' => "O aluno não possui uma matrícula ativa na modalidade {$modalidadeNome}. Só é possível cadastrar uma graduação quando a matrícula da mesma modalidade estiver com status 'Matriculado'."
+                ]);
+        }
+
         // Matrícula(s) ativa(s) do aluno na modalidade da graduação selecionada
         $matriculasAtivas = Matricula::where('aluno_id_aluno', $id)
             ->where('id_emp_id', $user->id_emp_id)
@@ -175,7 +192,7 @@ class ProfessorUserDetalhesAlunoController extends Controller
         } catch (DecryptException $e) {
             abort(404);
         }
-        
+
 
         $user    = Auth::user();
         $detalhe = DetalhesAluno::where('id_det_aluno', $id)

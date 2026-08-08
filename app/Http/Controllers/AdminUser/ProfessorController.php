@@ -58,7 +58,9 @@ class ProfessorController extends Controller
                 ->join('grade_horario as g', 'm.grade_id_grade', '=', 'g.id_grade')
                 ->where('g.professor_id_professor', $professor->id_professor)
                 ->where('m.matri_status', 'Matriculado')
-                ->count();
+                ->where('m.id_emp_id', $user->id_emp_id)
+                ->where('g.id_emp_id', $user->id_emp_id)
+                ->count(DB::raw('DISTINCT m.aluno_id_aluno'));
 
             $professor->alunos = DB::table('aluno as a')
                 ->join('matricula as m', 'a.id_aluno', '=', 'm.aluno_id_aluno')

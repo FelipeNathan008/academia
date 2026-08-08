@@ -94,7 +94,7 @@
                     <a href="{{ route('aluno.show', Crypt::encrypt($aluno->id_aluno)) }}"
                         style="background-color: #174ab9; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
-                        Ver aluno
+                        Ver / Editar aluno
                     </a>
 
                     <a href="{{ route('aluno-detalhes.index', Crypt::encrypt($aluno->id_aluno)) }}"

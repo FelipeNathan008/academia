@@ -20,11 +20,11 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-        <a href="{{ route('filiais') }}"
+        <!--<a href="{{ route('filiais') }}"
             style="background-color: #0F4C81; color: white;"
             class="px-4 py-3 rounded-xl shadow text-center font-semibold">
             Filiais
-        </a>
+        </a>-->
 
         <a href="{{ route('usuarios.indexEmpresa') }}"
             style="background-color: #15803d; color: white;"

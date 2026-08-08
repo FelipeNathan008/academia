@@ -1,15 +1,245 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Responsável')
+@section('title', 'Detalhes do Responsável')
 
 @section('content')
 
+<x-alert-error />
 
 <!-- TOPO -->
 <div class="flex justify-between items-center mb-8">
     <h2 class="text-3xl font-extrabold text-gray-800">
         INFORMAÇÕES DO RESPONSÁVEL
     </h2>
+
+
+    <div class="flex gap-3">
+
+        <button onclick="toggleEdicao()"
+            class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow-md hover:bg-[#732920] transition">
+            Editar
+        </button>
+    </div>
+</div>
+
+<!-- FORM EDIT -->
+<div id="editForm" class="hidden mb-10">
+
+    <form action="{{ route('aluno-responsavel.update', Crypt::encrypt($responsavel->id_responsavel)) }}"
+        method="POST">
+
+        @csrf
+        @method('PUT')
+
+        <div class="bg-white rounded-2xl shadow-md p-8">
+
+            <h3 class="text-xl font-bold mb-6 text-gray-700">
+                Editar Responsável
+            </h3>
+
+            <!-- Nome e Tipo -->
+            <div class="flex gap-4 mb-4">
+
+                <div class="flex-1">
+                    <label class="text-sm font-medium text-gray-600">
+                        Nome do Responsável
+                    </label>
+
+                    <input type="text"
+                        name="resp_nome"
+                        required
+                        maxlength="120"
+                        placeholder="Ex: Maria Lúcia"
+                        value="{{ old('resp_nome', $responsavel->resp_nome) }}"
+                        oninput="validarNome(this)"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                </div>
+
+                <div class="flex-1">
+                    <label class="text-sm font-medium text-gray-600">
+                        Tipo
+                    </label>
+
+                    <select name="resp_parentesco"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+
+                        <option value="">Selecione</option>
+
+                        @foreach (['Responsável','Outro'] as $p)
+                        <option value="{{ $p }}"
+                            {{ $responsavel->resp_parentesco == $p ? 'selected' : '' }}>
+                            {{ $p }}
+                        </option>
+                        @endforeach
+
+                    </select>
+                </div>
+
+            </div>
+
+            <!-- Email | Telefone -->
+            <div class="flex gap-4 mb-4">
+
+                <div class="flex-1">
+                    <label class="text-sm font-medium text-gray-600">
+                        Email
+                    </label>
+
+                    <input type="email"
+                        name="resp_email"
+                        maxlength="150"
+                        placeholder="Ex: email@email.com"
+                        value="{{ old('resp_email', $responsavel->resp_email) }}"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                </div>
+
+                <div class="flex-1">
+                    <label class="text-sm font-medium text-gray-600">
+                        Telefone
+                    </label>
+
+                    <input type="text"
+                        name="resp_telefone"
+                        id="resp_telefone"
+                        placeholder="Ex: (99) 99999-9999"
+                        value="{{ old('resp_telefone', $responsavel->resp_telefone) }}"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                </div>
+
+            </div>
+
+            <!-- CPF | CEP -->
+            <div class="flex gap-4 mb-4">
+
+                <div class="flex-1">
+                    <label class="text-sm font-medium text-gray-600">
+                        CPF
+                    </label>
+
+                    <input type="text"
+                        value="{{ $responsavel->resp_cpf_mascarado }}"
+                        disabled
+                        class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100 text-gray-500">
+
+                    <label class="inline-flex items-center mt-2 text-sm text-gray-600 cursor-pointer">
+                        <input type="checkbox" id="alterarCpfCheck" class="mr-2" onchange="toggleCpfInput()">
+                        Alterar CPF
+                    </label>
+
+                    <input type="text"
+                        name="resp_cpf"
+                        id="resp_cpf_input"
+                        maxlength="14"
+                        placeholder="000.000.000-00"
+                        oninput="mascaraCPF(this)"
+                        class="hidden w-full border rounded-lg px-4 py-2 mt-2 focus:ring-2 focus:ring-[#8E251F]">
+                </div>
+
+                <div class="flex-1">
+                    <label class="text-sm font-medium text-gray-600">
+                        CEP
+                    </label>
+
+                    <input type="text"
+                        name="resp_cep"
+                        id="resp_cep"
+                        maxlength="9"
+                        placeholder="00000-000"
+                        value="{{ old('resp_cep', $responsavel->resp_cep) }}"
+                        oninput="mascaraCEP(this)"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                </div>
+
+            </div>
+
+            <!-- Cidade | Bairro -->
+            <div class="flex gap-4 mb-4">
+
+                <div class="flex-1">
+                    <label class="text-sm font-medium text-gray-600">
+                        Cidade
+                    </label>
+
+                    <input type="text"
+                        name="resp_cidade"
+                        placeholder="Ex: São Paulo"
+                        value="{{ old('resp_cidade', $responsavel->resp_cidade) }}"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                </div>
+
+                <div class="flex-1">
+                    <label class="text-sm font-medium text-gray-600">
+                        Bairro
+                    </label>
+
+                    <input type="text"
+                        name="resp_bairro"
+                        placeholder="Ex: Centro"
+                        value="{{ old('resp_bairro', $responsavel->resp_bairro) }}"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                </div>
+
+            </div>
+
+            <!-- Logradouro | Número | Complemento -->
+            <div class="flex gap-4 mb-6">
+
+                <div class="flex-1">
+                    <label class="text-sm font-medium text-gray-600">
+                        Logradouro
+                    </label>
+
+                    <input type="text"
+                        name="resp_logradouro"
+                        placeholder="Rua, Avenida, etc."
+                        value="{{ old('resp_logradouro', $responsavel->resp_logradouro) }}"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                </div>
+
+                <div class="w-32">
+                    <label class="text-sm font-medium text-gray-600">
+                        Número
+                    </label>
+
+                    <input type="text"
+                        name="resp_numero"
+                        placeholder="Ex: 63"
+                        value="{{ old('resp_numero', $responsavel->resp_numero) }}"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                </div>
+
+                <div class="flex-1">
+                    <label class="text-sm font-medium text-gray-600">
+                        Complemento
+                    </label>
+
+                    <input type="text"
+                        name="resp_complemento"
+                        placeholder="Ex: Bloco B"
+                        value="{{ old('resp_complemento', $responsavel->resp_complemento) }}"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                </div>
+
+            </div>
+
+            <!-- AÇÕES -->
+            <div class="flex justify-end gap-4 border-t pt-6">
+
+                <button type="button"
+                    onclick="fecharEdicao()"
+                    class="px-5 py-2 border rounded-lg hover:bg-gray-100">
+                    Cancelar
+                </button>
+
+                <button type="submit"
+                    class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920]">
+                    Salvar Alterações
+                </button>
+
+            </div>
+
+        </div>
+    </form>
 </div>
 
 <!-- CARD -->
@@ -21,9 +251,7 @@
         <div class="space-y-6">
 
             <div>
-                <p class="text-xs uppercase text-gray-400">
-                    Nome
-                </p>
+                <p class="text-xs uppercase text-gray-400">Nome</p>
 
                 <p class="text-lg font-semibold text-gray-800">
                     {{ $responsavel->resp_nome }}
@@ -31,54 +259,30 @@
             </div>
 
             <div>
-                <p class="text-xs uppercase text-gray-400">
-                    Parentesco
-                </p>
+                <p class="text-xs uppercase text-gray-400">Telefone</p>
 
                 <p class="text-lg font-semibold text-gray-800">
-                    {{ $responsavel->resp_parentesco ?? '-' }}
-                </p>
-            </div>
-
-            <div>
-                <p class="text-xs uppercase text-gray-400">
-                    CPF
-                </p>
-
-                <p class="text-lg font-semibold text-gray-800">
-
-                    @if($responsavel->resp_cpf_mascarado)
-                    {{ $responsavel->resp_cpf_mascarado }}
-                    @else
-                    -
-                    @endif
-
-                </p>
-            </div>
-
-            <div>
-                <p class="text-xs uppercase text-gray-400">
-                    Telefone
-                </p>
-
-                <p class="text-lg font-semibold text-gray-800">
-
                     @if($responsavel->resp_telefone)
                     {{ preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', preg_replace('/\D/', '', $responsavel->resp_telefone)) }}
                     @else
                     -
                     @endif
-
                 </p>
             </div>
 
             <div>
-                <p class="text-xs uppercase text-gray-400">
-                    E-mail
-                </p>
+                <p class="text-xs uppercase text-gray-400">Email</p>
 
                 <p class="text-lg font-semibold text-gray-800">
                     {{ $responsavel->resp_email ?? '-' }}
+                </p>
+            </div>
+
+            <div>
+                <p class="text-xs uppercase text-gray-400">CPF</p>
+
+                <p class="text-lg font-semibold text-gray-800">
+                    {{ $responsavel->resp_cpf_mascarado }}
                 </p>
             </div>
 
@@ -88,25 +292,19 @@
         <div class="space-y-6">
 
             <div>
-                <p class="text-xs uppercase text-gray-400">
-                    CEP
-                </p>
+                <p class="text-xs uppercase text-gray-400">CEP</p>
 
                 <p class="text-lg font-semibold text-gray-800">
-
                     @if($responsavel->resp_cep)
                     {{ preg_replace('/(\d{5})(\d{3})/', '$1-$2', preg_replace('/\D/', '', $responsavel->resp_cep)) }}
                     @else
                     -
                     @endif
-
                 </p>
             </div>
 
             <div>
-                <p class="text-xs uppercase text-gray-400">
-                    Cidade
-                </p>
+                <p class="text-xs uppercase text-gray-400">Cidade</p>
 
                 <p class="text-lg font-semibold text-gray-800">
                     {{ $responsavel->resp_cidade ?? '-' }}
@@ -114,9 +312,7 @@
             </div>
 
             <div>
-                <p class="text-xs uppercase text-gray-400">
-                    Bairro
-                </p>
+                <p class="text-xs uppercase text-gray-400">Bairro</p>
 
                 <p class="text-lg font-semibold text-gray-800">
                     {{ $responsavel->resp_bairro ?? '-' }}
@@ -124,40 +320,116 @@
             </div>
 
             <div>
-                <p class="text-xs uppercase text-gray-400">
-                    Endereço
-                </p>
+                <p class="text-xs uppercase text-gray-400">Logradouro</p>
 
                 <p class="text-lg font-semibold text-gray-800">
-                    {{ $responsavel->resp_logradouro ?? '-' }},
-                    {{ $responsavel->resp_numero ?? 'S/N' }}
+                    {{ $responsavel->resp_logradouro ?? '-' }}
+                    {{ $responsavel->resp_numero ?? '' }}
                 </p>
             </div>
 
+            @if($responsavel->resp_complemento)
             <div>
-                <p class="text-xs uppercase text-gray-400">
-                    Complemento
-                </p>
+                <p class="text-xs uppercase text-gray-400">Complemento</p>
 
                 <p class="text-lg font-semibold text-gray-800">
-                    {{ $responsavel->resp_complemento ?? '-' }}
+                    {{ $responsavel->resp_complemento }}
                 </p>
             </div>
-
-            <div>
-                <p class="text-xs uppercase text-gray-400">
-                    Quantidade de Alunos
-                </p>
-
-                <p class="text-lg font-semibold text-gray-800">
-                    {{ $responsavel->qtd_alunos }}
-                </p>
-            </div>
+            @endif
 
         </div>
 
     </div>
 
 </div>
+
+<!-- JS -->
+<script>
+    function toggleEdicao() {
+        const form = document.getElementById('editForm');
+
+        form.classList.toggle('hidden');
+
+        form.scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+
+    function fecharEdicao() {
+        document.getElementById('editForm').classList.add('hidden');
+    }
+
+    function toggleCpfInput() {
+        const checkbox = document.getElementById('alterarCpfCheck');
+        const input = document.getElementById('resp_cpf_input');
+
+        if (checkbox.checked) {
+            input.classList.remove('hidden');
+            input.required = true;
+            input.value = '';
+        } else {
+            input.classList.add('hidden');
+            input.required = false;
+            input.value = '';
+        }
+    }
+
+    function validarNome(input) {
+        input.value = input.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
+    }
+
+    function mascaraCPF(input) {
+
+        let v = input.value.replace(/\D/g, '').slice(0, 11);
+
+        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+        v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+
+        input.value = v;
+    }
+
+    function mascaraCEP(input) {
+
+        let v = input.value.replace(/\D/g, '').slice(0, 8);
+
+        if (v.length > 5) {
+            v = v.replace(/^(\d{5})(\d)/, '$1-$2');
+        }
+
+        input.value = v;
+    }
+
+    const tel = document.getElementById('resp_telefone');
+
+    if (tel) {
+
+        tel.addEventListener('input', () => {
+
+            let v = tel.value.replace(/\D/g, '');
+
+            if (v.length > 11) {
+                v = v.slice(0, 11);
+            }
+
+            let formatado = '';
+
+            if (v.length > 0) {
+                formatado = '(' + v.slice(0, 2);
+            }
+
+            if (v.length >= 3) {
+                formatado += ') ' + v.slice(2, 7);
+            }
+
+            if (v.length >= 8) {
+                formatado += '-' + v.slice(7, 11);
+            }
+
+            tel.value = formatado;
+        });
+    }
+</script>
 
 @endsection

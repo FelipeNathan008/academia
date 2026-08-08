@@ -177,9 +177,20 @@
                     @endif
                 </td>
 
-                <td class="py-3 px-4 font-bold">
-                    {{ $professor->qtd_aluno ?? '0'}}
+                <td class="py-3 px-4">
+
+                    <a href="{{ route('alunos.index', ['prof_nome' => $professor->prof_nome]) }}"
+                        class="inline-flex items-center justify-center min-w-[55px] px-4 py-2
+        bg-[#174ab9] text-white rounded-lg shadow
+        hover:bg-[#1e40af] transition duration-200"
+                        title="Ver alunos deste professor">
+
+                        {{ $professor->qtd_aluno ?? 0 }}
+
+                    </a>
+
                 </td>
+
 
                 <!-- Graduado -->
                 <td class="py-3 px-4">

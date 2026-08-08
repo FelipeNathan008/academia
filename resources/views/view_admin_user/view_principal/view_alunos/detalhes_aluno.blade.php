@@ -52,10 +52,13 @@
         <h2 class="text-3xl font-extrabold text-gray-800">Matrículas / Graduações do Aluno</h2>
     </div>
 
+
     <button onclick="toggleCadastro()"
         class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow-md hover:bg-[#732920] hover:shadow-lg transition-all">
         + Cadastrar Graduação
+
     </button>
+
 </div>
 
 <!-- CARD DO ALUNO -->

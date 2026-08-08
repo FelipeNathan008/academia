@@ -21,6 +21,7 @@ class Matricula extends Model
         'matri_data_pausa',
         'matri_data_encerramento',
         'matri_plano',
+        'matri_dia_vencimento',
         'id_emp_id'
     ];
     public function aluno()
@@ -36,6 +37,7 @@ class Matricula extends Model
         });
     }
 
+    
     public function mensalidades()
     {
         return $this->hasMany(

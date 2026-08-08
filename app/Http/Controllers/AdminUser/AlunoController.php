@@ -42,66 +42,128 @@ class AlunoController extends Controller
 
         $query = Aluno::with([
             'responsavel',
+
             'matriculas' => function ($q) use ($user) {
                 $q->where('id_emp_id', $user->id_emp_id)
                     ->whereIn('matri_status', ['Matriculado', 'Pausada'])
                     ->with([
-                        'grade',
+                        'grade.professor',
                         'mensalidades.detalhes'
                     ]);
             }
         ])->where('id_emp_id', $user->id_emp_id);
 
-        // FILTRO NOME
-        if ($request->filled('nome')) {
-            $query->where('aluno_nome', 'like', '%' . $request->nome . '%');
-        }
 
-        // FILTRO RESPONSÁVEL
-        if ($request->filled('responsavel')) {
-            $query->whereHas('responsavel', function ($q) use ($request) {
-                $q->where('resp_nome', 'like', '%' . $request->responsavel . '%');
+        // FILTRO PROFESSOR
+        if ($request->filled('prof_nome')) {
+
+            $query->whereHas('matriculas.grade.professor', function ($q) use ($request) {
+
+                $q->where(
+                    'prof_nome',
+                    'like',
+                    '%' . $request->prof_nome . '%'
+                );
             });
         }
 
+
+        // FILTRO NOME
+        if ($request->filled('nome')) {
+
+            $query->where(
+                'aluno_nome',
+                'like',
+                '%' . $request->nome . '%'
+            );
+        }
+
+
+        // FILTRO RESPONSÁVEL
+        if ($request->filled('responsavel')) {
+
+            $query->whereHas('responsavel', function ($q) use ($request) {
+
+                $q->where(
+                    'resp_nome',
+                    'like',
+                    '%' . $request->responsavel . '%'
+                );
+            });
+        }
+
+
         // FILTRO BOLSISTA
         if ($request->filled('bolsista')) {
-            $query->where('aluno_bolsista', $request->bolsista === 'sim' ? 'sim' : 'nao');
+
+            $query->where(
+                'aluno_bolsista',
+                $request->bolsista === 'sim' ? 'sim' : 'nao'
+            );
         }
+
 
         // FILTRO MATRÍCULA
         if ($request->filled('matricula')) {
+
             if ($request->matricula === 'Matriculado') {
-                // Tem pelo menos uma matrícula Matriculado ou Pausada
+
                 $query->whereHas('matriculas', function ($q) use ($user) {
+
                     $q->where('id_emp_id', $user->id_emp_id)
-                        ->whereIn('matri_status', ['Matriculado', 'Pausada']);
+                        ->whereIn(
+                            'matri_status',
+                            ['Matriculado', 'Pausada']
+                        );
                 });
             } elseif ($request->matricula === 'Pausada') {
-                // Tem pelo menos uma Pausada mas nenhuma Matriculado
+
                 $query->whereHas('matriculas', function ($q) use ($user) {
+
                     $q->where('id_emp_id', $user->id_emp_id)
-                        ->where('matri_status', 'Pausada');
+                        ->where(
+                            'matri_status',
+                            'Pausada'
+                        );
                 })->whereDoesntHave('matriculas', function ($q) use ($user) {
+
                     $q->where('id_emp_id', $user->id_emp_id)
-                        ->where('matri_status', 'Matriculado');
+                        ->where(
+                            'matri_status',
+                            'Matriculado'
+                        );
                 });
             } elseif ($request->matricula === 'Encerrada') {
-                // Não tem nenhuma Matriculado nem Pausada
+
                 $query->whereDoesntHave('matriculas', function ($q) use ($user) {
+
                     $q->where('id_emp_id', $user->id_emp_id)
-                        ->whereIn('matri_status', ['Matriculado', 'Pausada']);
+                        ->whereIn(
+                            'matri_status',
+                            ['Matriculado', 'Pausada']
+                        );
                 });
             }
         }
 
-        $totalAlunos = Aluno::where('id_emp_id', $user->id_emp_id)->count();
+        // TOTAL GERAL DE ALUNOS
+        $totalAlunos = Aluno::where(
+            'id_emp_id',
+            $user->id_emp_id
+        )->count();
+        // LISTAGEM
         $alunos = $query
             ->orderBy('aluno_nome')
             ->paginate(10)
             ->withQueryString();
 
-        return view('view_admin_user.view_principal.view_alunos.index_sidebar', compact('alunos', 'totalAlunos'));
+        return view(
+            'view_admin_user.view_principal.view_alunos.index_sidebar',
+            compact(
+                'alunos',
+                'totalAlunos'
+            )
+        );
     }
 
 
@@ -125,7 +187,7 @@ class AlunoController extends Controller
             ],
             'aluno_bolsista' => 'required|in:sim,nao',
             'aluno_desc' => 'required|string',
-            'aluno_foto' => 'required|image|mimes:jpeg,jpg,png,webp|max:5120',
+            'aluno_foto' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
         ]);
 
         $user = Auth::user();
@@ -134,7 +196,14 @@ class AlunoController extends Controller
             ->where('id_emp_id', $user->id_emp_id)
             ->firstOrFail();
 
-        $filename = $this->processarFoto($request->file('aluno_foto'), 'alunos');
+        $filename = null;
+
+        if ($request->hasFile('aluno_foto')) {
+            $filename = $this->processarFoto(
+                $request->file('aluno_foto'),
+                'alunos'
+            );
+        }
 
         Aluno::create([
             'responsavel_id_responsavel' => $responsavel->id_responsavel,

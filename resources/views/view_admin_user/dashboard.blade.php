@@ -14,9 +14,127 @@
     </a>
 </div>
 
+@if($empresa->emp_status == 'Degustação')
+
+<div class="bg-white rounded-2xl shadow-md overflow-hidden mb-10">
+
+    <div class="px-6 py-4 border-b bg-yellow-50">
+        <h3 class="text-lg font-bold text-yellow-700">
+            Período de Degustação
+        </h3>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 p-6">
+
+        <div>
+            <p class="text-xs uppercase text-gray-500">
+                Início
+            </p>
+
+            <p class="font-semibold">
+                {{ $empresa->emp_degustacao_inicio->format('d/m/Y') }}
+            </p>
+        </div>
+
+        <div>
+            <p class="text-xs uppercase text-gray-500">
+                Fim
+            </p>
+
+            <p class="font-semibold">
+                {{ $empresa->emp_degustacao_fim->format('d/m/Y') }}
+            </p>
+        </div>
+
+        <div>
+            <p class="text-xs uppercase text-gray-500">
+                Status
+            </p>
+
+            <span class="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
+                Degustação
+            </span>
+        </div>
+
+    </div>
+
+</div>
+
+@elseif($contrato)
+
+<div class="bg-white rounded-2xl shadow-md border-l-8 border-[#8E251F] p-6 mb-10">
+    
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-5">
+
+        <div>
+
+            <p class="text-xs uppercase tracking-widest text-gray-500">
+                Plano Atual
+            </p>
+
+            <p class="text-gray-600 mt-2">
+                Status:
+
+                <span class="font-semibold
+                @if($contrato->contrato_status == 'Ativo')
+                    text-green-600
+                @elseif($contrato->contrato_status == 'Pendente')
+                    text-yellow-600
+                @elseif($contrato->contrato_status == 'Suspenso')
+                    text-orange-600
+                @else
+                    text-red-600
+                @endif">
+
+                    {{ $contrato->contrato_status }}
+
+                </span>
+
+            </p>
+
+            @if($contrato->detalheAtual)
+
+            <div class="mt-3 space-y-1">
+
+                <p>
+                    <strong>Plano:</strong>
+                    {{ $contrato->detalheAtual->det_plano_nome }}
+                </p>
+
+                <p>
+                    <strong>Valor:</strong>
+                    R$ {{ number_format($contrato->detalheAtual->det_plano_valor,2,',','.') }}
+                </p>
+
+                <p>
+                    <strong>Limite:</strong>
+                    @if($contrato->detalheAtual->det_plano_tipo == 'financeiro')
+                    Pacote adicional
+                    @else
+                    {{ $contrato->detalheAtual->det_plano_quantidade }}
+                    matrículas
+                    @endif
+                </p>
+            </div>
+            @endif
+
+            <p class="text-sm text-gray-500 mt-3">
+                Contratado em:
+                {{ $contrato->created_at->format('d/m/Y') }}
+            </p>
+        </div>
+
+        <a href="{{ route('contrato.show', Crypt::encrypt($contrato->id_contrato)) }}"
+            class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920]">
+            Ver contrato
+        </a>
+    </div>
+
+</div>
+
+@endif
+
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-
-
 
     <div class="p-6 bg-white rounded-xl shadow-sm">
         <h3 class="font-semibold text-lg mb-2">Total de Alunos Matriculados</h3>

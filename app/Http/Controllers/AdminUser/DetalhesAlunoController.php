@@ -95,7 +95,6 @@ class DetalhesAlunoController extends Controller
                 'before_or_equal:today'
             ],
             'det_certificado'   => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
-            // exige que o usuário confirme ciência do apagamento das frequências
             'confirma_apagar_frequencias' => 'required|accepted',
         ], [
             'det_data.after_or_equal' => 'Não é possível informar uma data anterior ao nascimento do aluno.',
@@ -116,6 +115,24 @@ class DetalhesAlunoController extends Controller
 
         $graduacao = Graduacao::with('modalidade')->findOrFail($request->id_graduacao);
         $modalidadeNome = $graduacao->modalidade->mod_nome;
+
+        // Verifica se existe matrícula ativa na modalidade da graduação
+        $possuiMatriculaAtiva = Matricula::where('aluno_id_aluno', $id)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->where('matri_status', 'Matriculado')
+            ->whereHas('grade', function ($query) use ($modalidadeNome) {
+                $query->where('grade_modalidade', $modalidadeNome);
+            })
+            ->exists();
+
+        if (!$possuiMatriculaAtiva) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'id_graduacao' =>
+                    "O aluno precisa possuir uma matrícula ativa na modalidade {$modalidadeNome} para cadastrar esta graduação."
+                ]);
+        }
 
         // Matrícula(s) ativa(s) do aluno na modalidade da graduação selecionada
         $matriculasAtivas = Matricula::where('aluno_id_aluno', $id)

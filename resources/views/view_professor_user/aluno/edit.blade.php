@@ -129,8 +129,9 @@
                     @endif
                 </div>
 
-                <label class="text-sm font-medium text-gray-600">Alterar Foto</label>
-                <input type="file"
+                <label class="text-sm font-medium text-gray-600">
+                    Alterar Foto (Opcional)
+                </label> <input type="file"
                     name="aluno_foto"
                     accept="image/*"
                     class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-50">

@@ -103,7 +103,7 @@
         </a>
 
         <a href="{{ route('professor-responsavel.show', Crypt::encrypt($aluno->id_aluno)) }}"
-            style="background-color: #325db8; color: white;"
+            style="background-color: #15803d; color: white;"
             class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center">
             Responsável
         </a>

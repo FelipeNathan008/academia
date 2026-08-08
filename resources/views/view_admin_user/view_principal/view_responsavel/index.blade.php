@@ -55,125 +55,169 @@
 
 </div>
 
+<!-- ESCOLHA TIPO -->
+<div id="escolhaTipoResponsavel"
+    class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+    <div class="bg-white rounded-2xl p-8 w-[400px] shadow-xl">
+
+        <h3 class="text-xl font-bold text-center mb-6">
+            Tipo de Cadastro
+        </h3>
+
+        <p class="text-gray-600 text-center mb-8">
+            Este responsável é para qual tipo de aluno?
+        </p>
+
+        <div class="grid grid-cols-2 gap-4">
+
+            <button type="button"
+                onclick="abrirCadastroKids()"
+                class="bg-[#8E251F] text-white rounded-xl py-4 hover:bg-[#732920]">
+                Kids
+            </button>
+
+            <button type="button"
+                onclick="abrirCadastroAdulto()"
+                class="bg-blue-600 text-white rounded-xl py-4 hover:bg-blue-700">
+                Adulto
+            </button>
+
+        </div>
+
+        <button type="button"
+            onclick="fecharEscolhaTipo()"
+            class="mt-6 w-full border rounded-lg py-2">
+            Cancelar
+        </button>
+
+    </div>
+
+</div>
+
 <!-- FORMULÁRIO -->
-<div id="cadastroForm" class="mb-10 {{ $errors->any() ? '' : 'hidden' }}">
+<div id="cadastroForm"
+    class="{{ $errors->any() ? '' : 'hidden' }}">
     <form action="{{ route('responsaveis.store') }}" method="POST" onsubmit="bloquearSubmit(event, this)">
         @csrf
+        <input type="hidden" name="tipo_cadastro" id="tipo_cadastro" value="kids">
 
-        <div class="bg-white rounded-2xl shadow-md p-8">
+
+        <div id="cadastroResponsavel" class="bg-white rounded-2xl shadow-md p-8">
             <h3 class="text-xl font-bold mb-6 text-gray-700">
                 Cadastrar Responsável
             </h3>
 
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                <!-- Nome e Tipo -->
-                <div style="display: flex; gap: 4%;">
-                    <div style="flex: 1;">
-                        <label class="text-sm font-medium text-gray-600">Nome do Responsável</label>
-                        <input type="text" name="resp_nome" required maxlength="120"
-                            value="{{ old('resp_nome') }}"
-                            placeholder=" Ex: Maria Lúcia"
-                            oninput="validarNome(this)"
-                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
-                    </div>
-
-                    <div style="flex: 1;">
-                        <label class="text-sm font-medium text-gray-600">Tipo</label>
-                        <select name="resp_parentesco" required
-                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
-                            <option value="">Selecione o Tipo</option>
-                            <option {{ old('resp_parentesco') == 'Responsável' ? 'selected' : '' }}>Responsável</option>
-                            <option {{ old('resp_parentesco') == 'Outro' ? 'selected' : '' }}>Outro</option>
-                        </select>
-                    </div>
+                <!-- Nome -->
+                <div>
+                    <label class="text-sm font-medium text-gray-600">Nome do Responsável</label>
+                    <input type="text" name="resp_nome" required maxlength="120"
+                        value="{{ old('resp_nome') }}"
+                        placeholder="Ex: Maria Lúcia"
+                        oninput="validarNome(this)"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                 </div>
 
-                <!-- Telefone e Email -->
-                <div style="display: flex; gap: 4%;">
-                    <div style="flex: 1;">
-                        <label class="text-sm font-medium text-gray-600">Email</label>
-                        <input type="email" name="resp_email" required maxlength="150"
-                            value="{{ old('resp_email') }}"
-                            placeholder="Ex: marialucia@email.com"
-                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
-                    </div>
-
-                    <div style="flex: 1;">
-                        <label class="text-sm font-medium text-gray-600">Telefone</label>
-                        <input type="text" id="resp_telefone" name="resp_telefone" required
-                            value="{{ old('resp_telefone') }}"
-                            placeholder="Ex: (99) 99999-9999"
-                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
-                    </div>
+                <!-- Tipo -->
+                <div class="campo-kids">
+                    <label class="text-sm font-medium text-gray-600">Tipo</label>
+                    <select name="resp_parentesco"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                        <option value="">Selecione o Tipo</option>
+                        <option {{ old('resp_parentesco') == 'Responsável' ? 'selected' : '' }}>Responsável</option>
+                        <option {{ old('resp_parentesco') == 'Outro' ? 'selected' : '' }}>Outro</option>
+                    </select>
                 </div>
 
-
-                <!-- CPF e CEP -->
-                <div style="display: flex; gap: 4%;">
-                    <div style="flex: 1;">
-                        <label class="text-sm font-medium text-gray-600">CPF</label>
-                        <input type="text" name="resp_cpf" required maxlength="14"
-                            value="{{ old('resp_cpf') }}"
-                            placeholder="000.000.000-00"
-                            oninput="mascaraCPF(this)"
-                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] @error('resp_cpf') border-red-500 @enderror">
-                        @error('resp_cpf')
-                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div style="flex: 1;">
-                        <label class="text-sm font-medium text-gray-600">CEP</label>
-                        <input type="text" name="resp_cep" id="resp_cep" required maxlength="9"
-                            value="{{ old('resp_cep') }}"
-                            placeholder="00000-000" oninput="mascaraCEP(this)" onblur="buscarCEP()"
-                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
-                    </div>
+                <!-- Email -->
+                <div class="campo-kids">
+                    <label class="text-sm font-medium text-gray-600">Email</label>
+                    <input type="email" name="resp_email" maxlength="150"
+                        value="{{ old('resp_email') }}"
+                        placeholder="Ex: marialucia@email.com"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                 </div>
 
-                <!-- Cidade e Bairro -->
-                <div style="display: flex; gap: 4%; margin-top: 1rem;">
-                    <div style="flex: 1;">
-                        <label class="text-sm font-medium text-gray-600">Cidade</label>
-                        <input type="text" name="resp_cidade" required placeholder="Ex: São Paulo"
-                            value="{{ old('resp_cidade') }}"
-                            oninput="validarTexto(this)"
-                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
-                    </div>
-
-                    <div style="flex: 1;">
-                        <label class="text-sm font-medium text-gray-600">Bairro</label>
-                        <input type="text" name="resp_bairro" required placeholder="Ex: Centro"
-                            value="{{ old('resp_bairro') }}"
-                            oninput="validarTexto(this)"
-                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
-                    </div>
+                <!-- Telefone -->
+                <div class="campo-kids">
+                    <label class="text-sm font-medium text-gray-600">Telefone</label>
+                    <input type="text" id="resp_telefone" name="resp_telefone"
+                        value="{{ old('resp_telefone') }}"
+                        placeholder="Ex: (99) 99999-9999"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                 </div>
 
-                <!-- Logradouro, Número e Complemento -->
-                <div style="display: flex; gap: 4%; margin-top: 1rem;">
-                    <div style="flex: 2;">
-                        <label class="text-sm font-medium text-gray-600">Logradouro</label>
-                        <input type="text" name="resp_logradouro" required placeholder="Rua, Avenida, etc."
-                            value="{{ old('resp_logradouro') }}"
-                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
-                    </div>
+                <!-- CPF -->
+                <div class="campo-kids">
+                    <label class="text-sm font-medium text-gray-600">CPF</label>
+                    <input type="text" name="resp_cpf" maxlength="14"
+                        value="{{ old('resp_cpf') }}"
+                        placeholder="000.000.000-00"
+                        oninput="mascaraCPF(this)"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] @error('resp_cpf') border-red-500 @enderror">
+                    @error('resp_cpf')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-                    <div style="flex: 1;">
-                        <label class="text-sm font-medium text-gray-600">Número</label>
-                        <input type="text" name="resp_numero" placeholder="Ex: 63" required
-                            value="{{ old('resp_numero') }}"
-                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
-                    </div>
+                <!-- CEP -->
+                <div class="campo-kids">
+                    <label class="text-sm font-medium text-gray-600">CEP</label>
+                    <input type="text" name="resp_cep" id="resp_cep" maxlength="9"
+                        value="{{ old('resp_cep') }}"
+                        placeholder="00000-000"
+                        oninput="mascaraCEP(this)"
+                        onblur="buscarCEP()"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                </div>
 
-                    <div style="flex: 1;">
-                        <label class="text-sm font-medium text-gray-600">Complemento</label>
-                        <input type="text" name="resp_complemento" placeholder="Ex: Bloco B, Apto 302"
-                            value="{{ old('resp_complemento') }}"
-                            class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
-                    </div>
+                <!-- Cidade -->
+                <div class="campo-kids">
+                    <label class="text-sm font-medium text-gray-600">Cidade</label>
+                    <input type="text" name="resp_cidade"
+                        value="{{ old('resp_cidade') }}"
+                        placeholder="Ex: São Paulo"
+                        oninput="validarTexto(this)"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                </div>
+
+                <!-- Bairro -->
+                <div class="campo-kids">
+                    <label class="text-sm font-medium text-gray-600">Bairro</label>
+                    <input type="text" name="resp_bairro"
+                        value="{{ old('resp_bairro') }}"
+                        placeholder="Ex: Centro"
+                        oninput="validarTexto(this)"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                </div>
+
+                <!-- Logradouro -->
+                <div class="campo-kids">
+                    <label class="text-sm font-medium text-gray-600">Logradouro</label>
+                    <input type="text" name="resp_logradouro"
+                        value="{{ old('resp_logradouro') }}"
+                        placeholder="Rua, Avenida, etc."
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                </div>
+
+                <!-- Número -->
+                <div class="campo-kids">
+                    <label class="text-sm font-medium text-gray-600">Número</label>
+                    <input type="text" name="resp_numero"
+                        value="{{ old('resp_numero') }}"
+                        placeholder="Ex: 63"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
+                </div>
+
+                <!-- Complemento -->
+                <div class="campo-kids md:col-span-2">
+                    <label class="text-sm font-medium text-gray-600">Complemento (Opcional)</label>
+                    <input type="text" name="resp_complemento"
+                        value="{{ old('resp_complemento') }}"
+                        placeholder="Ex: Bloco B, Apto 302"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                 </div>
 
             </div>
@@ -265,15 +309,15 @@
                 </td>
 
                 <td class="py-3 px-4 font-mono text-gray-600">
-                    {{ $resp->resp_cpf_mascarado }}
+                    {{ $resp->resp_cpf_mascarado ?? "-" }}
                 </td>
 
                 <td class="py-3 px-4">
-                    {{ $resp->resp_parentesco }}
+                    {{ $resp->resp_parentesco ?? "-"}}
                 </td>
 
                 <td class="py-3 px-4">
-                    {{ preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $resp->resp_telefone) }}
+                    {{ preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $resp->resp_telefone ?? "-") }}
                 </td>
 
 
@@ -323,8 +367,57 @@
 </div>
 
 <script>
-    function bloquearSubmit(event, form) {
+    function toggleCadastro() {
+        const form = document.getElementById('cadastroForm');
 
+        // Se o formulário já estiver aberto, clicar em "Cadastrar" novamente fecha tudo.
+        if (!form.classList.contains('hidden')) {
+            fecharCadastro();
+            return;
+        }
+
+        document.getElementById('escolhaTipoResponsavel').classList.remove('hidden');
+    }
+
+    function fecharEscolhaTipo() {
+        document.getElementById('escolhaTipoResponsavel').classList.add('hidden');
+    }
+
+    function abrirCadastroKids() {
+        fecharEscolhaTipo();
+
+        document.getElementById('cadastroForm').classList.remove('hidden');
+        document.getElementById('tipo_cadastro').value = 'kids';
+
+        document.querySelectorAll('.campo-kids').forEach(campo => {
+            campo.classList.remove('hidden');
+        });
+
+        document.getElementById('cadastroForm').scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+
+    function abrirCadastroAdulto() {
+        fecharEscolhaTipo();
+
+        document.getElementById('cadastroForm').classList.remove('hidden');
+        document.getElementById('tipo_cadastro').value = 'adulto';
+
+        document.querySelectorAll('.campo-kids').forEach(campo => {
+            campo.classList.add('hidden');
+        });
+
+        document.getElementById('cadastroForm').scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+
+    function fecharCadastro() {
+        document.getElementById('cadastroForm').classList.add('hidden');
+    }
+
+    function bloquearSubmit(event, form) {
         if (!form.checkValidity()) {
             return; // deixa validação normal do HTML
         }
@@ -335,18 +428,6 @@
             btn.disabled = true;
             btn.innerText = 'Salvando...';
         }
-    }
-
-    function toggleCadastro() {
-        const form = document.getElementById('cadastroForm');
-        form.classList.toggle('hidden');
-        form.scrollIntoView({
-            behavior: 'smooth'
-        });
-    }
-
-    function fecharCadastro() {
-        document.getElementById('cadastroForm').classList.add('hidden');
     }
 
     function validarNome(input) {
@@ -373,19 +454,21 @@
 
     const tel = document.getElementById('resp_telefone');
 
-    tel.addEventListener('input', () => {
-        let v = tel.value.replace(/\D/g, '');
+    if (tel) {
+        tel.addEventListener('input', () => {
+            let v = tel.value.replace(/\D/g, '');
 
-        if (v.length > 11) v = v.slice(0, 11);
+            if (v.length > 11) v = v.slice(0, 11);
 
-        let formatado = '';
+            let formatado = '';
 
-        if (v.length > 0) formatado = '(' + v.slice(0, 2);
-        if (v.length >= 3) formatado += ') ' + v.slice(2, 7);
-        if (v.length >= 8) formatado += '-' + v.slice(7, 11);
+            if (v.length > 0) formatado = '(' + v.slice(0, 2);
+            if (v.length >= 3) formatado += ') ' + v.slice(2, 7);
+            if (v.length >= 8) formatado += '-' + v.slice(7, 11);
 
-        tel.value = formatado;
-    });
+            tel.value = formatado;
+        });
+    }
 
     function buscarCEP() {
         const cepInput = document.getElementById('resp_cep');
@@ -405,38 +488,6 @@
             })
             .catch(() => alert('Erro ao buscar o CEP'));
     }
-
-    document.addEventListener('DOMContentLoaded', function() {
-
-        const filtroNome = document.getElementById('filtroNomeResponsavel');
-        const limparBtn = document.getElementById('limparFiltroResponsavel');
-        const linhas = document.querySelectorAll('.linha-responsavel');
-
-        function aplicarFiltro() {
-            const nome = filtroNome.value.toLowerCase();
-
-            linhas.forEach(linha => {
-                const nomeResponsavel = linha.dataset.nome || '';
-
-                let mostrar = true;
-
-                if (nome && !nomeResponsavel.includes(nome)) {
-                    mostrar = false;
-                }
-
-                linha.style.display = mostrar ? '' : 'none';
-            });
-        }
-
-        filtroNome.addEventListener('input', aplicarFiltro);
-
-        limparBtn.addEventListener('click', function() {
-            filtroNome.value = '';
-            aplicarFiltro();
-        });
-
-    });
-
 </script>
 
 @endsection

@@ -128,7 +128,6 @@
                     </label>
 
                     <select name="resp_parentesco"
-                        required
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
 
                         <option value="">Selecione</option>
@@ -155,7 +154,6 @@
 
                     <input type="email"
                         name="resp_email"
-                        required
                         maxlength="150"
                         placeholder="Ex: email@email.com"
                         value="{{ old('resp_email', $responsavel->resp_email) }}"
@@ -170,7 +168,6 @@
                     <input type="text"
                         name="resp_telefone"
                         id="resp_telefone"
-                        required
                         placeholder="Ex: (99) 99999-9999"
                         value="{{ old('resp_telefone', $responsavel->resp_telefone) }}"
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
@@ -214,7 +211,6 @@
                         name="resp_cep"
                         id="resp_cep"
                         maxlength="9"
-                        required
                         placeholder="00000-000"
                         value="{{ old('resp_cep', $responsavel->resp_cep) }}"
                         oninput="mascaraCEP(this)"
@@ -233,7 +229,6 @@
 
                     <input type="text"
                         name="resp_cidade"
-                        required
                         placeholder="Ex: São Paulo"
                         value="{{ old('resp_cidade', $responsavel->resp_cidade) }}"
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
@@ -246,7 +241,6 @@
 
                     <input type="text"
                         name="resp_bairro"
-                        required
                         placeholder="Ex: Centro"
                         value="{{ old('resp_bairro', $responsavel->resp_bairro) }}"
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
@@ -264,7 +258,6 @@
 
                     <input type="text"
                         name="resp_logradouro"
-                        required
                         placeholder="Rua, Avenida, etc."
                         value="{{ old('resp_logradouro', $responsavel->resp_logradouro) }}"
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">

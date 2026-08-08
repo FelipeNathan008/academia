@@ -79,7 +79,10 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="text-sm font-medium text-gray-600">Nome Completo</label>
-                    <input type="text" name="aluno_nome" required placeholder="Ex: Davi Lucas"
+                    <input
+                        type="text"
+                        name="aluno_nome" placeholder="Davi Lucas"
+                        value="{{ old('aluno_nome', request('nome')) }}"
                         oninput="validarNome(this)"
                         class="w-full border rounded-lg px-4 py-2 mt-1">
                 </div>
@@ -125,10 +128,10 @@
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="text-sm font-medium text-gray-600">Foto do Aluno</label>
+                    <label class="text-sm font-medium text-gray-600">Foto do Aluno (Opcional)</label>
 
                     <input type="file"
-                        name="aluno_foto" required
+                        name="aluno_foto"
                         accept="image/*"
                         class="w-full border rounded-lg px-4 py-2 mt-1">
                 </div>
@@ -355,26 +358,20 @@ color:#166534; background-color:#bbf7d0;"> 🥋 Sim
                 </td>
                 <!-- AÇÕES -->
                 <td class="py-3 px-4 flex gap-2">
-                    <a href="{{ route('detalhes-aluno.index', Crypt::encrypt($aluno->id_aluno)) }}"
-                        style="background-color: #174ab9; color: white;"
-                        class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
-                        Graduações
-                    </a>
-
                     <a href="{{ route('matricula', Crypt::encrypt($aluno->id_aluno)) }}"
                         style="background-color: #275cce; color: white;"
                         class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                         Matrícula
                     </a>
 
-                    <!--@if(strtolower($aluno->aluno_bolsista) !== 'sim')
-                    <a href="{{ route('mensalidade', Crypt::encrypt($aluno->id_aluno)) }}"
-                        style="background-color: #15803d; color: white;"
-                        class="px-4 py-2 rounded-lg shadow hover:bg-[#166534] transition duration-200 text-center">
-                        Financeiro
-                    </a>
-                    @endif-->
+                    @if($aluno->matriculas->count() > 0)
 
+                    <a href="{{ route('detalhes-aluno.index', Crypt::encrypt($aluno->id_aluno)) }}"
+                        style="background-color: #174ab9; color: white;"
+                        class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
+                        Graduações
+                    </a>
+                    @endif
 
                     <a href="{{ route('alunos.edit', Crypt::encrypt($aluno->id_aluno)) }}"
                         style="background-color: #8E251F; color: white;"

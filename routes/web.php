@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\SuperAdmin\{
     SuperAdminController,
+    SuperAdminPlanoController,
 };
 use App\Http\Controllers\AdminUser\{
     DashboardController,
@@ -26,11 +27,13 @@ use App\Http\Controllers\AdminUser\{
     UsuariosController,
     DetalhesFilialController,
     EmpresaController,
-    PlanoController,
+    AdminUserPlanoController,
+    ContratoController,
 };
 
 use App\Http\Controllers\{
     ProfileController,
+    PlanoController,
 };
 
 use App\Http\Controllers\ProfessorUser\{
@@ -65,12 +68,12 @@ Route::get('/', fn() => view('apresentacao'))->name('apresentacao');
 Route::get('/cadastro-empresa', fn() => view('cadastro_empresa'))->name('cadastro_empresa');
 Route::post('/cadastro-empresa/store', [EmpresaController::class, 'store'])
     ->name('cadastro_empresa.store');
-Route::get('/planos', function () {
-    return view('planos');
-})->name('planos.publico');
+
+Route::get('/planos', [PlanoController::class, 'planosPublicos'])
+    ->name('planos.publico');
+
 
 // ROTAS COMUNS
-
 Route::middleware(['auth'])->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -78,9 +81,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-//
-// ADMIN
-// 
 Route::middleware(['auth'])->group(function () {
 
     Route::put('/mensalidade/editar-forma', [MensalidadeController::class, 'editarForma'])
@@ -93,10 +93,20 @@ Route::middleware(['auth'])->group(function () {
         ->name('mensalidade.desfazerBaixa');
 });
 
-Route::middleware(['auth', 'superadmin'])->group(function () {
+route::middleware(['auth', 'superadmin'])->group(function () {
 
     Route::get('/superadmin', [SuperAdminController::class, 'index'])->name('dashboard-superadmin');
 
+    // PLANOS
+    // Rota estática "visualizar" precisa vir ANTES das rotas com {id},
+    // senão o Laravel pode tentar interpretar "visualizar" como um {id}.
+    Route::get('/superadmin/planos/visualizar', [SuperAdminPlanoController::class, 'visualizar'])->name('superadmin.planos.visualizar');
+
+    Route::get('/superadmin/planos', [SuperAdminPlanoController::class, 'index'])->name('superadmin.planos');
+    Route::post('/superadmin/planos', [SuperAdminPlanoController::class, 'store'])->name('superadmin.planos.store');
+    Route::get('/superadmin/planos/{id}/edit', [SuperAdminPlanoController::class, 'edit'])->name('superadmin.planos.edit');
+    Route::put('/superadmin/planos/{id}', [SuperAdminPlanoController::class, 'update'])->name('superadmin.planos.update');
+    Route::delete('/superadmin/planos/{id}', [SuperAdminPlanoController::class, 'destroy'])->name('superadmin.planos.destroy');
 });
 
 
@@ -114,9 +124,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
         return view('view_admin_user.controle');
     })->name('admin.controle');
 
+    // CONTRATOS
+    Route::get('/contrato/planos', [ContratoController::class, 'index'])->name('admin.planos');
+    Route::get('/contrato/{id}/create', [ContratoController::class, 'create'])->name('contrato.create');
+    Route::post('/contrato/{id}', [ContratoController::class, 'store'])->name('contrato.store');
+    Route::get('/contrato/{id}', [ContratoController::class, 'show'])->name('contrato.show');
 
-
-    Route::get('/admin/planos', [PlanoController::class, 'index'])->name('admin.planos');
 
     // DASHBOARD
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -360,6 +373,7 @@ Route::middleware(['auth', 'aluno'])->group(function () {
     // ALUNO
     Route::get('/aluno/alunos', [AlunoUserAlunoController::class, 'index'])->name('aluno.index');
     Route::get('/aluno/alunos/{id}', [AlunoUserAlunoController::class, 'show'])->name('aluno.show');
+    Route::put('/aluno/{id}', [AlunoUserAlunoController::class, 'update'])->name('aluno.update');
 
     // DETALHES
     Route::get('/aluno/detalhes-aluno/{id}', [AlunoUserDetalhesAlunoController::class, 'index'])->name('aluno-detalhes.index');
@@ -367,6 +381,7 @@ Route::middleware(['auth', 'aluno'])->group(function () {
 
     // RESPONSAVEL
     Route::get('/aluno/responsavel', [AlunoUserResponsavelController::class, 'index'])->name('responsavel.index');
+    Route::put('/aluno/responsavel', [AlunoUserResponsavelController::class, 'update'])->name('aluno-responsavel.update');
 
     // MATRÍCULA
     Route::get('/aluno/matriculas/{id}', [AlunoUserMatriculaController::class, 'index'])->name('aluno-matricula.index');

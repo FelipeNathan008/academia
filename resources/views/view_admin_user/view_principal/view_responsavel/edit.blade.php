@@ -56,7 +56,6 @@
             <div class="flex-1">
                 <label class="text-sm font-medium text-gray-600">Tipo</label>
                 <select name="resp_parentesco"
-                    required
                     class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                     <option value="">Selecione</option>
                     @foreach (['Responsável','Outro'] as $p)
@@ -74,7 +73,6 @@
                 <label class="text-sm font-medium text-gray-600">Email</label>
                 <input type="email"
                     name="resp_email"
-                    required
                     maxlength="150"
                     placeholder="Ex: marialucia@email.com"
                     value="{{ old('resp_email', $responsavel->resp_email) }}"
@@ -86,7 +84,6 @@
                 <input type="text"
                     name="resp_telefone"
                     id="resp_telefone"
-                    required
                     placeholder="Ex: (99) 99999-9999"
                     value="{{ old('resp_telefone', $responsavel->resp_telefone) }}"
                     class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
@@ -123,7 +120,6 @@
                     name="resp_cep"
                     id="resp_cep"
                     maxlength="9"
-                    required
                     placeholder="00000-000"
                     value="{{ old('resp_cep', $responsavel->resp_cep) }}"
                     oninput="mascaraCEP(this)"
@@ -137,7 +133,6 @@
                 <label class="text-sm font-medium text-gray-600">Cidade</label>
                 <input type="text"
                     name="resp_cidade"
-                    required
                     placeholder="Ex: São Paulo"
                     value="{{ old('resp_cidade', $responsavel->resp_cidade) }}"
                     class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
@@ -147,7 +142,6 @@
                 <label class="text-sm font-medium text-gray-600">Bairro</label>
                 <input type="text"
                     name="resp_bairro"
-                    required
                     placeholder="Ex: Centro"
                     value="{{ old('resp_bairro', $responsavel->resp_bairro) }}"
                     class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
@@ -160,7 +154,6 @@
                 <label class="text-sm font-medium text-gray-600">Logradouro</label>
                 <input type="text"
                     name="resp_logradouro"
-                    required
                     placeholder="Rua, Avenida, etc."
                     value="{{ old('resp_logradouro', $responsavel->resp_logradouro) }}"
                     class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
@@ -170,14 +163,13 @@
                 <label class="text-sm font-medium text-gray-600">Número</label>
                 <input type="text"
                     name="resp_numero"
-                    required
                     placeholder="Ex: 63"
                     value="{{ old('resp_numero', $responsavel->resp_numero) }}"
                     class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
             </div>
 
             <div class="flex-1">
-                <label class="text-sm font-medium text-gray-600">Complemento</label>
+                <label class="text-sm font-medium text-gray-600">Complemento (Opcional)</label>
                 <input type="text"
                     name="resp_complemento"
                     placeholder="Ex: Bloco B, Apto 302"

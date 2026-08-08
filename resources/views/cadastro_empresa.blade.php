@@ -300,6 +300,94 @@
 
                 <input type="hidden" name="emp_tipo" value="Matriz">
 
+                <div class="campo">
+                    <label>CEP</label>
+
+                    <input
+                        type="text"
+                        id="emp_end_cep"
+                        name="emp_end_cep"
+                        value="{{ old('emp_end_cep') }}"
+                        placeholder="00000-000"
+                        maxlength="9"
+                        oninput="mascaraCEP(this)"
+                        onblur="buscarCEP()"
+                        required>
+                </div>
+
+                <div class="campo campo-full">
+                    <label>Logradouro</label>
+
+                    <input
+                        type="text"
+                        id="emp_end_logradouro"
+                        name="emp_end_logradouro"
+                        value="{{ old('emp_end_logradouro') }}"
+                        placeholder="Rua, Avenida, etc."
+                        required>
+                </div>
+
+                <div class="campo">
+                    <label>Número</label>
+
+                    <input
+                        type="text"
+                        name="emp_end_numero"
+                        value="{{ old('emp_end_numero') }}"
+                        placeholder="Ex: 123"
+                        maxlength="10"
+                        required>
+                </div>
+
+                <div class="campo">
+                    <label>Complemento</label>
+
+                    <input
+                        type="text"
+                        name="emp_end_complemento"
+                        value="{{ old('emp_end_complemento') }}"
+                        placeholder="Sala, bloco, etc. (opcional)"
+                        maxlength="100">
+                </div>
+
+                <div class="campo">
+                    <label>Bairro</label>
+
+                    <input
+                        type="text"
+                        id="emp_end_bairro"
+                        name="emp_end_bairro"
+                        value="{{ old('emp_end_bairro') }}"
+                        placeholder="Ex: Centro"
+                        required>
+                </div>
+
+                <div class="campo">
+                    <label>Cidade</label>
+
+                    <input
+                        type="text"
+                        id="emp_end_cidade"
+                        name="emp_end_cidade"
+                        value="{{ old('emp_end_cidade') }}"
+                        placeholder="Ex: São José dos Campos"
+                        required>
+                </div>
+
+                <div class="campo">
+                    <label>Estado</label>
+
+                    <input
+                        type="text"
+                        id="emp_end_estado"
+                        name="emp_end_estado"
+                        value="{{ old('emp_end_estado') }}"
+                        placeholder="SP"
+                        maxlength="2"
+                        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z]/g,'')"
+                        required>
+                </div>|
+
                 <div class="campo campo-full">
 
                     <label>Logo da Empresa </label>
@@ -343,6 +431,44 @@
         });
         document.getElementById('formCadastro').reset();
     }
+
+    // CEP - máscara e busca via ViaCEP
+function mascaraCEP(input) {
+    let value = input.value.replace(/\D/g, '').slice(0, 8);
+
+    if (value.length > 5) {
+        value = value.replace(/^(\d{5})(\d)/, '$1-$2');
+    }
+
+    input.value = value;
+}
+
+function buscarCEP() {
+
+    const cepInput = document.getElementById('emp_end_cep');
+    const cep = cepInput.value.replace(/\D/g, '');
+
+    if (cep.length !== 8) return;
+
+    fetch(`https://viacep.com.br/ws/${cep}/json/`)
+        .then(res => res.json())
+        .then(data => {
+
+            if (data.erro) {
+                alert('CEP não encontrado.');
+                return;
+            }
+
+            document.getElementById('emp_end_logradouro').value = data.logradouro || '';
+            document.getElementById('emp_end_bairro').value = data.bairro || '';
+            document.getElementById('emp_end_cidade').value = data.localidade || '';
+            document.getElementById('emp_end_estado').value = data.uf || '';
+
+        })
+        .catch(() => {
+            alert('Erro ao consultar o CEP.');
+        });
+}
 
     // Bloquear múltiplos envios do formulário
     document.getElementById('cadastroForm').addEventListener('submit', function() {

@@ -83,6 +83,13 @@
                 </p>
             </div>
 
+            <div>
+                <p class="text-xs uppercase text-gray-400">Dia de Vencimento</p>
+                <p class="text-lg font-semibold text-gray-800">
+                    {{ $matricula->matri_dia_vencimento }}
+                </p>
+            </div>
+
         </div>
 
         <!-- COLUNA 2 -->

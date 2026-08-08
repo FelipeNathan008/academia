@@ -95,8 +95,7 @@ class GraduacaoController extends Controller
                 ->where(function ($q) use ($item) {
                     $q->where('gradu_ordem', $item['gradu_ordem'])
                         ->orWhere(function ($q2) use ($item) {
-                            $q2->where('gradu_nome_cor', $item['gradu_nome_cor'])
-                                ->where('gradu_grau', $item['gradu_grau']);
+                            $q2->where('gradu_nome_cor', $item['gradu_nome_cor']);
                         });
                 })
                 ->exists();
@@ -108,7 +107,7 @@ class GraduacaoController extends Controller
 
             Graduacao::create([
                 'gradu_nome_cor' => trim($item['gradu_nome_cor']),
-                'gradu_grau'     => $item['gradu_grau'],
+                'gradu_grau' => 0,
                 'gradu_meta'     => $item['gradu_meta'],
                 'gradu_ordem'    => $item['gradu_ordem'],
                 'id_modalidade'  => $modalidade->id_modalidade,

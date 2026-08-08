@@ -4,8 +4,9 @@ namespace App\Http\Controllers\AdminUser;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Aluno;
+use App\Models\Empresa;
 use App\Models\Mensalidade;
+use App\Models\Contrato;
 use App\Models\DetalhesMensalidade;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -153,6 +154,12 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
+        $empresa = Empresa::findOrFail($user->id_emp_id);
+
+        $contrato = Contrato::with('detalheAtual.plano')
+            ->where('empresa_id', $empresa->id_empresa)
+            ->latest('id_contrato')
+            ->first();
 
         $anoSelecionado = $request->get('ano', Carbon::now()->year);
 
@@ -272,6 +279,8 @@ class DashboardController extends Controller
             ->count();
 
         return view('view_admin_user.dashboard', [
+            'empresa'                => $empresa,
+            'contrato'               => $contrato,
             'graficoLabels'          => $labels,
             'graficoDados'           => $dados,
             'graficoDadosEncerrados' => $dadosEncerrados,

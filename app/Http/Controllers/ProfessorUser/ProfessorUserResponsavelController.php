@@ -4,13 +4,7 @@ namespace App\Http\Controllers\professorUser;
 
 use App\Http\Controllers\Controller;
 use App\Models\Aluno;
-use App\Models\DetalhesAluno;
-use App\Models\Mensalidade;
-use App\Models\DetalhesMensalidade;
-use App\Models\FrequenciaAluno;
-use App\Models\GradeHorario;
-use App\Models\Graduacao;
-use App\Models\Modalidade;
+use App\Rules\CpfValido;
 use App\Models\Responsavel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -64,7 +58,13 @@ class ProfessorUserResponsavelController extends Controller
             ->firstOrFail();
 
         $request->merge([
-            'resp_cep' => preg_replace('/\D/', '', $request->resp_cep),
+            'resp_cep' => $request->filled('resp_cep')
+                ? preg_replace('/\D/', '', $request->resp_cep)
+                : null,
+
+            'resp_telefone' => $request->filled('resp_telefone')
+                ? preg_replace('/\D/', '', $request->resp_telefone)
+                : null,
         ]);
 
         // SÓ TRATA O CPF SE O CAMPO FOI PREENCHIDO
@@ -78,22 +78,21 @@ class ProfessorUserResponsavelController extends Controller
         }
 
         $request->validate([
-            'resp_nome' => 'required|string|max:120',
-            'resp_parentesco' => 'required|string|max:60',
-            'resp_cpf' => $cpfAlterado ? 'required|string|size:11' : 'nullable',
-            'resp_telefone' => 'required|string|max:20',
-            'resp_email' => 'required|email|max:150',
-            'resp_cep' => 'required|digits:8',
-            'resp_logradouro' => 'required|string|max:150',
-            'resp_numero' => 'nullable|string|max:10',
-            'resp_complemento' => 'nullable|string|max:100',
-            'resp_bairro' => 'required|string|max:150',
-            'resp_cidade' => 'required|string|max:150',
+            'resp_nome'         => 'required|string|max:120',
+            'resp_parentesco'   => 'nullable|string|max:60',
+            'resp_cpf' => ['nullable', 'string', 'size:11', new CpfValido],
+            'resp_telefone'     => 'nullable|string|max:20',
+            'resp_email'        => 'nullable|email|max:150',
+            'resp_cep'          => 'nullable|digits:8',
+            'resp_logradouro'   => 'nullable|string|max:150',
+            'resp_numero'       => 'nullable|string|max:10',
+            'resp_complemento'  => 'nullable|string|max:100',
+            'resp_bairro'       => 'nullable|string|max:150',
+            'resp_cidade'       => 'nullable|string|max:150',
         ]);
 
-        // VERIFICA DUPLICIDADE DE CPF (descriptografando em PHP,
-        // já que o valor salvo no banco é cifrado e não-determinístico)
         if ($cpfAlterado) {
+
             $jaExiste = Responsavel::where('id_emp_id', $user->id_emp_id)
                 ->where('id_responsavel', '!=', $id)
                 ->get()
@@ -105,7 +104,6 @@ class ProfessorUserResponsavelController extends Controller
                 ])->withInput();
             }
         }
-
         // SE O CPF NÃO FOI ALTERADO, REMOVE DO ARRAY PRA NÃO SOBRESCREVER COM NULL
         $dados = $request->except($cpfAlterado ? [] : ['resp_cpf']);
 

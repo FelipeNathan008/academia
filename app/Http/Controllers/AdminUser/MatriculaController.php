@@ -203,6 +203,7 @@ class MatriculaController extends Controller
             ],
             'matri_desc'     => 'required|string|max:150',
             'matri_plano'    => 'required|string|max:40',
+            'matri_dia_vencimento' => 'required|integer|min:1|max:31',
             'grade_id_grade' => 'required|exists:grade_horario,id_grade',
         ], [
             'matri_data.required' => 'A data da matrícula é obrigatória.',
@@ -239,6 +240,8 @@ class MatriculaController extends Controller
                 'matri_status'   => 'Matriculado',
                 'matri_data'     => $request->matri_data,
                 'matri_plano'    => $request->matri_plano,
+                'matri_dia_vencimento' => $request->matri_dia_vencimento,
+
                 'grade_id_grade' => $request->grade_id_grade,
                 'matri_desc'     => $request->matri_desc,
                 'id_emp_id'      => $user->id_emp_id
@@ -246,8 +249,7 @@ class MatriculaController extends Controller
 
             if (strtolower($aluno->aluno_bolsista) !== 'sim') {
 
-                $dataMatricula = Carbon::parse($request->matri_data);
-                $diaVencimento = $dataMatricula->day;
+                $diaVencimento = (int) $request->matri_dia_vencimento;
 
                 $grade = GradeHorario::where('id_grade', $request->grade_id_grade)
                     ->where('id_emp_id', $user->id_emp_id)
@@ -287,10 +289,17 @@ class MatriculaController extends Controller
 
                 $dataBase = Carbon::parse($request->matri_data);
 
-                for ($i = 0; $i <= $quantidadeParcelas; $i++) {
+                for ($i = 0; $i < $quantidadeParcelas; $i++) {
 
-                    $dataVencimento = $dataBase->copy()->addMonthsNoOverflow($i);
-                    $dataVencimento->locale('pt_BR');
+                    $dataVencimento = $dataBase
+                        ->copy()
+                        ->addMonths($i);
+
+                    $ultimoDia = $dataVencimento->daysInMonth;
+
+                    $dataVencimento->day(
+                        min($diaVencimento, $ultimoDia)
+                    );
 
                     DetalhesMensalidade::create([
                         'mensalidade_id_mensalidade' => $mensalidade->id_mensalidade,

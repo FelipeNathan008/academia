@@ -204,27 +204,36 @@
 @endif
 
 <div class="bg-white rounded-2xl shadow-md p-6">
+    <form method="GET"
+        action="{{ route('professor-frequencia.dias', Crypt::encrypt($grade->id_grade)) }}"
+        class="mb-6 flex justify-center">
 
-    <!-- FILTRO -->
-    <div class="flex justify-center mb-6">
-        <div class="flex gap-4 items-end">
+        <div class="flex flex-wrap gap-4 items-end justify-center">
+
             <div>
                 <label class="block text-sm font-semibold text-gray-700">
                     Filtrar por Data
                 </label>
 
-                <input type="date" id="filtroDia"
-                    class="border rounded-lg p-2">
+                <input type="date"
+                    name="data"
+                    value="{{ $filtroData ?? '' }}"
+                    class="w-full border rounded-lg p-2">
             </div>
 
-            <button id="limparFiltroDia"
-                class="h-[40px] px-6 rounded-lg bg-gray-300
-                       text-gray-800 font-semibold hover:bg-gray-400
-                       transition shadow-md">
-                Limpar
+            <button type="submit"
+                class="h-[48px] px-6 rounded-xl bg-[#8E251F] text-white hover:bg-[#732920] transition shadow-md">
+                Filtrar
             </button>
+
+            <a href="{{ route('professor-frequencia.dias', Crypt::encrypt($grade->id_grade)) }}"
+                class="h-[40px] px-6 rounded-lg bg-gray-300 text-gray-800 font-semibold hover:bg-gray-400 transition shadow-md flex items-center">
+                Limpar
+            </a>
+
         </div>
-    </div>
+
+    </form>
 
     <table class="w-full text-left border-collapse">
         <thead>
@@ -407,7 +416,9 @@
             @endforelse
         </tbody>
     </table>
-
+    <div class="mt-6">
+        {{ $datasPaginadas->links('pagination::tailwind') }}
+    </div>
 </div>
 
 <script>

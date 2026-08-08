@@ -21,6 +21,23 @@
     <form method="GET">
         <div class="flex flex-wrap gap-6 items-end justify-center max-w-6xl mx-auto">
 
+            <!-- Buscar Professor -->
+
+            <div class="flex flex-col w-[300px]">
+                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                    Buscar Professor
+                </label>
+
+                <input type="text"
+                    name="prof_nome"
+                    value="{{ request('prof_nome') }}"
+                    placeholder="Digite o professor..."
+                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                    focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+
+            </div>
+
+
             <!-- Buscar Aluno -->
             <div class="flex flex-col w-[300px]">
                 <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
