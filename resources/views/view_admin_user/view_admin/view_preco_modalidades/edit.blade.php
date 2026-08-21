@@ -45,6 +45,27 @@
                     value="{{ old('preco_modalidade', $valor->preco_modalidade) }}">
             </div>
 
+            {{-- Categoria --}}
+            <div>
+                <label class="text-sm font-medium text-gray-600">
+                    Categoria
+                </label>
+
+                <input
+                    type="text"
+                    name="preco_categoria"
+                    value="{{ old('preco_categoria', $valor->preco_categoria) }}"
+                    required
+                    maxlength="120"
+                    class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+
+                @error('preco_categoria')
+                <span class="text-red-600 text-sm mt-1 block">
+                    {{ $message }}
+                </span>
+                @enderror
+            </div>
+
             <!-- Plano -->
             <div>
                 <label class="text-sm font-medium text-gray-600">Plano</label>

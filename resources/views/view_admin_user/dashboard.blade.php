@@ -32,7 +32,7 @@
             </p>
 
             <p class="font-semibold">
-                {{ $empresa->emp_degustacao_inicio->format('d/m/Y') }}
+                {{ $empresa->emp_degustacao_inicio->format('d/m/Y') ?? 'N/D'}}
             </p>
         </div>
 
@@ -42,7 +42,7 @@
             </p>
 
             <p class="font-semibold">
-                {{ $empresa->emp_degustacao_fim->format('d/m/Y') }}
+                {{ $empresa->emp_degustacao_fim->format('d/m/Y') ?? 'N/D'}}
             </p>
         </div>
 
@@ -63,7 +63,7 @@
 @elseif($contrato)
 
 <div class="bg-white rounded-2xl shadow-md border-l-8 border-[#8E251F] p-6 mb-10">
-    
+
     <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-5">
 
         <div>

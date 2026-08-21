@@ -22,6 +22,7 @@ class Matricula extends Model
         'matri_data_encerramento',
         'matri_plano',
         'matri_dia_vencimento',
+        'matri_categoria',
         'id_emp_id'
     ];
     public function aluno()

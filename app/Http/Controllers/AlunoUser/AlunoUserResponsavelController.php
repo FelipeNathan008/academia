@@ -84,7 +84,6 @@ class AlunoUserResponsavelController extends Controller
         $dados = $request->except($cpfAlterado ? [] : ['resp_cpf']);
 
         $responsavel->update($dados);
-
-        return back()->with('success', 'Responsável atualizado com sucesso!');
+        return redirect()->route('responsavel.index')->with('success', 'Responsável atualizado com sucesso!');
     }
 }

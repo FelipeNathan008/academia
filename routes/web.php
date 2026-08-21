@@ -381,7 +381,7 @@ Route::middleware(['auth', 'aluno'])->group(function () {
 
     // RESPONSAVEL
     Route::get('/aluno/responsavel', [AlunoUserResponsavelController::class, 'index'])->name('responsavel.index');
-    Route::put('/aluno/responsavel', [AlunoUserResponsavelController::class, 'update'])->name('aluno-responsavel.update');
+    Route::put('/aluno/responsavel/{id}', [AlunoUserResponsavelController::class, 'update'])->name('aluno-responsavel.update');
 
     // MATRÍCULA
     Route::get('/aluno/matriculas/{id}', [AlunoUserMatriculaController::class, 'index'])->name('aluno-matricula.index');

@@ -138,11 +138,6 @@ class AlunoUserAlunoController extends Controller
                 'after_or_equal:' . now()->subYears(100)->format('Y-m-d'),
             ],
 
-            'aluno_bolsista' => [
-                'required',
-                'in:sim,nao',
-            ],
-
             'aluno_desc' => [
                 'required',
                 'string',
@@ -180,7 +175,6 @@ class AlunoUserAlunoController extends Controller
         $aluno->aluno_nome = $request->aluno_nome;
         $aluno->aluno_parentesco = $request->aluno_parentesco;
         $aluno->aluno_nascimento = $request->aluno_nascimento;
-        $aluno->aluno_bolsista = $request->aluno_bolsista;
         $aluno->aluno_desc = $request->aluno_desc;
 
 

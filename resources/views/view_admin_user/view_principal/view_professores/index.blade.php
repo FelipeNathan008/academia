@@ -178,17 +178,21 @@
                 </td>
 
                 <td class="py-3 px-4">
-
                     <a href="{{ route('alunos.index', ['prof_nome' => $professor->prof_nome]) }}"
-                        class="inline-flex items-center justify-center min-w-[55px] px-4 py-2
-        bg-[#174ab9] text-white rounded-lg shadow
-        hover:bg-[#1e40af] transition duration-200"
+                        style="
+            padding: 5px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            color: #ffffff;
+            background-color: #2563eb;
+        "
+                        class="inline-flex items-center justify-center shadow-sm hover:bg-blue-700 hover:shadow-md transition duration-200 cursor-pointer"
                         title="Ver alunos deste professor">
 
                         {{ $professor->qtd_aluno ?? 0 }}
 
                     </a>
-
                 </td>
 
 

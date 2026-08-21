@@ -140,32 +140,6 @@
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
 
                 </div>
-
-
-                <div class="flex-1">
-
-                    <label class="text-sm font-medium text-gray-600">
-                        Bolsista
-                    </label>
-
-                    <select name="aluno_bolsista"
-                        required
-                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
-
-                        <option value="sim"
-                            {{ old('aluno_bolsista', $aluno->aluno_bolsista) == 'sim' ? 'selected' : '' }}>
-                            Sim
-                        </option>
-
-                        <option value="nao"
-                            {{ old('aluno_bolsista', $aluno->aluno_bolsista) == 'nao' ? 'selected' : '' }}>
-                            Não
-                        </option>
-
-                    </select>
-
-                </div>
-
             </div>
 
 

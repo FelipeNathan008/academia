@@ -125,16 +125,42 @@
                     </select>
                 </div>
 
+                <!-- CATEGORIA -->
                 <div>
-                    <label class="text-sm font-medium text-gray-600">Plano</label>
+                    <label class="text-sm font-medium text-gray-600">
+                        Categoria
+                    </label>
 
-                    <select name="matri_plano"
+                    <select
+                        name="matri_categoria"
+                        id="categoriaSelect"
+                        required
+                        disabled
+                        class="w-full border rounded-lg px-4 py-2 mt-1">
+
+                        <option value="">
+                            Selecione a modalidade primeiro
+                        </option>
+
+                    </select>
+                </div>
+
+                <!-- PLANO -->
+                <div>
+                    <label class="text-sm font-medium text-gray-600">
+                        Plano
+                    </label>
+
+                    <select
+                        name="matri_plano"
                         id="planoSelect"
                         required
                         disabled
                         class="w-full border rounded-lg px-4 py-2 mt-1">
 
-                        <option value="">Selecione a modalidade primeiro</option>
+                        <option value="">
+                            Selecione a categoria primeiro
+                        </option>
 
                     </select>
                 </div>
@@ -173,7 +199,7 @@
 
                     </select>
                 </div>
-                
+
                 <!-- TURMA -->
                 <div>
                     <label class="text-sm font-medium text-gray-600">Turma</label>
@@ -244,6 +270,11 @@
 
                     <p class="text-sm text-gray-600">
                         {{ $matricula->grade->grade_modalidade ?? '-' }}
+                    </p>
+
+                    <p class="text-sm text-gray-500">
+                        Categoria:
+                        <strong>{{ $matricula->matri_categoria ?? '-' }}</strong>
                     </p>
 
                     <p class="text-sm text-gray-500">
@@ -510,33 +541,134 @@
     const precos = JSON.parse(precosElement.dataset.precos);
 
     const planoSelect = document.getElementById('planoSelect');
+    const categoriaSelect = document.getElementById('categoriaSelect');
 
     // FILTRO MODALIDADE
     modalidadeSelect.addEventListener('change', function() {
 
+        categoriaSelect.innerHTML =
+            '<option value="">Selecione a categoria</option>';
+
+        categoriaSelect.disabled = true;
+
         planoSelect.innerHTML =
-            '<option value="">Selecione o plano</option>';
+            '<option value="">Selecione a categoria primeiro</option>';
+
         planoSelect.disabled = true;
 
-        turmaSelect.innerHTML = '<option value="">Selecione a turma</option>';
-        gradeSelect.innerHTML = '<option value="">Selecione o horário</option>';
+        turmaSelect.innerHTML =
+            '<option value="">Selecione a turma</option>';
+
+        turmaSelect.disabled = true;
+
+        gradeSelect.innerHTML =
+            '<option value="">Selecione o horário</option>';
+
         gradeSelect.disabled = true;
 
         if (!this.value) {
-            turmaSelect.disabled = true;
             return;
         }
 
         const modalidadeSelecionada = this.value;
 
-        const planosDisponiveis = [
+        const categoriasDisponiveis = [
             ...new Set(
                 precos
                 .filter(p =>
                     p.modalidade &&
                     p.modalidade.mod_nome === modalidadeSelecionada
                 )
+                .map(p => p.preco_categoria)
+                .filter(categoria => categoria)
+            )
+        ];
+
+        if (categoriasDisponiveis.length > 0) {
+
+            categoriaSelect.disabled = false;
+
+            categoriasDisponiveis.forEach(categoria => {
+
+                categoriaSelect.innerHTML += `
+                <option value="${categoria}">
+                    ${categoria}
+                </option>
+            `;
+            });
+
+        } else {
+
+            categoriaSelect.innerHTML = `
+            <option value="">
+                Nenhuma categoria cadastrada
+            </option>
+        `;
+
+            categoriaSelect.disabled = true;
+        }
+
+        const turmasFiltradas = [
+            ...new Set(
+                grades
+                .filter(g =>
+                    g.grade_modalidade === modalidadeSelecionada
+                )
+                .map(g => g.grade_turma)
+            )
+        ];
+
+        turmasFiltradas.forEach(turma => {
+
+            let textoExibicao = turma;
+
+            if (turma.toLowerCase() === 'criancas') {
+                textoExibicao = 'Crianças';
+            }
+
+            if (turma.toLowerCase() === 'adultos') {
+                textoExibicao = 'Adultos';
+            }
+
+            if (turma.toLowerCase() === 'mulheres') {
+                textoExibicao = 'Mulheres';
+            }
+
+            turmaSelect.innerHTML += `
+            <option value="${turma}">
+                ${textoExibicao}
+            </option>
+        `;
+        });
+
+        turmaSelect.disabled = false;
+    });
+
+    // FILTRO CATEGORIA -> PLANO
+    categoriaSelect.addEventListener('change', function() {
+
+        planoSelect.innerHTML =
+            '<option value="">Selecione o plano</option>';
+
+        planoSelect.disabled = true;
+
+        if (!this.value || !modalidadeSelect.value) {
+            return;
+        }
+
+        const modalidadeSelecionada = modalidadeSelect.value;
+        const categoriaSelecionada = this.value;
+
+        const planosDisponiveis = [
+            ...new Set(
+                precos
+                .filter(p =>
+                    p.modalidade &&
+                    p.modalidade.mod_nome === modalidadeSelecionada &&
+                    p.preco_categoria === categoriaSelecionada
+                )
                 .map(p => p.preco_plano)
+                .filter(plano => plano)
             )
         ];
 
@@ -547,50 +679,22 @@
             planosDisponiveis.forEach(plano => {
 
                 planoSelect.innerHTML += `
-            <option value="${plano}">
-                ${plano}
-            </option>
-        `;
+                <option value="${plano}">
+                    ${plano}
+                </option>
+            `;
             });
 
         } else {
 
             planoSelect.innerHTML = `
-        <option value="">
-            Nenhum plano cadastrado para esta modalidade
-        </option>
+            <option value="">
+                Nenhum plano cadastrado para esta categoria
+            </option>
         `;
 
             planoSelect.disabled = true;
         }
-        const turmasFiltradas = [...new Set(
-            grades
-            .filter(g => g.grade_modalidade === this.value)
-            .map(g => g.grade_turma)
-        )];
-
-        turmasFiltradas.forEach(turma => {
-
-            let textoExibicao = turma;
-
-            if (turma.toLowerCase() === 'criancas') {
-                textoExibicao = 'Crianças';
-            }
-            if (turma.toLowerCase() === 'adultos') {
-                textoExibicao = 'Adultos';
-            }
-            if (turma.toLowerCase() === 'mulheres') {
-                textoExibicao = 'Mulheres';
-            }
-
-            turmaSelect.innerHTML += `
-                <option value="${turma}">
-                    ${textoExibicao}
-                </option>
-            `;
-        });
-
-        turmaSelect.disabled = false;
     });
 
     // FILTRO TURMA

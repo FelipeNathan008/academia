@@ -9,7 +9,7 @@
 
 <!-- TOPO -->
 <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
-     <div class="flex items-center gap-4">
+    <div class="flex items-center gap-4">
         <a href="{{ route('admin.administracao') }}"
             class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
             ← Voltar
@@ -44,6 +44,28 @@
                         </option>
                         @endforeach
                     </select>
+                </div>
+
+                {{-- Categoria --}}
+                <div>
+                    <label class="text-sm font-medium text-gray-600">
+                        Categoria
+                    </label>
+
+                    <input
+                        type="text"
+                        name="preco_categoria"
+                        value="{{ old('preco_categoria') }}"
+                        required
+                        maxlength="120"
+                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none"
+                        placeholder="Ex: Plano Família">
+
+                    @error('preco_categoria')
+                    <span class="text-red-600 text-sm mt-1 block">
+                        {{ $message }}
+                    </span>
+                    @enderror
                 </div>
 
                 <!-- Preço -->
@@ -92,6 +114,7 @@
         <thead>
             <tr class="border-b border-gray-300 text-gray-600 text-sm">
                 <th class="py-3 px-4">Modalidade</th>
+                <th class="py-3 px-4">Categoria</th>
                 <th class="py-3 px-4">Plano</th>
                 <th class="py-3 px-4">Preço</th>
                 <th class="py-3 px-4">Ações</th>
@@ -105,6 +128,11 @@
                 <!-- Nome Modalidade -->
                 <td class="py-3 px-4">
                     {{ $valor->modalidade->mod_nome ?? 'Sem modalidade' }}
+                </td>
+
+                {{-- Categoria --}}
+                <td class="py-3 px-4">
+                    {{ $valor->preco_categoria ?? 'Sem categoria' }}
                 </td>
 
                 <!-- Nome Modalidade -->
@@ -144,7 +172,7 @@
 
             @empty
             <tr>
-                <td colspan="4" class="text-center text-gray-500 py-6">
+                <td colspan="5" class="text-center text-gray-500 py-6">
                     Nenhum valor cadastrado
                 </td>
             </tr>

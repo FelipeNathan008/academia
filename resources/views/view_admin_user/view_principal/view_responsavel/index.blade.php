@@ -73,13 +73,15 @@
 
             <button type="button"
                 onclick="abrirCadastroKids()"
-                class="bg-[#8E251F] text-white rounded-xl py-4 hover:bg-[#732920]">
+                style="background-color: #174ab9; color: white;"
+                class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                 Kids
             </button>
 
             <button type="button"
                 onclick="abrirCadastroAdulto()"
-                class="bg-blue-600 text-white rounded-xl py-4 hover:bg-blue-700">
+                style="background-color: #8E251F; color: white;"
+                class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                 Adulto
             </button>
 

@@ -14,7 +14,8 @@ class PrecoModalidade extends Model
         'modalidade_id',
         'preco_modalidade',
         'preco_plano',
-        'id_emp_id'
+        'id_emp_id',
+        'preco_categoria'
     ];
 
     public function modalidade()

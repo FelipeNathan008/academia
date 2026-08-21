@@ -201,15 +201,18 @@ class MatriculaController extends Controller
                 'before_or_equal:today',
                 'after_or_equal:' . $aluno->aluno_nascimento,
             ],
-            'matri_desc'     => 'required|string|max:150',
-            'matri_plano'    => 'required|string|max:40',
+            'matri_desc'          => 'required|string|max:150',
+            'matri_categoria'     => 'required|string|max:120',
+            'matri_plano'         => 'required|string|max:40',
             'matri_dia_vencimento' => 'required|integer|min:1|max:31',
-            'grade_id_grade' => 'required|exists:grade_horario,id_grade',
+            'grade_id_grade'      => 'required|exists:grade_horario,id_grade',
         ], [
             'matri_data.required' => 'A data da matrícula é obrigatória.',
             'matri_data.date' => 'Informe uma data válida.',
             'matri_data.before_or_equal' => 'Não é possível informar uma data futura.',
             'matri_data.after_or_equal' => 'A data não pode ser anterior ao nascimento do aluno.',
+            'matri_categoria.required' => 'Selecione uma categoria.',
+            'matri_plano.required' => 'Selecione um plano.',
         ]);
 
         // VERIFICA DUPLICIDADE POR MODALIDADE
@@ -236,15 +239,16 @@ class MatriculaController extends Controller
         try {
 
             $matricula = Matricula::create([
-                'aluno_id_aluno' => $id,
-                'matri_status'   => 'Matriculado',
-                'matri_data'     => $request->matri_data,
-                'matri_plano'    => $request->matri_plano,
+                'aluno_id_aluno'     => $id,
+                'matri_status'       => 'Matriculado',
+                'matri_data'         => $request->matri_data,
+                'matri_plano'        => $request->matri_plano,
+                'matri_categoria'    => $request->matri_categoria,
                 'matri_dia_vencimento' => $request->matri_dia_vencimento,
 
-                'grade_id_grade' => $request->grade_id_grade,
-                'matri_desc'     => $request->matri_desc,
-                'id_emp_id'      => $user->id_emp_id
+                'grade_id_grade'     => $request->grade_id_grade,
+                'matri_desc'         => $request->matri_desc,
+                'id_emp_id'          => $user->id_emp_id
             ]);
 
             if (strtolower($aluno->aluno_bolsista) !== 'sim') {
@@ -264,12 +268,15 @@ class MatriculaController extends Controller
                 }
 
                 $preco = PrecoModalidade::where('preco_plano', $request->matri_plano)
+                    ->where('preco_categoria', $request->matri_categoria)
                     ->where('modalidade_id', $modalidade->id_modalidade)
                     ->where('id_emp_id', $user->id_emp_id)
                     ->first();
 
                 if (!$preco) {
-                    throw new \Exception('Preço não encontrado para esse plano e modalidade.');
+                    throw new \Exception(
+                        'Preço não encontrado para essa modalidade, categoria e plano.'
+                    );
                 }
 
                 $mensalidade = Mensalidade::create([
@@ -361,19 +368,47 @@ class MatriculaController extends Controller
         }
 
         $user = Auth::user();
+
         $matricula = Matricula::where('id_matricula', $id)
             ->where('id_emp_id', $user->id_emp_id)
             ->firstOrFail();
 
+        // Só permite excluir matrícula encerrada
         if ($matricula->matri_status !== 'Encerrada') {
             return redirect()
                 ->route('matricula', Crypt::encrypt($matricula->aluno_id_aluno))
-                ->withErrors(['erro' => 'Só é possível excluir matrículas encerradas.']);
+                ->withErrors([
+                    'erro' => 'Só é possível excluir matrículas encerradas.'
+                ]);
         }
 
+        $mensalidadeAtrasada = Mensalidade::where(
+            'matricula_id_matricula',
+            $matricula->id_matricula
+        )
+            ->where('id_emp_id', $user->id_emp_id)
+            ->whereHas('detalhes', function ($query) {
+                $query->where('det_mensa_status', 'Atrasado');
+            })
+            ->exists();
+
+        if ($mensalidadeAtrasada) {
+            return redirect()
+                ->route('matricula', Crypt::encrypt($matricula->aluno_id_aluno))
+                ->withErrors([
+                    'erro' => 'Não é possível excluir esta matrícula porque ela possui mensalidade(s) atrasada(s). Regularize as pendências financeiras antes de excluir.'
+                ]);
+        }
+
+    
         $alunoId = $matricula->aluno_id_aluno;
 
-        $mensalidades = Mensalidade::where('matricula_id_matricula', $matricula->id_matricula)->get();
+        $mensalidades = Mensalidade::where(
+            'matricula_id_matricula',
+            $matricula->id_matricula
+        )
+            ->where('id_emp_id', $user->id_emp_id)
+            ->get();
 
         foreach ($mensalidades as $mensalidade) {
             $mensalidade->detalhes()->delete();
