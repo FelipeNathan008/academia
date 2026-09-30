@@ -309,18 +309,40 @@
                     <button
                         type="button"
                         onclick="toggleSenha()"
+                        aria-label="Mostrar senha"
                         style="
-                position:absolute;
-                right:12px;
-                top:50%;
-                transform:translateY(-50%);
-                background:none;
-                border:none;
-                color:#ccc;
-                cursor:pointer;
-                font-size:16px;">
-                        <span id="icone-olho">👁</span>
+                            position:absolute;
+                            right:12px;
+                            top:50%;
+                            transform:translateY(-50%);
+                            background:none;
+                            border:none;
+                            color:#aaa;
+                            cursor:pointer;
+                            padding:4px;
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                            transition:.2s;
+                        "
+                        onmouseover="this.style.color='#fff'"
+                        onmouseout="this.style.color='#aaa'">
+                        <svg
+                            id="icone-olho"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
                     </button>
+
                 </div>
 
                 @error('password')
@@ -455,12 +477,30 @@
     function toggleSenha() {
         const input = document.getElementById('senha');
         const icone = document.getElementById('icone-olho');
+
         if (input.type === 'password') {
             input.type = 'text';
-            icone.innerHTML = '🙈';
+
+            // Ícone de olho fechado
+            icone.innerHTML = `
+            <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+            <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c5 0 8.73 4.17 9.5 7a1 1 0 0 1 0 .7 10.75 10.75 0 0 1-4.1 5.18"/>
+            <path d="M6.61 6.61A10.75 10.75 0 0 0 2.5 12.3a1 1 0 0 0 0 .7C3.27 15.83 7 20 12 20a10.43 10.43 0 0 0 2.73-.36"/>
+            <line x1="2" y1="2" x2="22" y2="22"/>
+        `;
+
+            icone.setAttribute('aria-label', 'Ocultar senha');
+
         } else {
             input.type = 'password';
-            icone.innerHTML = '👁';
+
+            // Ícone de olho aberto
+            icone.innerHTML = `
+            <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/>
+            <circle cx="12" cy="12" r="3"/>
+        `;
+
+            icone.setAttribute('aria-label', 'Mostrar senha');
         }
     }
 </script>

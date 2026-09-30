@@ -39,4 +39,5 @@ class MensalidadeContrato extends Model
             'id_det_contrato'
         );
     }
+    
 }

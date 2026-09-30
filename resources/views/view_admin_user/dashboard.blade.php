@@ -24,43 +24,127 @@
         </h3>
     </div>
 
-    <div class="grid md:grid-cols-3 gap-6 p-6">
+    @php
+    $hoje = now()->startOfDay();
+    $fimDegustacao = $empresa->emp_degustacao_fim?->startOfDay();
 
-        <div>
-            <p class="text-xs uppercase text-gray-500">
-                Início
-            </p>
+    $diasRestantes = $fimDegustacao
+    ? $hoje->diffInDays($fimDegustacao, false)
+    : null;
+    @endphp
 
-            <p class="font-semibold">
-                {{ $empresa->emp_degustacao_inicio->format('d/m/Y') ?? 'N/D'}}
-            </p>
+    {{-- AVISO: faltam 5 dias ou menos --}}
+    @if($diasRestantes !== null && $diasRestantes >= 0 && $diasRestantes <= 5)
+
+        <div class="mx-6 mt-6 p-4 rounded-xl border border-yellow-300 bg-yellow-50">
+        <div class="flex items-start gap-3">
+
+            <div class="text-yellow-600 text-xl">
+                ⚠️
+            </div>
+
+            <div>
+                <h4 class="font-bold text-yellow-800">
+                    Atenção: período de degustação chegando ao fim
+                </h4>
+
+                <p class="text-sm text-yellow-700 mt-1">
+                    @if($diasRestantes == 0)
+                    Seu período de degustação termina <strong>hoje</strong>.
+                    @elseif($diasRestantes == 1)
+                    Falta apenas <strong>1 dia</strong> para o fim do período de degustação.
+                    @else
+                    Faltam apenas <strong>{{ $diasRestantes }} dias</strong> para o fim do período de degustação.
+                    @endif
+                </p>
+
+                <p class="text-sm text-yellow-700 mt-1">
+                    Para continuar utilizando a plataforma, é necessário realizar a
+                    <strong>contratação de um plano e formalizar o contrato</strong>.
+                </p>
+
+            </div>
+
         </div>
+</div>
 
-        <div>
-            <p class="text-xs uppercase text-gray-500">
-                Fim
-            </p>
+@endif
 
-            <p class="font-semibold">
-                {{ $empresa->emp_degustacao_fim->format('d/m/Y') ?? 'N/D'}}
-            </p>
-        </div>
+<div class="grid md:grid-cols-4 gap-6 p-6">
 
-        <div>
-            <p class="text-xs uppercase text-gray-500">
-                Status
-            </p>
+    <div>
+        <p class="text-xs uppercase text-gray-500">
+            Início
+        </p>
+        <p class="font-semibold">
+            {{ $empresa->emp_degustacao_inicio?->format('d/m/Y') ?? 'N/D' }}
+        </p>
+    </div>
 
-            <span class="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
-                Degustação
-            </span>
-        </div>
+    <div>
+        <p class="text-xs uppercase text-gray-500">
+            Fim
+        </p>
 
+        <p class="font-semibold">
+            {{ $empresa->emp_degustacao_fim?->format('d/m/Y') ?? 'N/D' }}
+        </p>
+    </div>
+
+    <div>
+        <p class="text-xs uppercase text-gray-500">
+            Status
+        </p>
+
+        <span class="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
+            Degustação
+        </span>
+    </div>
+
+    <div class="flex items-center">
+        <a href="{{ route('admin.planos') }}"
+            class="w-full text-center px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920] transition font-semibold">
+            Ver Planos
+        </a>
     </div>
 
 </div>
+</div>
 
 @elseif($contrato)
+
+@if(
+$contrato &&
+$contrato->detalheAtual &&
+$contrato->detalheAtual->det_plano_tipo != 'financeiro' &&
+$contagemMatriculas >= $contrato->detalheAtual->det_plano_quantidade
+)
+
+<div class="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 mb-4">
+    <div class="flex items-center justify-between gap-4">
+
+        <div class="flex items-center gap-2">
+            <span class="text-yellow-600">⚠️</span>
+
+            <p class="text-sm text-yellow-800">
+                O limite de matrículas do seu plano foi excedido.
+                <strong>
+                    {{ $contagemMatriculas }}/{{ $contrato->detalheAtual->det_plano_quantidade }}
+                </strong>
+                matrículas utilizadas.
+            </p>
+
+        </div>
+
+        <a href="{{ route('admin.planos') }}"
+            class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920]">
+            Atualizar contrato
+        </a>
+
+    </div>
+</div>
+
+@endif
 
 <div class="bg-white rounded-2xl shadow-md border-l-8 border-[#8E251F] p-6 mb-10">
 
@@ -124,10 +208,64 @@
             </p>
         </div>
 
-        <a href="{{ route('contrato.show', Crypt::encrypt($contrato->id_contrato)) }}"
-            class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920]">
-            Ver contrato
-        </a>
+        @if($alertaFinanceiro)
+
+        <div class="flex-1 flex justify-center">
+
+            <div class="rounded-xl px-5 py-4 max-w-sm w-full
+        @switch($alertaFinanceiro['cor'])
+            @case('red')
+                bg-red-50 border border-red-200
+            @break
+
+            @case('blue')
+                bg-blue-50 border border-blue-200
+            @break
+
+            @case('yellow')
+                bg-yellow-50 border border-yellow-200
+            @break
+        @endswitch">
+
+                <p class="text-xs uppercase tracking-widest text-gray-500 mb-1">
+                    Financeiro
+                </p>
+
+                <p class="font-semibold
+            @switch($alertaFinanceiro['cor'])
+                @case('red')
+                    text-red-700
+                @break
+
+                @case('blue')
+                    text-blue-700
+                @break
+
+                @case('yellow')
+                    text-yellow-700
+                @break
+            @endswitch">
+
+                    {{ $alertaFinanceiro['texto'] }}
+                </p>
+            </div>
+        </div>
+
+        @endif
+
+        <div class="flex flex-col sm:flex-row gap-3">
+
+            <a href="{{ route('contrato.show', Crypt::encrypt($contrato->id_contrato)) }}"
+                class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920] text-center">
+                Ver contrato
+            </a>
+
+            <a href="{{ route('contrato.show', Crypt::encrypt($contrato->id_contrato)) }}#pagamentos"
+                class="px-5 py-2 border border-[#8E251F] text-[#8E251F] rounded-lg hover:bg-[#8E251F] hover:text-white transition text-center">
+                Ver pagamentos
+            </a>
+
+        </div>
     </div>
 
 </div>
@@ -136,10 +274,57 @@
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
 
-    <div class="p-6 bg-white rounded-xl shadow-sm">
+    <div class="p-6 bg-white rounded-xl shadow-sm border-2 border-[#8E251F] relative overflow-hidden">
+
+        <!-- Destaque lateral -->
+        <div class="absolute left-0 top-0 bottom-0 w-2 bg-[#8E251F]"></div>
+
+        <div class="pl-2">
+
+            <div class="flex items-center justify-between gap-3 mb-2">
+
+                <h3 class="font-semibold text-lg text-gray-800">
+                    Quantidade de Matrículas da Academia
+                </h3>
+
+                <span class="px-2.5 py-1 text-xs font-bold uppercase tracking-wide
+                         text-[#8E251F] bg-[#8E251F]/10 rounded-full">
+                    Contrato
+                </span>
+
+            </div>
+
+            <p class="text-3xl font-bold text-[#8E251F] mb-2">
+                {{ $contagemMatriculas }}
+            </p>
+
+            <span class="text-sm text-gray-500">
+                Total de Matrículas "Matriculado" e "Pausada"
+            </span>
+
+        </div>
+
+    </div>
+    <a href="{{ route('alunos.index', ['bolsista' => 'sim']) }}"
+        class="block p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition">
+
+        <h3 class="font-semibold text-lg mb-2">
+            Total de Alunos Bolsistas
+        </h3>
+
+        <p class="text-2xl font-bold mb-2">
+            {{ $totalBolsista }}
+        </p>
+
+        <span class="text-sm text-blue-600 underline hover:text-blue-800 font-medium">
+            Ver todos os Alunos →
+        </span>
+    </a>
+
+    <div class="p-6 bg-white rounded-xl shadow-sm ">
         <h3 class="font-semibold text-lg mb-2">Total de Alunos Matriculados</h3>
         <p class="text-2xl font-bold mb-2">{{ $totalAlunosMatriculados }}</p>
-        <span class="text-sm text-gray-500">Total Geral</span>
+        <span class="text-sm text-gray-500">Total de Matrículas "Matriculado"</span>
     </div>
 
     <a href="{{ route('alunos.index', ['matricula' => 'Encerrada']) }}"
@@ -179,6 +364,7 @@
             Ver todos os Alunos →
         </span>
     </a>
+
     <div class="p-6 bg-white rounded-xl shadow-sm">
         <h3 class="font-semibold text-lg mb-2">Receita Mensal (Pago/Total)</h3>
         <p class="text-2xl font-bold mb-2">

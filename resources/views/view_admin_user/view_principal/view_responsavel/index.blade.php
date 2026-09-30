@@ -98,24 +98,32 @@
 </div>
 
 <!-- FORMULÁRIO -->
+
 <div id="cadastroForm"
     class="{{ $errors->any() ? '' : 'hidden' }}">
     <form action="{{ route('responsaveis.store') }}" method="POST" onsubmit="bloquearSubmit(event, this)">
         @csrf
+
         <input type="hidden" name="tipo_cadastro" id="tipo_cadastro" value="kids">
 
-
         <div id="cadastroResponsavel" class="bg-white rounded-2xl shadow-md p-8">
+
             <h3 class="text-xl font-bold mb-6 text-gray-700">
                 Cadastrar Responsável
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                <!-- Nome -->
-                <div>
-                    <label class="text-sm font-medium text-gray-600">Nome do Responsável</label>
-                    <input type="text" name="resp_nome" required maxlength="120"
+                <!-- Nome - Linha inteira -->
+                <div class="md:col-span-2">
+                    <label class="text-sm font-medium text-gray-600">
+                        Nome do Responsável
+                    </label>
+
+                    <input type="text"
+                        name="resp_nome"
+                        required
+                        maxlength="120"
                         value="{{ old('resp_nome') }}"
                         placeholder="Ex: Maria Lúcia"
                         oninput="validarNome(this)"
@@ -124,28 +132,45 @@
 
                 <!-- Tipo -->
                 <div class="campo-kids">
-                    <label class="text-sm font-medium text-gray-600">Tipo</label>
+                    <label class="text-sm font-medium text-gray-600">
+                        Tipo
+                    </label>
+
                     <select name="resp_parentesco"
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                         <option value="">Selecione o Tipo</option>
-                        <option {{ old('resp_parentesco') == 'Responsável' ? 'selected' : '' }}>Responsável</option>
-                        <option {{ old('resp_parentesco') == 'Outro' ? 'selected' : '' }}>Outro</option>
+                        <option {{ old('resp_parentesco') == 'Responsável' ? 'selected' : '' }}>
+                            Responsável
+                        </option>
+                        <option {{ old('resp_parentesco') == 'Outro' ? 'selected' : '' }}>
+                            Outro
+                        </option>
                     </select>
                 </div>
 
                 <!-- Email -->
-                <div class="campo-kids">
-                    <label class="text-sm font-medium text-gray-600">Email</label>
-                    <input type="email" name="resp_email" maxlength="150"
+                <div>
+                    <label class="text-sm font-medium text-gray-600">
+                        Email
+                    </label>
+
+                    <input type="email"
+                        name="resp_email"
+                        maxlength="150"
                         value="{{ old('resp_email') }}"
                         placeholder="Ex: marialucia@email.com"
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                 </div>
 
                 <!-- Telefone -->
-                <div class="campo-kids">
-                    <label class="text-sm font-medium text-gray-600">Telefone</label>
-                    <input type="text" id="resp_telefone" name="resp_telefone"
+                <div>
+                    <label class="text-sm font-medium text-gray-600">
+                        Telefone
+                    </label>
+
+                    <input type="text"
+                        id="resp_telefone"
+                        name="resp_telefone"
                         value="{{ old('resp_telefone') }}"
                         placeholder="Ex: (99) 99999-9999"
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
@@ -153,21 +178,35 @@
 
                 <!-- CPF -->
                 <div class="campo-kids">
-                    <label class="text-sm font-medium text-gray-600">CPF</label>
-                    <input type="text" name="resp_cpf" maxlength="14"
+                    <label class="text-sm font-medium text-gray-600">
+                        CPF
+                    </label>
+
+                    <input type="text"
+                        name="resp_cpf"
+                        maxlength="14"
                         value="{{ old('resp_cpf') }}"
                         placeholder="000.000.000-00"
                         oninput="mascaraCPF(this)"
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] @error('resp_cpf') border-red-500 @enderror">
+
                     @error('resp_cpf')
-                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    <p class="text-red-600 text-sm mt-1">
+                        {{ $message }}
+                    </p>
                     @enderror
                 </div>
 
                 <!-- CEP -->
                 <div class="campo-kids">
-                    <label class="text-sm font-medium text-gray-600">CEP</label>
-                    <input type="text" name="resp_cep" id="resp_cep" maxlength="9"
+                    <label class="text-sm font-medium text-gray-600">
+                        CEP
+                    </label>
+
+                    <input type="text"
+                        name="resp_cep"
+                        id="resp_cep"
+                        maxlength="9"
                         value="{{ old('resp_cep') }}"
                         placeholder="00000-000"
                         oninput="mascaraCEP(this)"
@@ -177,8 +216,12 @@
 
                 <!-- Cidade -->
                 <div class="campo-kids">
-                    <label class="text-sm font-medium text-gray-600">Cidade</label>
-                    <input type="text" name="resp_cidade"
+                    <label class="text-sm font-medium text-gray-600">
+                        Cidade
+                    </label>
+
+                    <input type="text"
+                        name="resp_cidade"
                         value="{{ old('resp_cidade') }}"
                         placeholder="Ex: São Paulo"
                         oninput="validarTexto(this)"
@@ -187,8 +230,12 @@
 
                 <!-- Bairro -->
                 <div class="campo-kids">
-                    <label class="text-sm font-medium text-gray-600">Bairro</label>
-                    <input type="text" name="resp_bairro"
+                    <label class="text-sm font-medium text-gray-600">
+                        Bairro
+                    </label>
+
+                    <input type="text"
+                        name="resp_bairro"
                         value="{{ old('resp_bairro') }}"
                         placeholder="Ex: Centro"
                         oninput="validarTexto(this)"
@@ -197,8 +244,12 @@
 
                 <!-- Logradouro -->
                 <div class="campo-kids">
-                    <label class="text-sm font-medium text-gray-600">Logradouro</label>
-                    <input type="text" name="resp_logradouro"
+                    <label class="text-sm font-medium text-gray-600">
+                        Logradouro
+                    </label>
+
+                    <input type="text"
+                        name="resp_logradouro"
                         value="{{ old('resp_logradouro') }}"
                         placeholder="Rua, Avenida, etc."
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
@@ -206,17 +257,25 @@
 
                 <!-- Número -->
                 <div class="campo-kids">
-                    <label class="text-sm font-medium text-gray-600">Número</label>
-                    <input type="text" name="resp_numero"
+                    <label class="text-sm font-medium text-gray-600">
+                        Número
+                    </label>
+
+                    <input type="text"
+                        name="resp_numero"
                         value="{{ old('resp_numero') }}"
                         placeholder="Ex: 63"
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
                 </div>
 
-                <!-- Complemento -->
-                <div class="campo-kids md:col-span-2">
-                    <label class="text-sm font-medium text-gray-600">Complemento (Opcional)</label>
-                    <input type="text" name="resp_complemento"
+                <!-- Complemento - metade da linha -->
+                <div class="campo-kids">
+                    <label class="text-sm font-medium text-gray-600">
+                        Complemento (Opcional)
+                    </label>
+
+                    <input type="text"
+                        name="resp_complemento"
                         value="{{ old('resp_complemento') }}"
                         placeholder="Ex: Bloco B, Apto 302"
                         class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F]">
@@ -225,12 +284,20 @@
             </div>
 
             <div class="flex justify-end gap-4 border-t pt-6 mt-8">
-                <button type="button" onclick="fecharCadastro()"
-                    class="px-4 py-2 border rounded-lg hover:bg-gray-100">Cancelar</button>
+
+                <button type="button"
+                    onclick="fecharCadastro()"
+                    class="px-4 py-2 border rounded-lg hover:bg-gray-100">
+                    Cancelar
+                </button>
 
                 <button type="submit"
-                    class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920]">Salvar</button>
+                    class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920]">
+                    Salvar
+                </button>
+
             </div>
+
         </div>
     </form>
 </div>
@@ -238,39 +305,74 @@
 
 <!-- FILTRO -->
 <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
-    <div class="flex flex-wrap gap-6 items-end justify-center max-w-6xl mx-auto">
 
-        <div class="flex flex-col w-[400px]">
+    <div class="flex flex-col gap-6 max-w-6xl mx-auto">
+
+        <!-- BUSCA POR NOME -->
+        <div>
             <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
                 Buscar Responsável
             </label>
-            <form method="GET" class="flex gap-2 items-end">
 
-                <input type="text" name="nome"
+            <form method="GET" class="flex flex-wrap gap-2 items-end">
+
+                <input
+                    type="text"
+                    name="nome"
                     value="{{ request('nome') }}"
                     placeholder="Digite o nome..."
-                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-               focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+                    class="flex-1 min-w-[250px] border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
 
-                <button type="submit"
+                <button
+                    type="submit"
                     class="h-[48px] px-6 rounded-xl bg-[#8E251F] text-white
-               hover:bg-[#732920] transition shadow-md">
+                           hover:bg-[#732920] transition shadow-md">
                     Buscar
                 </button>
 
-                <a href="{{ route('responsaveis') }}"
+                <a
+                    href="{{ route('responsaveis') }}"
                     class="h-[48px] px-6 rounded-xl bg-gray-300 text-gray-800
-           flex items-center justify-center
-           hover:bg-gray-400 transition shadow-md">
+                           flex items-center justify-center
+                           hover:bg-gray-400 transition shadow-md">
                     Limpar
                 </a>
 
             </form>
         </div>
 
-    </div>
-</div>
 
+        <!-- FILTRO POR LETRA -->
+        <div>
+            <label class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide block">
+                Filtrar pela primeira letra
+            </label>
+            <div class="flex flex-wrap gap-2">
+                @foreach (range('A', 'Z') as $letra)
+                <a
+                    href="{{ route('responsaveis', ['letra' => $letra]) }}"
+                    class="
+                            w-10 h-10
+                            flex items-center justify-center
+                            rounded-lg
+                            font-bold
+                            text-sm
+                            transition
+                            shadow-sm
+                            {{ strtoupper(request('letra')) === $letra
+                                ? 'bg-[#8E251F] text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-[#8E251F] hover:text-white'
+                            }}
+                        ">
+                    {{ $letra }}
+                </a>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
+</div>
 
 <!-- LISTAGEM -->
 <div class="bg-white rounded-2xl shadow-md p-6">
@@ -293,9 +395,8 @@
         <thead>
             <tr class="border-b text-gray-600 text-sm">
                 <th class="py-3 px-4 text-left">Nome</th>
-                <th class="py-3 px-4 text-left">CPF</th>
-                <th class="py-3 px-4 text-left">Tipo</th>
                 <th class="py-3 px-4 text-left">Telefone</th>
+                <th class="py-3 px-4 text-left">E-mail</th>
                 <th class="py-3 px-4 text-left">Ações</th>
             </tr>
         </thead>
@@ -307,21 +408,16 @@
                     : 'hover:bg-gray-50' }}">
 
                 <td class="py-3 px-4">
-                    {{ $resp->resp_nome }}
-                </td>
-
-                <td class="py-3 px-4 font-mono text-gray-600">
-                    {{ $resp->resp_cpf_mascarado ?? "-" }}
-                </td>
-
-                <td class="py-3 px-4">
-                    {{ $resp->resp_parentesco ?? "-"}}
+                    {{ Str::upper($resp->resp_nome) }}
                 </td>
 
                 <td class="py-3 px-4">
                     {{ preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $resp->resp_telefone ?? "-") }}
                 </td>
 
+                <td class="py-3 px-4">
+                    {{$resp->resp_email ?? "-" }}
+                </td>
 
                 <td class="py-3 px-4">
                     <div class="flex gap-2">

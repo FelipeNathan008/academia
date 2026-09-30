@@ -17,7 +17,7 @@
 <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-8">
     <div>
         <h2 class="text-3xl font-bold text-gray-800">
-            Contrato #{{ $contrato->id_contrato }}
+            Contrato - {{ $contrato->contrato_empresa_nome }}
         </h2>
         <p class="text-gray-500 mt-2">
             Visualização completa dos dados do contrato.
@@ -43,10 +43,14 @@
         </div>
 
         <div>
-            <p class="text-xs uppercase tracking-widest text-gray-500">Situação financeira</p>
-            <p class="text-lg font-semibold mt-1">
-                {{ $contrato->contrato_situacao_financeira }}
+            <p class="text-xs uppercase tracking-widest text-gray-500 mb-2">
+                Financeiro
             </p>
+
+            <a href="#pagamentos"
+                class="inline-flex items-center px-5 py-2 bg-[#8E251F] text-white rounded-lg font-semibold hover:bg-[#732920] transition">
+                Pagamentos
+            </a>
         </div>
 
         <div>
@@ -213,7 +217,7 @@
 </div>
 
 <!-- MENSALIDADES -->
-<div class="bg-white rounded-2xl shadow-md p-8">
+<div id="pagamentos" class="bg-white rounded-2xl shadow-md p-8 scroll-mt-6">
     <h3 class="text-xl font-bold text-gray-700 mb-6">Mensalidades</h3>
 
     @php
@@ -230,6 +234,7 @@
                     <th class="py-3 pr-4">Valor</th>
                     <th class="py-3 pr-4">Status</th>
                     <th class="py-3 pr-4">Pagamento</th>
+                    <th class="py-3 pr-4">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -248,17 +253,100 @@
                     </td>
 
                     <td class="py-3 pr-4">
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold
-                                    @if($mensalidade->mensa_contrato_status == 'Pago') bg-green-100 text-green-700
-                                    @elseif($mensalidade->mensa_contrato_status == 'Pendente') bg-yellow-100 text-yellow-700
-                                    @else bg-red-100 text-red-700 @endif">
-                            {{ $mensalidade->mensa_contrato_status }}
+                        @switch($mensalidade->mensa_contrato_status)
+                        @case('Comprovante enviado')
+                        <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg"
+                            style="background-color: #2563eb;">
+                            Comprovante enviado
                         </span>
+                        @break
+                        @case('Pago')
+                        <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg"
+                            style="background-color: #15803d;">
+                            Pago
+                        </span>
+                        @break
+                        @case('Atrasado')
+                        <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg"
+                            style="background-color: #dc2626;">
+                            Atrasado
+                        </span>
+                        @break
+                        @case('Rejeitado')
+                        <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg shadow transition duration-200"
+                            style="background-color: #e71f1f;">
+                            Rejeitado
+                        </span>
+                        @break
+                        @case('Pendente')
+                        <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg"
+                            style="background-color: #ca8a04;">
+                            Pendente
+                        </span>
+                        @break
+                        @default
+                        <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg bg-gray-400">
+                            {{ $detalhe->det_mensa_status }}
+                        </span>
+                        @endswitch
                     </td>
 
                     <td class="py-3 pr-4">
                         {{ $mensalidade->mensa_contrato_pagamento?->format('d/m/Y') ?? '-' }}
                     </td>
+
+                    <td class="py-3 px-4 text-center">
+                        @php
+                        $vencimento = $mensalidade->mensa_contrato_vencimento
+                        ? \Carbon\Carbon::parse($mensalidade->mensa_contrato_vencimento)->startOfDay()
+                        : null;
+
+                        $hoje = \Carbon\Carbon::today();
+
+                        $status = $mensalidade->mensa_contrato_status;
+
+                        $statusSempreExibe = in_array($status, [
+                        'Comprovante enviado',
+                        'Atrasado',
+                        'Rejeitado'
+                        ]);
+
+                        $podePagarPix =
+                        $status !== 'Pago' &&
+                        (
+                        $statusSempreExibe ||
+                        (
+                        $vencimento &&
+                        $vencimento->gte($hoje) &&
+                        $hoje->diffInDays($vencimento) <= 3
+                            )
+                            );
+                            @endphp
+
+                            @if($podePagarPix)
+                            <a
+                            href="{{ route('contrato-financeiro.pagamento.show', Crypt::encrypt($mensalidade->id_mensalidade_contrato)) }}"
+                            class="inline-flex items-center justify-center w-9 h-9 rounded-full shadow text-white transition hover:scale-105 mx-auto"
+                            style="background:#059669;"
+                            title="Pagar via Pix">
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                class="w-5 h-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor">
+
+                                <path stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8v1m0 7v1m9-5a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            </a>
+                            @else
+                            <span class="text-gray-400">-</span>
+                            @endif
+                    </td>
+
                 </tr>
                 @endforeach
             </tbody>

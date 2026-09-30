@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Contracts\Encryption\DecryptException;
 
 class UsuariosController extends Controller
@@ -85,7 +86,7 @@ class UsuariosController extends Controller
 
             $dados = Responsavel::whereNotIn('id_responsavel', $usados)
                 ->when($busca, fn($q) => $q->where('resp_nome', 'like', "%{$busca}%"))
-                ->paginate(2);
+                ->paginate(5);
         }
 
         return response()->json($dados);
@@ -95,16 +96,25 @@ class UsuariosController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:100',
-            'login' => 'required|string|max:100',
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->where(function ($query) use ($request) {
+                    return $query->where('role', $request->role);
+                }),
+            ],
             'password' => 'required|string|min:8',
             'role' => 'required|in:admin,professor,aluno',
             'id_emp_id' => 'required|exists:empresas,id_empresa',
             'id_filial_id' => 'nullable|exists:filiais,id_filial',
-
             'professor_id' => 'nullable|exists:professor,id_professor',
             'responsavel_id' => 'nullable|exists:responsavel,id_responsavel',
         ], [
-            'password.min' => 'A senha deve ter no mínimo 8 caracteres.'
+            'email.required' => 'O e-mail é obrigatório.',
+            'email.email' => 'Digite um e-mail válido. Exemplo: usuario@gmail.com',
+            'email.unique' => 'Este e-mail já está cadastrado.',
+            'password.min' => 'A senha deve ter no mínimo 8 caracteres.',
         ]);
 
         $professorId = null;
@@ -118,41 +128,34 @@ class UsuariosController extends Controller
             $responsavelId = $request->responsavel_id;
         }
 
+        // Verifica se o professor já está vinculado
         if ($request->role === 'professor' && $request->professor_id) {
+
             if (User::where('professor_id', $request->professor_id)->exists()) {
-                return back()->withErrors(['Professor já vinculado a outro usuário.']);
+
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'professor_id' => 'Professor já vinculado a outro usuário.'
+                    ]);
             }
         }
 
+        // Verifica se o responsável já está vinculado
         if ($request->role === 'aluno' && $request->responsavel_id) {
+
             if (User::where('responsavel_id', $request->responsavel_id)->exists()) {
-                return back()->withErrors(['Responsável já vinculado a outro usuário.']);
+
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'responsavel_id' => 'Responsável já vinculado a outro usuário.'
+                    ]);
             }
         }
 
-        $empresa = Empresa::findOrFail($request->id_emp_id);
-
-        $email = Str::lower(
-            $request->login . '@' . $empresa->emp_apelido . '.com'
-        );
-        if (User::where('email', $email)->exists()) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'login' => 'Este login já está cadastrado.'
-                ]);
-        }
-
-        if (
-            str_contains($request->login, '@') ||
-            str_contains(strtolower($request->login), '.com') ||
-            str_contains(strtolower($request->login), '.br')
-
-        ) {
-            return back()->withInput()->withErrors([
-                'login' => 'Digite apenas o login, sem domínio.'
-            ]);
-        }
+        // Normaliza o e-mail para minúsculo
+        $email = Str::lower(trim($request->email));
 
         User::create([
             'name' => $request->name,
@@ -161,14 +164,15 @@ class UsuariosController extends Controller
             'role' => $request->role,
             'id_emp_id' => $request->id_emp_id,
             'id_filial_id' => $request->id_filial_id ?: null,
-
             'professor_id' => $professorId,
             'responsavel_id' => $responsavelId,
         ]);
 
-
-        return redirect()->back()->with('success', 'Usuário cadastrado com sucesso!');
+        return redirect()
+            ->back()
+            ->with('success', 'Usuário cadastrado com sucesso!');
     }
+
 
     public function editFilial($idCriptografado)
     {
@@ -204,45 +208,28 @@ class UsuariosController extends Controller
     {
         $id = Crypt::decrypt($idCriptografado);
         $user = User::findOrFail($id);
-
         $request->validate([
             'name' => 'required|string|max:100',
-            'login' => 'required|string|max:100',
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')
+                    ->ignore($user->id)
+                    ->where(function ($query) use ($user) {
+                        return $query->where('role', $user->role);
+                    }),
+            ],
             'password' => 'nullable|string|min:8',
-
         ], [
+            'email.required' => 'O e-mail é obrigatório.',
+            'email.email' => 'Digite um e-mail válido. Exemplo: usuario@gmail.com',
             'email.unique' => 'Este e-mail já está cadastrado.',
             'password.min' => 'A senha deve ter no mínimo 8 caracteres.'
         ]);
 
-        $empresa = Empresa::findOrFail($user->id_emp_id);
-
-        $email = Str::lower(
-            $request->login . '@' . $empresa->emp_apelido . '.com'
-        );
-
-        if (
-            User::where('email', $email)
-            ->where('id', '!=', $user->id)
-            ->exists()
-        ) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'login' => 'Este login já está cadastrado.'
-                ]);
-        }
-        if (
-            str_contains($request->login, '@') ||
-            str_contains(strtolower($request->login), '.com') ||
-            str_contains(strtolower($request->login), '.br')
-        ) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'login' => 'Digite apenas o login, sem domínio.'
-                ]);
-        }
+        // Normaliza o e-mail
+        $email = Str::lower(trim($request->email));
 
         $data = [
             'name' => $request->name,
@@ -250,15 +237,19 @@ class UsuariosController extends Controller
             'id_emp_id' => $user->id_emp_id,
             'id_filial_id' => null
         ];
+
+        // Só altera a senha se o campo foi preenchido
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }
 
         $user->update($data);
 
-        return redirect()->route('usuarios.indexEmpresa')
+        return redirect()
+            ->route('usuarios.indexEmpresa')
             ->with('success', 'Usuário atualizado com sucesso!');
     }
+
 
     public function updateFilial(Request $request, $idCriptografado)
     {

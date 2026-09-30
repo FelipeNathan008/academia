@@ -61,6 +61,18 @@
                     : '-' }}
             </strong>
         </p>
+        <p class="mt-2 text-sm text-gray-600">
+            CPF:
+            <strong class="text-gray-800">
+                {{ $responsavel->resp_cpf_mascarado ?: '-'}}
+            </strong>
+        </p>
+        <p class="mt-2 text-sm text-gray-600">
+            Tipo:
+            <strong class="text-gray-800">
+                {{ $responsavel->resp_tipo ?: '-' }}
+            </strong>
+        </p>
     </div>
 </div>
 
@@ -234,7 +246,7 @@
                 data-graduado="{{ $alunoGraduado ? 'sim' : 'nao' }}">
 
                 <td class="py-3 px-4">
-                    {{ $aluno->aluno_nome }}
+                    {{ Str::upper ($aluno->aluno_nome)}}
 
                     @if(strtolower($aluno->aluno_bolsista) === 'sim')
                     <span style="
@@ -379,16 +391,25 @@ color:#166534; background-color:#bbf7d0;"> 🥋 Sim
                         Editar
                     </a>
 
-                    <!--<form action="{{ route('alunos.destroy', Crypt::encrypt($aluno->id_aluno)) }}" method="POST"
+                    @if($aluno->matriculas->isEmpty() ||
+                    $aluno->matriculas->every(fn($matricula) => $matricula->matri_status === 'Encerrada')
+                    )
+                    <form
+                        action="{{ route('alunos.destroy', Crypt::encrypt($aluno->id_aluno)) }}"
+                        method="POST"
                         onsubmit="return confirm('Deseja excluir este aluno?');">
                         @csrf
                         @method('DELETE')
-                        <button type="submit"
+
+                        <button
+                            type="submit"
                             style="background-color: #c02600; color: white;"
                             class="px-4 py-2 rounded-lg shadow hover:bg-[#D65A3E] transition duration-200">
                             Excluir
                         </button>
-                    </form>-->
+                    </form>
+                    @endif
+
                 </td>
             </tr>
 

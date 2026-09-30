@@ -111,7 +111,7 @@
             <tr class="border-b hover:bg-gray-50 transition">
 
                 <td class="py-3 px-4 font-semibold">
-                    {{ $grade->professor->prof_nome ?? '-' }}
+                    {{  Str::upper($grade->professor->prof_nome ?? '-') }}
                 </td>
 
                 <td class="py-3 px-4">
@@ -129,14 +129,28 @@
                 </td>
 
                 <td class="py-3 px-4">
-                    {{ $grade->matriculas->count() }}
+                    <a href="{{ route('alunos.index', ['prof_nome' => $grade->professor->prof_nome]) }}"
+                        style="
+            padding: 5px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            color: #ffffff;
+            background-color: #2563eb;
+        "
+                        class="inline-flex items-center justify-center shadow-sm hover:bg-blue-700 hover:shadow-md transition duration-200 cursor-pointer"
+                        title="Ver alunos deste professor">
+
+                        {{ $grade->matriculas->count() }}
+
+                    </a>
                 </td>
 
                 <td class="py-3 px-4 text-center">
                     <div class="flex justify-center gap-2">
 
                         <a href="{{ route('aulas', Crypt::encrypt($grade->id_grade)) }}"
-                            style="background-color:#174ab9; color:white;"
+                            style="background-color: #7c3aed; color: white;"
                             class="px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition duration-200 inline-block text-center">
                             Aulas
                         </a>

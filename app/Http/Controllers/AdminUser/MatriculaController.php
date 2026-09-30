@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\Contrato;
+use App\Models\DiaVencimento;
 
 class MatriculaController extends Controller
 {
@@ -28,6 +30,10 @@ class MatriculaController extends Controller
         }
 
         $user = Auth::user();
+
+        $diasVencimento = DiaVencimento::where('id_emp_id', $user->id_emp_id)
+            ->orderBy('dia_vencimento')
+            ->get();
 
         $aluno = Aluno::where('id_aluno', $id)
             ->where('id_emp_id', $user->id_emp_id)
@@ -47,8 +53,45 @@ class MatriculaController extends Controller
             ->where('id_emp_id', $user->id_emp_id)
             ->get();
 
+        $contrato = Contrato::with('detalheAtual')
+            ->where('empresa_id', $user->id_emp_id)
+            ->latest('id_contrato')
+            ->first();
 
-        return view('view_admin_user.view_principal.view_matricula.index', compact('aluno', 'matriculas', 'grades', 'precos'));
+        $quantidadeMatriculas = Matricula::where('id_emp_id', $user->id_emp_id)
+            ->whereIn('matri_status', ['Matriculado', 'Pausada'])
+            ->count();
+
+        $contagemMatriculas = $quantidadeMatriculas;
+
+        $limiteMatriculas = $contrato?->detalheAtual?->det_plano_quantidade;
+
+        $planoFinanceiro = $contrato?->detalheAtual?->det_plano_tipo === 'financeiro';
+
+        $limitePermitido = !$planoFinanceiro && $limiteMatriculas !== null
+            ? (int) $limiteMatriculas + 3
+            : null;
+
+        $limiteAtingido = $limitePermitido !== null
+            && $quantidadeMatriculas >= $limitePermitido;
+
+        return view(
+            'view_admin_user.view_principal.view_matricula.index',
+            compact(
+                'aluno',
+                'matriculas',
+                'grades',
+                'precos',
+                'diasVencimento',
+                'contrato',
+                'quantidadeMatriculas',
+                'contagemMatriculas',
+                'limiteMatriculas',
+                'limitePermitido',
+                'limiteAtingido',
+                'planoFinanceiro'
+            )
+        );
     }
 
     public function pausar(Request $request, $id)
@@ -73,9 +116,9 @@ class MatriculaController extends Controller
                 'after_or_equal:' . $matricula->matri_data,
             ],
         ], [
-            'matri_motivo.required'            => 'Informe o motivo da pausa.',
-            'matri_data_evento.required'       => 'Informe a data da pausa.',
-            'matri_data_evento.date'           => 'Informe uma data válida.',
+            'matri_motivo.required'             => 'Informe o motivo da pausa.',
+            'matri_data_evento.required'        => 'Informe a data da pausa.',
+            'matri_data_evento.date'            => 'Informe uma data válida.',
             'matri_data_evento.before_or_equal' => 'A data da pausa não pode ser futura.',
             'matri_data_evento.after_or_equal'  => 'A data da pausa não pode ser anterior à data da matrícula.',
         ]);
@@ -161,9 +204,9 @@ class MatriculaController extends Controller
                 'after_or_equal:' . $dataMinima,
             ],
         ], [
-            'matri_motivo.required'            => 'Informe o motivo do encerramento.',
-            'matri_data_evento.required'       => 'Informe a data do encerramento.',
-            'matri_data_evento.date'           => 'Informe uma data válida.',
+            'matri_motivo.required'       => 'Informe o motivo do encerramento.',
+            'matri_data_evento.required'  => 'Informe a data do encerramento.',
+            'matri_data_evento.date'      => 'Informe uma data válida.',
             'matri_data_evento.after_or_equal' => 'A data do encerramento não pode ser anterior à última pausa/matrícula.',
         ]);
 
@@ -177,8 +220,6 @@ class MatriculaController extends Controller
             ->route('matricula', Crypt::encrypt($matricula->aluno_id_aluno))
             ->with('success', 'Matrícula encerrada com sucesso!');
     }
-
-
 
     public function store(Request $request, $id)
     {
@@ -194,6 +235,45 @@ class MatriculaController extends Controller
             ->where('id_emp_id', $user->id_emp_id)
             ->firstOrFail();
 
+        $contrato = Contrato::with('detalheAtual')
+            ->where('empresa_id', $user->id_emp_id)
+            ->latest('id_contrato')
+            ->first();
+
+        if ($contrato && $contrato->detalheAtual) {
+            $detalhePlano = $contrato->detalheAtual;
+
+            if ($detalhePlano->det_plano_tipo !== 'financeiro') {
+                $limiteMatriculas = (int) $detalhePlano->det_plano_quantidade;
+
+                $quantidadeMatriculas = Matricula::where('id_emp_id', $user->id_emp_id)
+                    ->whereIn('matri_status', ['Matriculado', 'Pausada'])
+                    ->count();
+
+                $limitePermitido = $limiteMatriculas + 3;
+
+                if ($limiteMatriculas > 0 && $quantidadeMatriculas >= $limitePermitido) {
+                    return back()
+                        ->withInput()
+                        ->withErrors([
+                            'erro' => "O limite permitido de {$limitePermitido} matrículas foi atingido. Não é possível cadastrar uma nova matrícula."
+                        ]);
+                }
+            }
+        }
+
+        $diasPermitidos = DiaVencimento::where('id_emp_id', $user->id_emp_id)
+            ->pluck('dia_vencimento')
+            ->toArray();
+
+        if (empty($diasPermitidos)) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'erro' => 'Nenhum dia de vencimento está cadastrado. Cadastre pelo menos um dia antes de realizar a matrícula.'
+                ]);
+        }
+
         $request->validate([
             'matri_data' => [
                 'required',
@@ -201,18 +281,18 @@ class MatriculaController extends Controller
                 'before_or_equal:today',
                 'after_or_equal:' . $aluno->aluno_nascimento,
             ],
-            'matri_desc'          => 'required|string|max:150',
-            'matri_categoria'     => 'required|string|max:120',
-            'matri_plano'         => 'required|string|max:40',
-            'matri_dia_vencimento' => 'required|integer|min:1|max:31',
-            'grade_id_grade'      => 'required|exists:grade_horario,id_grade',
+            'matri_desc'           => 'required|string|max:150',
+            'matri_categoria'      => 'required|string|max:120',
+            'matri_plano'          => 'required|string|max:40',
+            'matri_dia_vencimento' => ['required', 'integer', 'in:' . implode(',', $diasPermitidos)],
+            'grade_id_grade'       => 'required|exists:grade_horario,id_grade',
         ], [
-            'matri_data.required' => 'A data da matrícula é obrigatória.',
-            'matri_data.date' => 'Informe uma data válida.',
-            'matri_data.before_or_equal' => 'Não é possível informar uma data futura.',
-            'matri_data.after_or_equal' => 'A data não pode ser anterior ao nascimento do aluno.',
-            'matri_categoria.required' => 'Selecione uma categoria.',
-            'matri_plano.required' => 'Selecione um plano.',
+            'matri_data.required'             => 'A data da matrícula é obrigatória.',
+            'matri_data.date'                 => 'Informe uma data válida.',
+            'matri_data.before_or_equal'      => 'Não é possível informar uma data futura.',
+            'matri_data.after_or_equal'       => 'A data não pode ser anterior ao nascimento do aluno.',
+            'matri_categoria.required'        => 'Selecione uma categoria.',
+            'matri_plano.required'            => 'Selecione um plano.',
         ]);
 
         // VERIFICA DUPLICIDADE POR MODALIDADE
@@ -237,22 +317,19 @@ class MatriculaController extends Controller
         DB::beginTransaction();
 
         try {
-
             $matricula = Matricula::create([
-                'aluno_id_aluno'     => $id,
-                'matri_status'       => 'Matriculado',
-                'matri_data'         => $request->matri_data,
-                'matri_plano'        => $request->matri_plano,
-                'matri_categoria'    => $request->matri_categoria,
+                'aluno_id_aluno'       => $id,
+                'matri_status'         => 'Matriculado',
+                'matri_data'           => $request->matri_data,
+                'matri_plano'          => $request->matri_plano,
+                'matri_categoria'      => $request->matri_categoria,
                 'matri_dia_vencimento' => $request->matri_dia_vencimento,
-
-                'grade_id_grade'     => $request->grade_id_grade,
-                'matri_desc'         => $request->matri_desc,
-                'id_emp_id'          => $user->id_emp_id
+                'grade_id_grade'       => $request->grade_id_grade,
+                'matri_desc'           => $request->matri_desc,
+                'id_emp_id'            => $user->id_emp_id
             ]);
 
             if (strtolower($aluno->aluno_bolsista) !== 'sim') {
-
                 $diaVencimento = (int) $request->matri_dia_vencimento;
 
                 $grade = GradeHorario::where('id_grade', $request->grade_id_grade)
@@ -294,18 +371,55 @@ class MatriculaController extends Controller
                     default      => 12,
                 };
 
-                $dataBase = Carbon::parse($request->matri_data);
+                /*
+ * Entrada
+ * A data da entrada deve ser a própria data da matrícula.
+ */
+                $dataMatricula = Carbon::parse($request->matri_data);
+
+                DetalhesMensalidade::create([
+                    'mensalidade_id_mensalidade' => $mensalidade->id_mensalidade,
+                    'det_mensa_forma_pagamento'  => 'Pix',
+                    'det_mensa_mes_vigente'      => 'Entrada',
+                    'det_mensa_data_venc'        => $dataMatricula->toDateString(),
+                    'det_mensa_valor'             => number_format($preco->preco_modalidade, 2, '.', ''),
+                    'det_mensa_data_pagamento'   => null,
+                    'det_mensa_status'            => 'Em aberto',
+                    'id_emp_id'                  => $user->id_emp_id
+                ]);
+
+                /*
+ * Primeiro vencimento
+ * A referência é a data da matrícula.
+ *
+ * Exemplo:
+ * Matrícula: 10/09
+ * Vencimento: dia 20
+ * Primeiro vencimento: 20/09
+ *
+ * Matrícula: 25/09
+ * Vencimento: dia 20
+ * Primeiro vencimento: 20/10
+ */
+                $primeiraData = $dataMatricula->copy()->startOfMonth();
+
+                $primeiraData->setDay(
+                    min($diaVencimento, $primeiraData->daysInMonth)
+                );
+
+                if ($primeiraData->lessThanOrEqualTo($dataMatricula)) {
+                    $primeiraData->addMonthNoOverflow();
+
+                    $primeiraData->setDay(
+                        min($diaVencimento, $primeiraData->daysInMonth)
+                    );
+                }
 
                 for ($i = 0; $i < $quantidadeParcelas; $i++) {
+                    $dataVencimento = $primeiraData->copy()->addMonthsNoOverflow($i);
 
-                    $dataVencimento = $dataBase
-                        ->copy()
-                        ->addMonths($i);
-
-                    $ultimoDia = $dataVencimento->daysInMonth;
-
-                    $dataVencimento->day(
-                        min($diaVencimento, $ultimoDia)
+                    $dataVencimento->setDay(
+                        min($diaVencimento, $dataVencimento->daysInMonth)
                     );
 
                     DetalhesMensalidade::create([
@@ -313,9 +427,9 @@ class MatriculaController extends Controller
                         'det_mensa_forma_pagamento'  => 'Pix',
                         'det_mensa_mes_vigente'      => $dataVencimento->translatedFormat('F'),
                         'det_mensa_data_venc'        => $dataVencimento->format('Y-m-d'),
-                        'det_mensa_valor'            => number_format($preco->preco_modalidade, 2, '.', ''),
+                        'det_mensa_valor'             => number_format($preco->preco_modalidade, 2, '.', ''),
                         'det_mensa_data_pagamento'   => null,
-                        'det_mensa_status'           => 'Em aberto',
+                        'det_mensa_status'            => 'Em aberto',
                         'id_emp_id'                  => $user->id_emp_id
                     ]);
                 }
@@ -329,13 +443,13 @@ class MatriculaController extends Controller
                     ->with('success', 'Matrícula realizada com sucesso! (Aluno bolsista - sem geração de financeiro)');
             }
         } catch (\Exception $e) {
-
             DB::rollBack();
 
             return back()
                 ->withInput()
                 ->with('error', $e->getMessage());
         }
+
         return redirect()
             ->route('matricula', Crypt::encrypt($id))
             ->with('success', 'Matrícula realizada com sucesso!');
@@ -348,6 +462,7 @@ class MatriculaController extends Controller
         } catch (DecryptException $e) {
             abort(404);
         }
+
         $user = Auth::user();
 
         $matricula = Matricula::with(['aluno', 'grade.professor'])
@@ -357,7 +472,6 @@ class MatriculaController extends Controller
 
         return view('view_admin_user.view_principal.view_matricula.show', compact('matricula'));
     }
-
 
     public function destroy($id)
     {
@@ -400,7 +514,6 @@ class MatriculaController extends Controller
                 ]);
         }
 
-    
         $alunoId = $matricula->aluno_id_aluno;
 
         $mensalidades = Mensalidade::where(

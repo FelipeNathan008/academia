@@ -111,23 +111,25 @@ class EmpresaController extends Controller
         $request->validate([
             'emp_nome' => 'required|string|max:255',
             'emp_apelido' => 'required|string|max:255',
+
             'emp_nome_responsavel' => 'required|string|max:255',
             'emp_email_responsavel' => 'required|email|max:255',
-            'emp_telefone_responsavel' => 'required|max:20',
-            'emp_cpf' => 'required|max:14',
+            'emp_telefone_responsavel' => 'required|string|max:20',
+            'emp_cpf' => 'required|string|max:14',
+
             'emp_chave_pix' => 'required|string|max:255',
             'emp_nome_recebedor' => 'required|string|max:25',
             'emp_cidade' => 'required|string|max:15',
-            'emp_tipo' => 'required|string|max:150',
-            'emp_foto' => 'nullable|image|max:2048',
 
-            'emp_end_cep'          => 'required|string|max:9',
-            'emp_end_logradouro'   => 'required|string|max:255',
-            'emp_end_numero'       => 'required|string|max:10',
-            'emp_end_complemento'  => 'nullable|string|max:100',
-            'emp_end_bairro'       => 'required|string|max:120',
-            'emp_end_cidade'       => 'required|string|max:120',
-            'emp_end_estado'       => 'required|string|size:2',
+            'emp_end_cep' => 'required|string|max:9',
+            'emp_end_logradouro' => 'required|string|max:255',
+            'emp_end_bairro' => 'required|string|max:255',
+            'emp_end_cidade' => 'required|string|max:255',
+            'emp_end_numero' => 'required|string|max:20',
+            'emp_end_complemento' => 'nullable|string|max:255',
+            'emp_end_estado' => 'required|string|size:2',
+
+            'emp_foto' => 'nullable|image|max:5120',
         ]);
 
         if ($request->hasFile('emp_foto')) {

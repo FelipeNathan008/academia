@@ -16,14 +16,17 @@
 
 </div>
 
+<x-alert-error />
+
 <!-- FILTROS -->
-<div class="bg-white rounded-2xl shadow-md p-6 overflow-x-auto mb-8">
+<div class="bg-white rounded-2xl shadow-md p-6 mb-8">
     <form method="GET">
-        <div class="flex flex-wrap gap-6 items-end justify-center max-w-6xl mx-auto">
+
+        <!-- CAMPOS DE FILTRO -->
+        <div class="flex flex-wrap gap-4 items-end justify-center max-w-7xl mx-auto">
 
             <!-- Buscar Professor -->
-
-            <div class="flex flex-col w-[300px]">
+            <div class="flex flex-col flex-1 min-w-[220px] max-w-[300px]">
                 <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
                     Buscar Professor
                 </label>
@@ -32,90 +35,133 @@
                     name="prof_nome"
                     value="{{ request('prof_nome') }}"
                     placeholder="Digite o professor..."
-                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                    class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
                     focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
-
             </div>
 
-
             <!-- Buscar Aluno -->
-            <div class="flex flex-col w-[300px]">
+            <div class="flex flex-col flex-1 min-w-[220px] max-w-[300px]">
                 <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
                     Buscar Aluno
                 </label>
-                <input type="text" name="nome"
+
+                <input type="text"
+                    name="nome"
                     value="{{ request('nome') }}"
                     placeholder="Digite o nome..."
-                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+                    class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                    focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
             </div>
 
             <!-- Buscar Responsável -->
-            <div class="flex flex-col w-[300px]">
+            <div class="flex flex-col flex-1 min-w-[220px] max-w-[300px]">
                 <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
                     Buscar Responsável
                 </label>
-                <input type="text" name="responsavel"
+
+                <input type="text"
+                    name="responsavel"
                     value="{{ request('responsavel') }}"
                     placeholder="Digite o responsável..."
-                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+                    class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                    focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
             </div>
 
             <!-- Bolsista -->
-            <div class="flex flex-col w-[250px]">
+            <div class="flex flex-col flex-1 min-w-[180px] max-w-[250px]">
                 <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
                     Bolsista
                 </label>
+
                 <select name="bolsista"
-                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+                    class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                    focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
                     <option value="">Todos</option>
-                    <option value="sim" {{ request('bolsista') == 'sim' ? 'selected' : '' }}>Sim</option>
-                    <option value="nao" {{ request('bolsista') == 'nao' ? 'selected' : '' }}>Não</option>
+                    <option value="sim" {{ request('bolsista') == 'sim' ? 'selected' : '' }}>
+                        Sim
+                    </option>
+                    <option value="nao" {{ request('bolsista') == 'nao' ? 'selected' : '' }}>
+                        Não
+                    </option>
                 </select>
             </div>
 
             <!-- Matrícula -->
-            <div class="flex flex-col w-[250px]">
+            <div class="flex flex-col flex-1 min-w-[180px] max-w-[250px]">
                 <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
                     Matrícula
                 </label>
+
                 <select name="matricula"
-                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-               focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+                    class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
+                    focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
                     <option value="">Todos</option>
-                    <option value="Matriculado" {{ request('matricula') == 'Matriculado' ? 'selected' : '' }}>
+
+                    <option value="Matriculado"
+                        {{ request('matricula') == 'Matriculado' ? 'selected' : '' }}>
                         Matriculado
                     </option>
-                    <option value="Pausada" {{ request('matricula') == 'Pausada' ? 'selected' : '' }}>
+
+                    <option value="Pausada"
+                        {{ request('matricula') == 'Pausada' ? 'selected' : '' }}>
                         Pausado
                     </option>
-                    <option value="Encerrada" {{ request('matricula') == 'Encerrada' ? 'selected' : '' }}>
+
+                    <option value="Encerrada"
+                        {{ request('matricula') == 'Encerrada' ? 'selected' : '' }}>
                         Sem Matrícula
                     </option>
                 </select>
             </div>
 
-            <!-- Botões -->
-            <div class="flex gap-3">
+            <!-- BOTÕES -->
+            <div class="flex gap-3 flex-shrink-0">
 
                 <button type="submit"
                     class="h-[48px] px-6 rounded-xl bg-[#8E251F] text-white
-                           hover:bg-[#732920] transition shadow-md">
+                    hover:bg-[#732920] transition shadow-md whitespace-nowrap">
                     Filtrar
                 </button>
 
                 <a href="{{ route('alunos.index') }}"
                     class="h-[48px] px-6 rounded-xl bg-gray-300 text-gray-800
-                           flex items-center justify-center
-                           hover:bg-gray-400 transition shadow-md">
+                    flex items-center justify-center
+                    hover:bg-gray-400 transition shadow-md whitespace-nowrap">
                     Limpar
                 </a>
 
             </div>
 
         </div>
+
+        <!-- FILTRO POR LETRA -->
+        <div class="max-w-7xl mx-auto mt-6 pt-5 border-t border-gray-100">
+
+            <label class="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide block">
+                Filtrar pela primeira letra
+            </label>
+
+            <div class="flex flex-wrap gap-2">
+
+                @foreach (range('A', 'Z') as $letra)
+
+                <a
+                    href="{{ route('alunos.index', array_merge(request()->query(), ['letra' => $letra])) }}"
+                    class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-lg font-bold text-sm transition shadow-sm
+                        {{ strtoupper(request('letra')) === $letra
+                            ? 'bg-[#8E251F] text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-[#8E251F] hover:text-white'
+                        }}
+                    ">
+                    {{ $letra }}
+                </a>
+
+                @endforeach
+
+            </div>
+
+        </div>
+
     </form>
 </div>
 
@@ -177,7 +223,7 @@
 
                 <!-- NOME -->
                 <td class="py-3 px-4 font-medium text-gray-800">
-                    {{ $aluno->aluno_nome }}
+                    {{ Str::upper($aluno->aluno_nome) }}
                 </td>
 
                 <!-- IDADE -->
@@ -323,7 +369,7 @@
 
             @empty
             <tr>
-                <td colspan="7" class="text-center py-6 text-gray-500">
+                <td colspan="8" class="text-center py-6 text-gray-500">
                     Nenhum aluno cadastrado
                 </td>
             </tr>

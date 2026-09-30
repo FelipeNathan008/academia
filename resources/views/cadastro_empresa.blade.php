@@ -377,16 +377,43 @@
                 <div class="campo">
                     <label>Estado</label>
 
-                    <input
-                        type="text"
-                        id="emp_end_estado"
-                        name="emp_end_estado"
-                        value="{{ old('emp_end_estado') }}"
-                        placeholder="SP"
-                        maxlength="2"
-                        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z]/g,'')"
-                        required>
-                </div>|
+                    <select id="emp_end_estado" name="emp_end_estado" required>
+                        <option value="">Selecione o estado</option>
+                        @foreach([
+                        'AC' => 'Acre',
+                        'AL' => 'Alagoas',
+                        'AP' => 'Amapá',
+                        'AM' => 'Amazonas',
+                        'BA' => 'Bahia',
+                        'CE' => 'Ceará',
+                        'DF' => 'Distrito Federal',
+                        'ES' => 'Espírito Santo',
+                        'GO' => 'Goiás',
+                        'MA' => 'Maranhão',
+                        'MT' => 'Mato Grosso',
+                        'MS' => 'Mato Grosso do Sul',
+                        'MG' => 'Minas Gerais',
+                        'PA' => 'Pará',
+                        'PB' => 'Paraíba',
+                        'PR' => 'Paraná',
+                        'PE' => 'Pernambuco',
+                        'PI' => 'Piauí',
+                        'RJ' => 'Rio de Janeiro',
+                        'RN' => 'Rio Grande do Norte',
+                        'RS' => 'Rio Grande do Sul',
+                        'RO' => 'Rondônia',
+                        'RR' => 'Roraima',
+                        'SC' => 'Santa Catarina',
+                        'SP' => 'São Paulo',
+                        'SE' => 'Sergipe',
+                        'TO' => 'Tocantins'
+                        ] as $uf => $nome)
+                        <option value="{{ $uf }}" {{ old('emp_end_estado') == $uf ? 'selected' : '' }}>
+                            {{ $uf }} - {{ $nome }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
 
                 <div class="campo campo-full">
 
@@ -433,42 +460,42 @@
     }
 
     // CEP - máscara e busca via ViaCEP
-function mascaraCEP(input) {
-    let value = input.value.replace(/\D/g, '').slice(0, 8);
+    function mascaraCEP(input) {
+        let value = input.value.replace(/\D/g, '').slice(0, 8);
 
-    if (value.length > 5) {
-        value = value.replace(/^(\d{5})(\d)/, '$1-$2');
+        if (value.length > 5) {
+            value = value.replace(/^(\d{5})(\d)/, '$1-$2');
+        }
+
+        input.value = value;
     }
 
-    input.value = value;
-}
+    function buscarCEP() {
 
-function buscarCEP() {
+        const cepInput = document.getElementById('emp_end_cep');
+        const cep = cepInput.value.replace(/\D/g, '');
 
-    const cepInput = document.getElementById('emp_end_cep');
-    const cep = cepInput.value.replace(/\D/g, '');
+        if (cep.length !== 8) return;
 
-    if (cep.length !== 8) return;
+        fetch(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(res => res.json())
+            .then(data => {
 
-    fetch(`https://viacep.com.br/ws/${cep}/json/`)
-        .then(res => res.json())
-        .then(data => {
+                if (data.erro) {
+                    alert('CEP não encontrado.');
+                    return;
+                }
 
-            if (data.erro) {
-                alert('CEP não encontrado.');
-                return;
-            }
+                document.getElementById('emp_end_logradouro').value = data.logradouro || '';
+                document.getElementById('emp_end_bairro').value = data.bairro || '';
+                document.getElementById('emp_end_cidade').value = data.localidade || '';
+                document.getElementById('emp_end_estado').value = data.uf || '';
 
-            document.getElementById('emp_end_logradouro').value = data.logradouro || '';
-            document.getElementById('emp_end_bairro').value = data.bairro || '';
-            document.getElementById('emp_end_cidade').value = data.localidade || '';
-            document.getElementById('emp_end_estado').value = data.uf || '';
-
-        })
-        .catch(() => {
-            alert('Erro ao consultar o CEP.');
-        });
-}
+            })
+            .catch(() => {
+                alert('Erro ao consultar o CEP.');
+            });
+    }
 
     // Bloquear múltiplos envios do formulário
     document.getElementById('cadastroForm').addEventListener('submit', function() {

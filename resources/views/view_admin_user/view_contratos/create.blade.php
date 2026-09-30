@@ -55,7 +55,7 @@
                 <p class="text-xs uppercase tracking-widest text-gray-500">
                     Contrato atual
                 </p>
-                
+
 
                 <p class="text-gray-600 mt-2">
                     Status:
@@ -200,7 +200,7 @@
                             Após a geração do contrato, o sistema cria automaticamente <strong>13 cobranças</strong>, sendo:
                             <ul class="list-disc list-inside ml-5 mt-1 space-y-1">
                                 <li><strong>1 cobrança de entrada</strong> com vencimento na data da assinatura.</li>
-                                <li><strong>12 mensalidades</strong> referentes aos meses seguintes, utilizando o dia de vencimento selecionado.</li>
+                                <li><strong>12 mensalidades</strong> utilizando o dia de vencimento selecionado.</li>
                             </ul>
                         </li>
 
@@ -243,19 +243,17 @@
                     </h4>
 
                     <p class="text-sm text-green-700 mt-2">
-
                         Forma de pagamento:
                         <strong>
                             PIX
                         </strong>
-
                     </p>
 
                     <p class="text-sm text-green-700 mt-1">
 
                         Chave PIX:
                         <strong>
-                            {{ $empresa->emp_chave_pix ?? 'Não cadastrada' }}
+                            {{ $empresaPS->emp_chave_pix ?? 'Não cadastrada' }}
                         </strong>
 
                     </p>
@@ -264,7 +262,7 @@
 
                         Recebedor:
                         <strong>
-                            {{ $empresa->emp_nome_recebedor ?? '-' }}
+                            {{ $empresaPS->emp_nome_recebedor ?? '-' }}
                         </strong>
 
                     </p>
@@ -273,7 +271,7 @@
 
                         Cidade:
                         <strong>
-                            {{ $empresa->emp_cidade ?? '-' }}
+                            {{ $empresaPS->emp_cidade ?? '-' }}
                         </strong>
 
                     </p>
@@ -457,6 +455,7 @@
                     </label>
 
                     <select
+                        id="contrato_dia_vencimento"
                         name="contrato_dia_vencimento"
                         required
                         class="w-full border rounded-lg px-4 py-2 mt-1">
@@ -468,9 +467,9 @@
                             Dia 08
                         </option>
 
-                        <option value="15"
-                            {{ old('contrato_dia_vencimento') == 15 ? 'selected' : '' }}>
-                            Dia 15
+                        <option value="20"
+                            {{ old('contrato_dia_vencimento') == 20 ? 'selected' : '' }}>
+                            Dia 20
                         </option>
 
                         <option value="30"
@@ -479,6 +478,45 @@
                         </option>
 
                     </select>
+
+                    <!-- INFORMAÇÃO DA PRIMEIRA PARCELA -->
+                    <div
+                        id="infoPrimeiraParcela"
+                        class="hidden mt-3 bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4">
+
+                        <div class="flex items-start gap-3">
+
+                            <svg
+                                class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" />
+
+                            </svg>
+
+                            <div class="text-sm text-blue-800">
+
+                                <p class="font-semibold">
+                                    Primeira mensalidade
+                                </p>
+
+                                <p class="mt-1">
+                                    A entrada será gerada na data da assinatura.
+                                    A primeira mensalidade vencerá em
+                                    <strong id="dataPrimeiraParcela"></strong>.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
                 </div>
 
             </div>
@@ -557,6 +595,93 @@
 
     document.getElementById('formContrato').addEventListener('submit', function(event) {
         bloquearSubmit(event, this);
+    });
+
+    function calcularPrimeiraParcela() {
+
+        const select = document.getElementById('contrato_dia_vencimento');
+        const info = document.getElementById('infoPrimeiraParcela');
+        const dataElement = document.getElementById('dataPrimeiraParcela');
+
+        const diaVencimento = parseInt(select.value);
+
+        if (!diaVencimento) {
+            info.classList.add('hidden');
+            return;
+        }
+
+        // Data de hoje
+        const hoje = new Date();
+
+        const anoAtual = hoje.getFullYear();
+        const mesAtual = hoje.getMonth();
+
+        // Último dia do mês atual
+        const ultimoDiaMesAtual = new Date(
+            anoAtual,
+            mesAtual + 1,
+            0
+        ).getDate();
+
+        // Mesmo comportamento do Carbon:
+        // min(dia escolhido, último dia do mês)
+        let dia = Math.min(
+            diaVencimento,
+            ultimoDiaMesAtual
+        );
+
+        let primeiraData = new Date(
+            anoAtual,
+            mesAtual,
+            dia
+        );
+
+        if (primeiraData <= hoje) {
+
+            let proximoMes = mesAtual + 1;
+            let proximoAno = anoAtual;
+
+            if (proximoMes > 11) {
+                proximoMes = 0;
+                proximoAno++;
+            }
+
+            const ultimoDiaProximoMes = new Date(
+                proximoAno,
+                proximoMes + 1,
+                0
+            ).getDate();
+
+            dia = Math.min(
+                diaVencimento,
+                ultimoDiaProximoMes
+            );
+
+            primeiraData = new Date(
+                proximoAno,
+                proximoMes,
+                dia
+            );
+        }
+
+        // Formatação brasileira
+        const dataFormatada = primeiraData.toLocaleDateString(
+            'pt-BR'
+        );
+
+        dataElement.textContent = dataFormatada;
+
+        info.classList.remove('hidden');
+    }
+
+    document
+        .getElementById('contrato_dia_vencimento')
+        .addEventListener('change', calcularPrimeiraParcela);
+
+    // Se houver valor antigo após erro de validação,
+    // já mostra a informação automaticamente.
+    document.addEventListener('DOMContentLoaded', function() {
+        calcularPrimeiraParcela();
     });
 </script>
 @endsection

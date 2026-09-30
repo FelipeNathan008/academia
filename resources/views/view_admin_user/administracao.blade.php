@@ -63,8 +63,11 @@
             7 - Grade de Horários
         </a>
 
-
-
+        <a href="{{ route('dia_vencimento') }}"
+            style="background-color: #4567c5; color: white;"
+            class="px-4 py-3 rounded-xl shadow text-center font-semibold">
+            8 - Dias de Vencimento
+        </a>
 
 
     </div>

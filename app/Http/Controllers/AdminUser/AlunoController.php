@@ -67,10 +67,8 @@ class AlunoController extends Controller
             });
         }
 
-
         // FILTRO NOME
         if ($request->filled('nome')) {
-
             $query->where(
                 'aluno_nome',
                 'like',
@@ -78,6 +76,15 @@ class AlunoController extends Controller
             );
         }
 
+        // FILTRO PELA PRIMEIRA LETRA
+        if ($request->filled('letra')) {
+
+            $letra = strtoupper($request->letra);
+
+            if (preg_match('/^[A-Z]$/', $letra)) {
+                $query->where('aluno_nome', 'like', $letra . '%');
+            }
+        }
 
         // FILTRO RESPONSÁVEL
         if ($request->filled('responsavel')) {
@@ -91,7 +98,6 @@ class AlunoController extends Controller
                 );
             });
         }
-
 
         // FILTRO BOLSISTA
         if ($request->filled('bolsista')) {

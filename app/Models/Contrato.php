@@ -14,7 +14,6 @@ class Contrato extends Model
         'empresa_id',
 
         'contrato_status',
-        'contrato_situacao_financeira',
         'contrato_forma_pagamento',
         'contrato_dia_vencimento',
         'contrato_assinado_em',
@@ -48,10 +47,36 @@ class Contrato extends Model
         'contrato_encerrado_em' => 'datetime',
     ];
 
+    public function possuiMensalidadeAtrasada(): bool
+    {
+        return $this->mensalidades()
+            ->whereDate(
+                'mensa_contrato_vencimento',
+                '<',
+                today()
+            )
+            ->whereNotIn(
+                'mensa_contrato_status',
+                ['Pago']
+            )
+            ->exists();
+    }
 
     public function empresa()
     {
         return $this->belongsTo(Empresa::class, 'empresa_id', 'id_empresa');
+    }
+
+    public function mensalidades()
+    {
+        return $this->hasManyThrough(
+            MensalidadeContrato::class,
+            DetalhesContrato::class,
+            'contrato_id',
+            'det_contrato_id',
+            'id_contrato',
+            'id_det_contrato'
+        );
     }
 
     public function detalhes()

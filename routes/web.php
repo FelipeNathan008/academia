@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SuperAdmin\{
     SuperAdminController,
     SuperAdminPlanoController,
+    SuperAdminEmpresaController,
+    SuperAdminMensalidadeController,
 };
 use App\Http\Controllers\AdminUser\{
     DashboardController,
@@ -14,6 +16,7 @@ use App\Http\Controllers\AdminUser\{
     DetalhesAlunoController,
     MatriculaController,
     MensalidadeController,
+    DiaVencimentoController,
     ProfessorController,
     DetalhesProfessorController,
     GradeHorarioController,
@@ -29,6 +32,7 @@ use App\Http\Controllers\AdminUser\{
     EmpresaController,
     AdminUserPlanoController,
     ContratoController,
+    ContratoFinanceiroController,
 };
 
 use App\Http\Controllers\{
@@ -66,11 +70,9 @@ use App\Http\Controllers\AlunoUser\{
 Route::get('/', fn() => view('apresentacao'))->name('apresentacao');
 
 Route::get('/cadastro-empresa', fn() => view('cadastro_empresa'))->name('cadastro_empresa');
-Route::post('/cadastro-empresa/store', [EmpresaController::class, 'store'])
-    ->name('cadastro_empresa.store');
+Route::post('/cadastro-empresa/store', [EmpresaController::class, 'store'])->name('cadastro_empresa.store');
 
-Route::get('/planos', [PlanoController::class, 'planosPublicos'])
-    ->name('planos.publico');
+Route::get('/planos', [PlanoController::class, 'planosPublicos'])->name('planos.publico');
 
 
 // ROTAS COMUNS
@@ -85,10 +87,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::put('/mensalidade/editar-forma', [MensalidadeController::class, 'editarForma'])
         ->name('mensalidade.editarForma');
-
     Route::put('/mensalidade/baixar/{id}', [MensalidadeController::class, 'darBaixa'])
         ->name('mensalidade.darBaixa');
-
     Route::put('/mensalidade/desfazer/{id}', [MensalidadeController::class, 'desfazerBaixa'])
         ->name('mensalidade.desfazerBaixa');
 });
@@ -97,9 +97,26 @@ route::middleware(['auth', 'superadmin'])->group(function () {
 
     Route::get('/superadmin', [SuperAdminController::class, 'index'])->name('dashboard-superadmin');
 
-    // PLANOS
-    // Rota estática "visualizar" precisa vir ANTES das rotas com {id},
-    // senão o Laravel pode tentar interpretar "visualizar" como um {id}.
+    // COMPROVANTES
+    Route::get('/superadmin/comprovantes', [SuperAdminController::class, 'comprovantesPendentes'])
+        ->name('superadmin-dashboard.comprovantes');
+    Route::put('/superadmin/comprovantes/{id}/aprovar', [SuperAdminController::class, 'aprovarComprovante'])
+        ->name('superadmin-comprovante.aprovar');
+    Route::put('/superadmin/comprovantes/{id}/rejeitar', [SuperAdminController::class, 'rejeitarComprovante'])
+        ->name('superadmin-comprovante.rejeitar');
+    Route::get('/superadmin/comprovantes/{id}', [SuperAdminController::class, 'verComprovante'])
+        ->name('superadmin-comprovante');
+
+    //EMPRESAS
+    Route::get('/superadmin/empresas', [SuperAdminEmpresaController::class, 'index'])->name('superadmin.empresas');
+    Route::get('/superadmin/empresas/{id}', [SuperAdminEmpresaController::class, 'show'])->name('superadmin.empresa.show');
+    Route::get('/superadmin/empresa/{id}/contratos', [SuperAdminEmpresaController::class, 'contratos'])->name('superadmin.empresa.contratos');
+
+    //MENSALIDADES ATRASADAS
+    Route::get('/superadmin/mensalidades-atrasadas', [SuperAdminMensalidadeController::class, 'index'])->name('superadmin.mensalidades.atrasadas');
+    Route::put('/superadmin/mensalidades-atrasadas/baixar/{id}', [SuperAdminController::class, 'darBaixa'])
+        ->name('superadmin-comprovante.darBaixa');
+
     Route::get('/superadmin/planos/visualizar', [SuperAdminPlanoController::class, 'visualizar'])->name('superadmin.planos.visualizar');
 
     Route::get('/superadmin/planos', [SuperAdminPlanoController::class, 'index'])->name('superadmin.planos');
@@ -110,7 +127,7 @@ route::middleware(['auth', 'superadmin'])->group(function () {
 });
 
 
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'admin', 'degustacao'])->group(function () {
 
     Route::get('/admin/principal', function () {
         return view('view_admin_user.principal');
@@ -129,10 +146,18 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/contrato/{id}/create', [ContratoController::class, 'create'])->name('contrato.create');
     Route::post('/contrato/{id}', [ContratoController::class, 'store'])->name('contrato.store');
     Route::get('/contrato/{id}', [ContratoController::class, 'show'])->name('contrato.show');
+    Route::get('/contrato/alterar-plano/{planoId}', [ContratoController::class, 'alterarPlano'])->name('contrato.alterar');
+    Route::post('/contrato/alterar-plano/{planoId}', [ContratoController::class, 'atualizarPlano'])->name('contrato.atualizarPlano');
 
+    // FINANCEIRO CONTRATO
+    Route::get('/contrato/financeiro/pagamento/{id}', [ContratoFinanceiroController::class, 'showPagamento'])->name('contrato-financeiro.pagamento.show');
+    Route::post('/contrato/financeiro/comprovante/{id}', [ContratoFinanceiroController::class, 'enviarComprovante'])->name('contrato-financeiro.comprovante');
+    Route::get('/contrato/financeiro/comprovante/{id}', [ContratoFinanceiroController::class, 'verComprovante'])->name('contrato-financeiro.comprovante.show');
 
     // DASHBOARD
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/mapa-financeiro', [DashboardController::class, 'mapaFinanceiro'])->name('dashboard.mapaFinanceiro');
+    Route::get('/dashboard/detalhes-mapa-financeiro', [DashboardController::class, 'listaMapaFinanceiro'])->name('dashboard.listaMapaFinanceiro');
     Route::get('/dashboard/mensalidades-atrasadas', [DashboardController::class, 'mensalidadesAtrasadas'])->name('dashboard.mensalidadesAtrasadas');
     Route::get('/dashboard/graduacoes', [DashboardController::class, 'graduacoes'])->name('dashboard.graduacoes');
     Route::get('/dashboard/comprovantes', [DashboardController::class, 'comprovantesPendentes'])->name('dashboard.comprovantes');
@@ -169,6 +194,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::put('matricula/{id}/reativar', [MatriculaController::class, 'reativar'])->name('matricula.reativar');
     Route::delete('/matricula/{id}', [MatriculaController::class, 'destroy'])->name('matricula.destroy');
 
+    // Dias Vencimento
+    Route::get('/dia_vencimento', [DiaVencimentoController::class, 'index'])->name('dia_vencimento');
+    Route::post('/dia_vencimento', [DiaVencimentoController::class, 'store'])->name('dia_vencimento.store');
+    Route::get('/dia_vencimento/{id}/edit', [DiaVencimentoController::class, 'edit'])->name('dia_vencimento.edit');
+    Route::put('/dia_vencimento/{id}', [DiaVencimentoController::class, 'update'])->name('dia_vencimento.update');
+    Route::delete('/dia_vencimento/{id}', [DiaVencimentoController::class, 'destroy'])->name('dia_vencimento.destroy');
 
     // AULA
     Route::get('/grades/aulas', [AulaController::class, 'grades'])->name('grades.aulas');

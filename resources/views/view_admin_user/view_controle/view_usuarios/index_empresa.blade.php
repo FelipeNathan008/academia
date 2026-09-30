@@ -77,26 +77,26 @@
                             class="w-full border rounded-lg px-4 py-2 mt-1">
                     </div>
 
-                    <div style="display: flex; gap: 4%;">
-                        <div style="flex: 1;">
-                            <label class="text-sm font-medium text-gray-600">Login</label>
-                            <input type="text"
-                                id="login"
-                                name="login"
-                                placeholder="Digite o Login"
-                                required
-                                class="w-full border rounded-lg px-4 py-2 mt-1">
-                        </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">
+                            E-mail
+                        </label>
 
-                        <div style="flex: 1;">
-                            <label class="text-sm font-medium text-gray-600">Domínio</label>
-                            <input type="text"
-                                value="{{ Str::lower('@' . $empresa->emp_apelido . '.com') }}"
-                                readonly
-                                class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100">
-                        </div>
+                        <input
+                            type="email"
+                            name="email"
+                            value="{{ old('email') }}"
+                            placeholder="Digite o e-mail"
+                            required
+                            autocomplete="email"
+                            class="w-full border rounded-lg px-4 py-2 mt-1">
+
+                        @error('email')
+                        <small class="text-red-600 text-sm">
+                            {{ $message }}
+                        </small>
+                        @enderror
                     </div>
-
 
                     <div>
                         <label class="text-sm font-medium text-gray-600">Senha</label>
@@ -459,15 +459,6 @@
             const alerta = document.getElementById('alertErro');
             if (alerta) alerta.style.display = 'none';
         }
-
-        document.addEventListener('DOMContentLoaded', function() {
-
-            const login = document.getElementById('login');
-            login.addEventListener('input', function() {
-                this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');
-            });
-
-        });
 
         function verificarSenha(valor) {
             const checks = {

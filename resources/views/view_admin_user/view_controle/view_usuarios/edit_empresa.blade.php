@@ -58,34 +58,27 @@ use Illuminate\Support\Facades\Crypt;
                     class="w-full border rounded-lg px-4 py-2 mt-1">
             </div>
 
-            @php
-            $login = explode('@', $user->email)[0];
-            $dominio = '@' . explode('@', $user->email)[1];
-            @endphp
+            <div>
+                <label class="text-sm text-gray-600">
+                    E-mail
+                </label>
 
-            <div style="display:flex; gap:4%;">
+                <input
+                    type="email"
+                    name="email"
+                    value="{{ old('email', $user->email) }}"
+                    placeholder="Digite o e-mail"
+                    required
+                    autocomplete="email"
+                    class="w-full border rounded-lg px-4 py-2 mt-1">
 
-                <div style="flex:1;">
-                    <label class="text-sm text-gray-600">Login</label>
-                    <input
-                        type="text"
-                        id="login"
-                        name="login"
-                        value="{{ $login }}"
-                        required
-                        class="w-full border rounded-lg px-4 py-2 mt-1">
-                </div>
-
-                <div style="flex:1;">
-                    <label class="text-sm text-gray-600">Domínio</label>
-                    <input
-                        type="text"
-                        value="{{ $dominio }}"
-                        readonly
-                        class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100">
-                </div>
-
+                @error('email')
+                <small class="text-red-600 text-sm">
+                    {{ $message }}
+                </small>
+                @enderror
             </div>
+
             <div>
                 <label class="text-sm text-gray-600">Nova Senha</label>
                 <div class="relative">
@@ -140,10 +133,6 @@ use Illuminate\Support\Facades\Crypt;
 </form>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-
-        document.getElementById('login').addEventListener('input', function() {
-            this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');
-        });
 
     });
 

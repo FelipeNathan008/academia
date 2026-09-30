@@ -3,6 +3,15 @@
 @section('title', 'Professores')
 @section('content')
 
+<style>
+    .professor-sem-graduacao td {
+        background-color: #fee2e2;
+    }
+
+    .professor-sem-graduacao:hover td {
+        background-color: #fecaca;
+    }
+</style>
 
 <x-alert-error />
 
@@ -148,7 +157,6 @@
                 <th class="py-3 px-4">Nome</th>
                 <th class="py-3 px-4">Foto</th>
                 <th class="py-3 px-4">Qtd. Alunos</th>
-                <th class="py-3 px-4">Graduado</th>
                 <th class="py-3 px-4">Ações</th>
             </tr>
         </thead>
@@ -160,11 +168,15 @@
             $professorGraduado = $professor->detalhes->where('professor_id_professor', $professor->id_professor)->count() > 0;
             @endphp
 
-            <tr class="border-b hover:bg-gray-50 transition linha-professor"
+
+            <tr class="border-b transition linha-professor {{ !$professorGraduado? 'professor-sem-graduacao': 'hover:bg-gray-50' }}"
                 data-nome="{{ strtolower($professor->prof_nome ?? '') }}"
                 data-graduado="{{ $professorGraduado ? 'sim' : 'nao' }}">
 
-                <td class="py-3 px-4">{{ $professor->prof_nome }}</td>
+
+                <td class="py-3 px-4 font-medium text-gray-800">
+                    {{ Str::upper($professor->prof_nome) }}
+                </td>
 
                 <td class="py-3 px-4">
                     @if($professor->prof_foto)
@@ -195,26 +207,6 @@
                     </a>
                 </td>
 
-
-                <!-- Graduado -->
-                <td class="py-3 px-4">
-                    @if($professorGraduado)
-                    <span style="padding:2px 8px; font-size:0.75rem;
-                        font-weight:600; border-radius:9999px;
-                        color:#166534; background-color:#bbf7d0;"> 🥋 Sim
-                    </span>
-                    @else
-                    <span style="
-                        padding:4px 10px;
-                        font-size:0.75rem;
-                        font-weight:600;
-                        border-radius:9999px;
-                        color:#7f1d1d;
-                        background-color:#fecaca;">
-                        Não
-                    </span>
-                    @endif
-                </td>
 
                 <td class="py-3 px-4 flex gap-2">
 

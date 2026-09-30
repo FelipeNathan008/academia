@@ -21,6 +21,42 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
     }
 
+    /* Admin e Superadmin */
+    .header-admin {
+        background: white;
+    }
+
+    /* Professor */
+    .header-professor {
+        background: #000000;
+        border-bottom-color: #222222;
+    }
+
+    /* Texto do usuário no header do professor */
+    .header-professor .header-user strong {
+        color: #FFFFFF;
+    }
+
+    .header-professor .header-user span {
+        color: #D1D5DB;
+    }
+
+
+    /* Aluno */
+    .header-aluno {
+        background: #8E173F;
+        border-bottom-color: #701232;
+    }
+
+    /* Texto do usuário no header do aluno */
+    .header-aluno .header-user strong {
+        color: #FFFFFF;
+    }
+
+    .header-aluno .header-user span {
+        color: #F5D5DF;
+    }
+
     .header-left {
         display: flex;
         align-items: center;
@@ -110,20 +146,219 @@
     }
 </style>
 
-<header class="header">
+@php
+$usuario = auth()->user();
+$empresa = $usuario->empresa;
 
+$degustacaoEncerrada = false;
+$contratoInadimplente = false;
+
+if (
+$empresa &&
+$empresa->emp_status === 'Degustação' &&
+$empresa->emp_degustacao_fim
+) {
+$degustacaoEncerrada = now()->startOfDay()->gt(
+$empresa->emp_degustacao_fim->startOfDay()
+);
+}
+
+$contratoInadimplente = false;
+$contratoPagamentoBloqueado = false;
+
+if ($empresa) {
+
+$contratos = \App\Models\Contrato::where(
+'empresa_id',
+$empresa->id_empresa
+)->with('detalhes.mensalidades')->get();
+
+
+foreach ($contratos as $contrato) {
+
+// Já é inadimplente
+if ($contrato->contrato_status === 'Inadimplente') {
+$contratoInadimplente = true;
+}
+
+foreach ($contrato->detalhes as $detalhe) {
+
+foreach ($detalhe->mensalidades as $mensalidade) {
+
+// Entrada rejeitada e vencida
+if (
+$mensalidade->mensa_contrato_referencia === 'Entrada' &&
+$mensalidade->mensa_contrato_status === 'Rejeitado' &&
+$mensalidade->mensa_contrato_vencimento &&
+\Carbon\Carbon::parse(
+$mensalidade->mensa_contrato_vencimento
+)->startOfDay()->lt(now()->startOfDay())
+) {
+$contratoPagamentoBloqueado = true;
+}
+
+// Entrada pendente vencida
+if (
+$mensalidade->mensa_contrato_referencia === 'Entrada' &&
+$mensalidade->mensa_contrato_status === 'Pendente' &&
+$mensalidade->mensa_contrato_vencimento &&
+\Carbon\Carbon::parse(
+$mensalidade->mensa_contrato_vencimento
+)->startOfDay()->lt(now()->startOfDay())
+) {
+$contratoPagamentoBloqueado = true;
+}
+
+// Entrada atrasada
+if (
+$mensalidade->mensa_contrato_referencia === 'Entrada' &&
+$mensalidade->mensa_contrato_status === 'Atrasado'
+) {
+$contratoPagamentoBloqueado = true;
+}
+
+}
+
+}
+
+}
+}
+
+
+$acessoRestrito = $degustacaoEncerrada || $contratoInadimplente || $contratoPagamentoBloqueado;
+
+@endphp
+
+<header class="header
+    @if(auth()->user()->role === 'professor')
+        header-professor
+    @elseif(auth()->user()->role === 'aluno')
+        header-aluno
+    @else
+        header-admin
+    @endif
+">
     <div class="header-left">
 
 
         {{-- MENU ADMIN --}}
-        @if(auth()->user()->role === 'superadmin')
+        @if(auth()->user()->role === 'admin')
 
+        @if($acessoRestrito)
+
+        {{-- DEGUSTAÇÃO ENCERRADA OU CONTRATO INADIMPLENTE: SOMENTE PLANOS --}}
         <div class="header-menu">
 
-            <a href="{{ route('superadmin.planos') }}"
+            <a href="{{ route('admin.planos') }}"
                 class="header-link {{ request()->routeIs(
-                        'superadmin.planos'
-                        ) ? 'active' : '' }}">
+            'admin.planos',
+            'contrato.show',
+            'contrato.create',
+                                'contrato-financeiro.pagamento.show'
+        ) ? 'active' : '' }}">
+                Planos
+            </a>
+
+            <a href="{{ route('empresa') }}"
+                class="header-link {{ request()->routeIs(
+            'empresa.*',
+            'empresa'
+        ) ? 'active' : '' }}">
+                Empresa
+            </a>
+
+        </div>
+
+        @else
+
+        {{-- MENU NORMAL --}}
+        <div class="header-menu">
+
+            <a href="{{ route('admin.principal') }}"
+                class="header-link {{ request()->routeIs(
+                    'admin.principal',
+                    'dashboard',
+                    'dashboard.comprovantes',
+                    'dashboard.mensalidadesAtrasadas',
+                    'responsaveis.*',
+                    'responsaveis',
+                    'alunos.*',
+                    'alunos',
+                    'detalhes-aluno.*',
+                    'matricula.*',
+                    'matricula',
+                    'finaceiro.*',
+                    'mensalidade',
+                    'professores.*',
+                    'professores',
+                    'detalhes-professor.*',
+                    'frequencia.*',
+                    'aulas.*',
+                    'aulas',
+                    'grades.aulas',
+                    'grades.aulas.*'
+                ) ? 'active' : '' }}">
+                Principal
+            </a>
+
+            <a href="{{ route('admin.administracao') }}"
+                class="header-link {{ request()->routeIs(
+                    'admin.administracao',
+                    'grade_horarios.*',
+                    'grade_horarios',
+                    'graduacoes',
+                    'graduacoes.*',
+                    'modalidades',
+                    'modalidades.*',
+                    'horario_treino',
+                    'horario_treino.*',
+                    'preco-aula',
+                    'preco-aula.*',
+                    'turmas',
+                    'turmas.*',
+                    'dia_vencimento.*',
+                    'dia_vencimento'
+                ) ? 'active' : '' }}">
+                Administração
+            </a>
+
+            <a href="{{ route('admin.controle') }}"
+                class="header-link {{ request()->routeIs(
+                    'admin.controle',
+                    'filiais.*',
+                    'filiais',
+                    'detalhes-filial.*',
+                    'detalhes-filial',
+                    'usuarios.*',
+                    'usuarios',
+                    'empresa.*',
+                    'empresa'
+                ) ? 'active' : '' }}">
+                Controle
+            </a>
+
+            <a href="{{ route('dashboard.graduacoes') }}"
+                class="header-link {{ request()->routeIs(
+                    'dashboard.graduacoes'
+                ) ? 'active' : '' }}">
+                Graduação
+            </a>
+
+            <a href="{{ route('dashboard.mapaFinanceiro') }}"
+                class="header-link {{ request()->routeIs(
+                    'dashboard.mapaFinanceiro',
+                    'dashboard.listaMapaFinanceiro'
+                ) ? 'active' : '' }}">
+                Mapa
+            </a>
+
+            <a href="{{ route('admin.planos') }}"
+                class="header-link {{ request()->routeIs(
+                    'admin.planos',
+                    'contrato.show',
+                    'contrato.create',
+                    'contrato-financeiro.pagamento.show',
+                ) ? 'active' : '' }}">
                 Planos
             </a>
 
@@ -131,70 +366,20 @@
 
         @endif
 
+        @endif
 
-        {{-- MENU ADMIN --}}
-        @if(auth()->user()->role === 'admin')
+
+        @if(auth()->user()->role === 'superadmin')
 
         <div class="header-menu">
-
-            <a href="{{ route('admin.principal') }}"
+            <a href="{{ route('dashboard-superadmin') }}"
                 class="header-link {{ request()->routeIs(
-                        'admin.principal',
-                        'dashboard.*', 'dashboard',
-                        'responsaveis.*', 'responsaveis',
-                        'alunos.*', 'alunos', 'detalhes-aluno.*',
-                        'matricula.*', 'matricula', 'finaceiro.*', 'mensalidade',
-                        'professores.*', 'professores', 'detalhes-professor.*',
-                        'frequencia.*',
-                        'aulas.*','aulas', 'grades.aulas', 'grades.aulas.*',
-
-                        
+                        'dashboard-superadmin', 'superadmin-dashboard.comprovantes', 'superadmin.mensalidades.atrasadas',
+                        'superadmin.empresas', 'superadmin.empresa.show', 'superadmin.empresa.contratos',
                 ) ? 'active' : '' }}">
-                Principal
+                Dashboard
             </a>
-
-            <a href="{{ route('admin.administracao') }}"
-                class="header-link {{ request()->routeIs(
-                        'admin.administracao',
-                        'grade_horarios.*','grade_horarios',
-                        'graduacoes', 'graduacoes.*',
-                        'modalidades', 'modalidades.*',
-                        'horario_treino', 'horario_treino.*',
-                        'preco-aula', 'preco-aula.*',
-                        'turmas', 'turmas.*',
-                ) ? 'active' : '' }}">
-                Administração
-            </a>
-
-            <a href="{{ route('admin.controle') }}"
-                class="header-link {{ request()->routeIs(
-                        'admin.controle',
-                        'filiais.*', 'filiais', 'detalhes-filial.*', 'detalhes-filial',
-                        'usuarios.*', 'usuarios',
-                        'empresa.*', 'empresa',
-                        
-                ) ? 'active' : '' }}">
-                Controle
-            </a>
-
-            <a href="{{ route('dashboard.graduacoes') }}"
-                class="header-link {{ request()->routeIs(
-                        'dashboard.graduacoes'
-                        
-                ) ? 'active' : '' }}">
-                Graduação
-            </a>
-
-            <a href="{{ route('admin.planos') }}"
-                class="header-link {{ request()->routeIs(
-                        'admin.planos'
-                        
-                ) ? 'active' : '' }}">
-                Planos
-            </a>
-
         </div>
-
         @endif
 
         @if(auth()->user()->role === 'professor')

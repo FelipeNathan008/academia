@@ -11,7 +11,7 @@ use App\Models\DetalhesMensalidade;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
+use App\Services\PagamentoContratoService;
 
 class DashboardController extends Controller
 {
@@ -151,15 +151,25 @@ class DashboardController extends Controller
         ));
     }
 
+
     public function index(Request $request)
     {
         $user = Auth::user();
         $empresa = Empresa::findOrFail($user->id_emp_id);
-
         $contrato = Contrato::with('detalheAtual.plano')
             ->where('empresa_id', $empresa->id_empresa)
             ->latest('id_contrato')
             ->first();
+
+        $alertaFinanceiro = null;
+
+        if ($contrato) {
+
+            $pagamentoService = new PagamentoContratoService();
+
+            $alertaFinanceiro = $pagamentoService
+                ->atualizarStatusEMensagem($contrato);
+        }
 
         $anoSelecionado = $request->get('ano', Carbon::now()->year);
 
@@ -169,23 +179,31 @@ class DashboardController extends Controller
             ->orderBy('ano', 'desc')
             ->pluck('ano');
 
-        // Matrículas CADASTRADAS por mês (evento de criação, independente do status atual)
+        // Matrículas CADASTRADAS por mês
         $matriculasPorMes = DB::table('matricula')
-            ->select(DB::raw("MONTH(matri_data) as mes"), DB::raw("COUNT(*) as total"))
+            ->select(
+                DB::raw("MONTH(matri_data) as mes"),
+                DB::raw("COUNT(*) as total")
+            )
             ->whereYear('matri_data', $anoSelecionado)
             ->where('id_emp_id', $user->id_emp_id)
             ->groupBy('mes')
             ->pluck('total', 'mes');
 
         $labels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
         $dados = [];
+
         for ($m = 1; $m <= 12; $m++) {
             $dados[] = $matriculasPorMes[$m] ?? 0;
         }
 
-        // Matrículas ENCERRADAS por mês (evento de encerramento, pela data real)
+        // Matrículas ENCERRADAS por mês
         $matriculasPorMesEncerradas = DB::table('matricula')
-            ->select(DB::raw("MONTH(matri_data_encerramento) as mes"), DB::raw("COUNT(*) as total"))
+            ->select(
+                DB::raw("MONTH(matri_data_encerramento) as mes"),
+                DB::raw("COUNT(*) as total")
+            )
             ->whereYear('matri_data_encerramento', $anoSelecionado)
             ->where('id_emp_id', $user->id_emp_id)
             ->whereNotNull('matri_data_encerramento')
@@ -193,13 +211,17 @@ class DashboardController extends Controller
             ->pluck('total', 'mes');
 
         $dadosEncerrados = [];
+
         for ($m = 1; $m <= 12; $m++) {
             $dadosEncerrados[] = $matriculasPorMesEncerradas[$m] ?? 0;
         }
 
-        // Matrículas PAUSADAS por mês (evento de pausa, pela data real)
+        // Matrículas PAUSADAS por mês
         $matriculasPorMesPausadas = DB::table('matricula')
-            ->select(DB::raw("MONTH(matri_data_pausa) as mes"), DB::raw("COUNT(*) as total"))
+            ->select(
+                DB::raw("MONTH(matri_data_pausa) as mes"),
+                DB::raw("COUNT(*) as total")
+            )
             ->whereYear('matri_data_pausa', $anoSelecionado)
             ->where('id_emp_id', $user->id_emp_id)
             ->whereNotNull('matri_data_pausa')
@@ -207,17 +229,24 @@ class DashboardController extends Controller
             ->pluck('total', 'mes');
 
         $dadosPausados = [];
+
         for ($m = 1; $m <= 12; $m++) {
             $dadosPausados[] = $matriculasPorMesPausadas[$m] ?? 0;
         }
 
-        // Total de matrículas ativas (foto do momento atual)
+        // Total de matrículas ativas
         $totalMatriculasAtivas = DB::table('matricula')
             ->where('id_emp_id', $user->id_emp_id)
             ->where('matri_status', 'Matriculado')
             ->count();
 
-        // Alunos com ao menos uma matrícula Matriculado ou Pausada
+        // Total de matrículas ativas e pausadas
+        $contagemMatriculas = DB::table('matricula')
+            ->where('id_emp_id', $user->id_emp_id)
+            ->whereIn('matri_status', ['Matriculado', 'Pausada'])
+            ->count();
+
+        // Alunos com ao menos uma matrícula ativa ou pausada
         $totalAlunosMatriculados = DB::table('aluno')
             ->where('id_emp_id', $user->id_emp_id)
             ->whereIn('id_aluno', function ($query) use ($user) {
@@ -228,7 +257,7 @@ class DashboardController extends Controller
             })
             ->count();
 
-        // Alunos sem nenhuma matrícula Matriculado ou Pausada
+        // Alunos sem nenhuma matrícula ativa ou pausada
         $totalAlunosNaoMatriculados = DB::table('aluno')
             ->where('id_emp_id', $user->id_emp_id)
             ->whereNotIn('id_aluno', function ($query) use ($user) {
@@ -244,24 +273,35 @@ class DashboardController extends Controller
             ->where('aluno_bolsista', 'sim')
             ->count();
 
-        $receitaMensal = DetalhesMensalidade::whereMonth('det_mensa_data_venc', Carbon::now()->month)
+        $receitaMensal = DetalhesMensalidade::whereMonth(
+            'det_mensa_data_venc',
+            Carbon::now()->month
+        )
             ->whereYear('det_mensa_data_venc', Carbon::now()->year)
             ->where('id_emp_id', $user->id_emp_id)
             ->sum('det_mensa_valor');
 
-        $receitaMensalPago = DetalhesMensalidade::whereMonth('det_mensa_data_venc', Carbon::now()->month)
+        $receitaMensalPago = DetalhesMensalidade::whereMonth(
+            'det_mensa_data_venc',
+            Carbon::now()->month
+        )
             ->where('det_mensa_status', 'Pago')
             ->whereYear('det_mensa_data_venc', Carbon::now()->year)
             ->where('id_emp_id', $user->id_emp_id)
             ->sum('det_mensa_valor');
 
-        // Atualiza atrasados apenas da empresa
+        // Atualiza atrasados das mensalidades normais
         DetalhesMensalidade::where('det_mensa_status', 'Em aberto')
             ->where('id_emp_id', $user->id_emp_id)
             ->whereDate('det_mensa_data_venc', '<', Carbon::today())
-            ->update(['det_mensa_status' => 'Atrasado']);
+            ->update([
+                'det_mensa_status' => 'Atrasado'
+            ]);
 
-        $mensalidadesAtrasadas = DetalhesMensalidade::where('id_emp_id', $user->id_emp_id)
+        $mensalidadesAtrasadas = DetalhesMensalidade::where(
+            'id_emp_id',
+            $user->id_emp_id
+        )
             ->whereDate('det_mensa_data_venc', '<', Carbon::today())
             ->whereIn('det_mensa_status', [
                 'Em aberto',
@@ -279,23 +319,234 @@ class DashboardController extends Controller
             ->count();
 
         return view('view_admin_user.dashboard', [
-            'empresa'                => $empresa,
-            'contrato'               => $contrato,
-            'graficoLabels'          => $labels,
-            'graficoDados'           => $dados,
-            'graficoDadosEncerrados' => $dadosEncerrados,
-            'graficoDadosPausados'   => $dadosPausados,
-            'anosDisponiveis'        => $anosDisponiveis,
-            'anoSelecionado'         => $anoSelecionado,
-            'totalMatriculasAtivas'  => $totalMatriculasAtivas,
+            'empresa'                    => $empresa,
+            'contrato'                   => $contrato,
+            'alertaFinanceiro'           => $alertaFinanceiro,
+            'graficoLabels'              => $labels,
+            'graficoDados'               => $dados,
+            'graficoDadosEncerrados'     => $dadosEncerrados,
+            'graficoDadosPausados'       => $dadosPausados,
+            'anosDisponiveis'            => $anosDisponiveis,
+            'anoSelecionado'             => $anoSelecionado,
+            'totalMatriculasAtivas'      => $totalMatriculasAtivas,
+            'contagemMatriculas'         => $contagemMatriculas,
             'totalAlunosMatriculados'    => $totalAlunosMatriculados,
             'totalAlunosNaoMatriculados' => $totalAlunosNaoMatriculados,
-            'totalBolsista'          => $totalBolsista,
-            'receitaMensal'          => $receitaMensal,
-            'receitaMensalPago'      => $receitaMensalPago,
-            'mensalidadesAtrasadas'  => $mensalidadesAtrasadas,
-            'comprovantesPendentes'  => $comprovantesPendentes,
+            'totalBolsista'              => $totalBolsista,
+            'receitaMensal'              => $receitaMensal,
+            'receitaMensalPago'          => $receitaMensalPago,
+            'mensalidadesAtrasadas'      => $mensalidadesAtrasadas,
+            'comprovantesPendentes'      => $comprovantesPendentes,
         ]);
+    }
+
+    public function mapaFinanceiro(Request $request)
+    {
+        $user = Auth::user();
+
+        $mes = (int) $request->get('mes', Carbon::now()->month);
+        $ano = (int) $request->get('ano', Carbon::now()->year);
+
+        if ($mes < 1 || $mes > 12) {
+            $mes = Carbon::now()->month;
+        }
+
+        if ($ano < 2000 || $ano > 2100) {
+            $ano = Carbon::now()->year;
+        }
+
+        $inicioMes = Carbon::create($ano, $mes, 1)->startOfMonth();
+        $fimMes = $inicioMes->copy()->endOfMonth();
+
+        $statusPendentes = [
+            'Em aberto',
+            'Atrasado',
+            'Comprovante enviado',
+            'Rejeitado',
+        ];
+
+        $detalhes = DetalhesMensalidade::with([
+            'mensalidade.matricula.aluno',
+            'mensalidade.matricula.grade.professor',
+        ])
+            ->where('id_emp_id', $user->id_emp_id)
+            ->whereBetween('det_mensa_data_venc', [
+                $inicioMes->toDateString(),
+                $fimMes->toDateString()
+            ])
+            ->whereIn('det_mensa_status', $statusPendentes)
+            ->whereHas('mensalidade.matricula', function ($query) {
+                $query->where('matri_status', '!=', 'Encerrada');
+            })
+            ->orderBy('det_mensa_data_venc')
+            ->get();
+
+        $recebimentosPorDia = $detalhes
+            ->groupBy(function ($detalhe) {
+                return Carbon::parse($detalhe->det_mensa_data_venc)->day;
+            })
+            ->map(function ($itens) {
+                $alunos = $itens
+                    ->map(function ($detalhe) {
+                        return optional($detalhe->mensalidade)->aluno_id_aluno;
+                    })
+                    ->filter()
+                    ->unique();
+
+                return [
+                    'quantidade_alunos' => $alunos->count(),
+                    'valor' => $itens->sum(function ($detalhe) {
+                        return (float) $detalhe->det_mensa_valor;
+                    }),
+                    'detalhes' => $itens,
+                ];
+            });
+
+        $totalAReceber = $detalhes->sum(function ($detalhe) {
+            return (float) $detalhe->det_mensa_valor;
+        });
+
+        $totalAlunos = $detalhes
+            ->map(function ($detalhe) {
+                return optional($detalhe->mensalidade)->aluno_id_aluno;
+            })
+            ->filter()
+            ->unique()
+            ->count();
+
+        $diasComRecebimentos = $recebimentosPorDia->count();
+
+        $hoje = Carbon::today();
+
+        if ($mes === $hoje->month && $ano === $hoje->year) {
+            $proximo = $recebimentosPorDia
+                ->filter(function ($dados, $dia) use ($hoje) {
+                    $data = Carbon::create($hoje->year, $hoje->month, $dia);
+                    return $data->gte($hoje);
+                })
+                ->sortKeys()
+                ->first();
+
+            $diaProximo = $recebimentosPorDia
+                ->filter(function ($dados, $dia) use ($hoje) {
+                    $data = Carbon::create($hoje->year, $hoje->month, $dia);
+                    return $data->gte($hoje);
+                })
+                ->sortKeys()
+                ->keys()
+                ->first();
+        } else {
+            $diaProximo = $recebimentosPorDia
+                ->sortKeys()
+                ->keys()
+                ->first();
+
+            $proximo = $diaProximo
+                ? $recebimentosPorDia[$diaProximo]
+                : null;
+        }
+
+        $dataProximo = $diaProximo
+            ? Carbon::create($ano, $mes, $diaProximo)
+            : null;
+
+        $nomeMes = $inicioMes->translatedFormat('F');
+
+        $dias = collect();
+
+        for ($dia = 1; $dia <= $inicioMes->daysInMonth; $dia++) {
+            $dados = $recebimentosPorDia->get($dia, [
+                'quantidade_alunos' => 0,
+                'valor' => 0,
+                'detalhes' => collect(),
+            ]);
+
+            $dias->push([
+                'dia' => $dia,
+                'data' => Carbon::create($ano, $mes, $dia),
+                'quantidade_alunos' => $dados['quantidade_alunos'],
+                'valor' => $dados['valor'],
+                'detalhes' => $dados['detalhes'],
+            ]);
+        }
+
+        return view(
+            'view_admin_user.view_principal.view_dashboard.mapa_financeiro',
+            compact(
+                'mes',
+                'ano',
+                'nomeMes',
+                'inicioMes',
+                'fimMes',
+                'dias',
+                'totalAReceber',
+                'totalAlunos',
+                'diasComRecebimentos',
+                'proximo',
+                'dataProximo'
+            )
+        );
+    }
+
+    public function listaMapaFinanceiro(Request $request)
+    {
+        $user = Auth::user();
+
+        $mes = (int) $request->get('mes');
+        $ano = (int) $request->get('ano');
+        $dia = (int) $request->get('dia');
+
+        // Validações
+        if ($mes < 1 || $mes > 12) {
+            abort(404);
+        }
+
+        if ($ano < 2000 || $ano > 2100) {
+            abort(404);
+        }
+
+        if ($dia < 1 || $dia > 31) {
+            abort(404);
+        }
+
+        $dataVencimento = Carbon::create($ano, $mes, $dia);
+
+        // Garante que o dia realmente existe naquele mês
+        if ($dataVencimento->month !== $mes || $dataVencimento->year !== $ano) {
+            abort(404);
+        }
+
+        $detalhes = DetalhesMensalidade::with([
+            'mensalidade.matricula.aluno',
+            'mensalidade.matricula.grade.professor',
+        ])
+            ->where('id_emp_id', $user->id_emp_id)
+            ->whereDate('det_mensa_data_venc', $dataVencimento->toDateString())
+            ->whereIn('det_mensa_status', [
+                'Em aberto',
+                'Atrasado',
+                'Comprovante enviado',
+                'Rejeitado',
+            ])
+            ->whereHas('mensalidade.matricula', function ($query) {
+                $query->where('matri_status', '!=', 'Encerrada');
+            })
+            ->orderBy('det_mensa_data_venc')
+            ->get();
+
+        $nomeMes = $dataVencimento->translatedFormat('F');
+
+        return view(
+            'view_admin_user.view_principal.view_dashboard.lista_mapa_financeiro',
+            compact(
+                'detalhes',
+                'dataVencimento',
+                'mes',
+                'ano',
+                'dia',
+                'nomeMes'
+            )
+        );
     }
 
     public function comprovantesPendentes()

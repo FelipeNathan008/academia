@@ -24,14 +24,30 @@ class ResponsavelController extends Controller
             $query->where('resp_nome', 'like', '%' . $request->nome . '%');
         }
 
+        // FILTRO PELA PRIMEIRA LETRA DO NOME
+        if ($request->filled('letra')) {
+            $letra = strtoupper($request->letra);
+
+            if (preg_match('/^[A-Z]$/', $letra)) {
+                $query->where('resp_nome', 'like', $letra . '%');
+            }
+        }
+
         $totalResponsaveis = Responsavel::where('id_emp_id', $user->id_emp_id)->count();
 
         $responsaveis = $query
             ->withCount('alunos')
+            ->orderBy('resp_nome', 'asc')
             ->paginate(10)
             ->withQueryString();
 
-        return view('view_admin_user.view_principal.view_responsavel.index', compact('responsaveis', 'totalResponsaveis'));
+        return view(
+            'view_admin_user.view_principal.view_responsavel.index',
+            compact(
+                'responsaveis',
+                'totalResponsaveis'
+            )
+        );
     }
 
     // CADASTRAR RESPONSÁVEL

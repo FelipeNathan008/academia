@@ -318,18 +318,14 @@
                         id="copiar"
                         class="px-6 py-3 rounded-r-xl bg-blue-700 text-white font-semibold hover:bg-blue-800 transition-all duration-200
                         hover:shadow-lg active:scale-95">
-
                         📋 Copiar
-
                     </button>
 
                 </div>
 
                 <p id="copiado"
                     class="hidden mt-3 text-green-600 text-sm font-semibold">
-
                     ✓ Código Pix copiado com sucesso.
-
                 </p>
 
                 <div class="mt-6 rounded-xl border border-green-200 bg-green-50 p-5">

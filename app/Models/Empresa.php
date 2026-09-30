@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Empresa extends Model
 {
     protected $table = 'empresas';
+
     protected $primaryKey = 'id_empresa';
 
     protected $fillable = [
@@ -21,10 +22,22 @@ class Empresa extends Model
         'emp_chave_pix',
         'emp_nome_recebedor',
         'emp_cidade',
+
+        // ENDEREÇO
+        'emp_end_cep',
+        'emp_end_logradouro',
+        'emp_end_numero',
+        'emp_end_complemento',
+        'emp_end_bairro',
+        'emp_end_cidade',
+        'emp_end_estado',
+
+        // DEGUSTAÇÃO
         'emp_degustacao_inicio',
         'emp_degustacao_fim',
         'emp_status',
 
+        // CONTRATO
         'contrato_empresa_nome',
         'contrato_empresa_email',
         'contrato_empresa_responsavel',
@@ -40,16 +53,28 @@ class Empresa extends Model
 
     public function filiais()
     {
-        return $this->hasMany(Filial::class, 'id_emp_id', 'id_empresa');
+        return $this->hasMany(
+            Filial::class,
+            'id_emp_id',
+            'id_empresa'
+        );
     }
 
     public function contrato()
     {
-        return $this->hasOne(Contrato::class, 'empresa_id', 'id_empresa');
+        return $this->hasOne(
+            Contrato::class,
+            'empresa_id',
+            'id_empresa'
+        );
     }
 
     public function contratos()
     {
-        return $this->hasMany(Contrato::class, 'empresa_id', 'id_empresa');
+        return $this->hasMany(
+            Contrato::class,
+            'empresa_id',
+            'id_empresa'
+        );
     }
 }
