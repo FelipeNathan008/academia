@@ -1,3 +1,4 @@
+<!-- empresa_contratos.blade.php -->
 @extends('layouts.dashboard')
 
 @section('title', 'Contratos da Empresa')
@@ -152,13 +153,13 @@
             </div>
         </div>
     </div>
- 
+
 </div>
 
 <div class="bg-white rounded-2xl shadow-md p-8 mb-8">
     <h3 class="text-xl font-bold text-gray-700 mb-6">Dados de Pagamento</h3>
 
-    
+
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div>
             <label class="text-sm text-gray-500">Forma de pagamento</label>
@@ -245,42 +246,126 @@
                         <th class="py-3 pr-4">Valor</th>
                         <th class="py-3 pr-4">Status</th>
                         <th class="py-3 pr-4">Pagamento</th>
+                        <th class="py-3 pr-4 text-center">Ações</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     @foreach($mensalidades as $mensalidade)
                     <tr class="border-b last:border-0">
-                        <td class="py-3 pr-4 font-medium">{{ $mensalidade->mensa_contrato_referencia }}</td>
-                        <td class="py-3 pr-4">{{ $mensalidade->mensa_contrato_vencimento?->format('d/m/Y') }}</td>
+
+                        <td class="py-3 pr-4 font-medium">
+                            {{ $mensalidade->mensa_contrato_referencia }}
+                        </td>
+
+                        <td class="py-3 pr-4">
+                            {{ $mensalidade->mensa_contrato_vencimento?->format('d/m/Y') }}
+                        </td>
+
                         <td class="py-3 pr-4 font-semibold text-green-600">
                             R$ {{ number_format($mensalidade->mensa_contrato_valor, 2, ',', '.') }}
                         </td>
+
                         <td class="py-3 pr-4">
                             @switch($mensalidade->mensa_contrato_status)
+
                             @case('Comprovante enviado')
-                            <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg" style="background-color:#2563eb;">Comprovante enviado</span>
+                            <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg"
+                                style="background-color:#2563eb;">
+                                Comprovante enviado
+                            </span>
                             @break
+
                             @case('Pago')
-                            <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg" style="background-color:#15803d;">Pago</span>
+                            <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg"
+                                style="background-color:#15803d;">
+                                Pago
+                            </span>
                             @break
+
                             @case('Atrasado')
-                            <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg" style="background-color:#dc2626;">Atrasado</span>
+                            <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg"
+                                style="background-color:#dc2626;">
+                                Atrasado
+                            </span>
                             @break
+
                             @case('Rejeitado')
-                            <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg" style="background-color:#e71f1f;">Rejeitado</span>
+                            <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg"
+                                style="background-color:#e71f1f;">
+                                Rejeitado
+                            </span>
                             @break
+
                             @case('Pendente')
-                            <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg" style="background-color:#ca8a04;">Pendente</span>
+                            <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg"
+                                style="background-color:#ca8a04;">
+                                Pendente
+                            </span>
                             @break
+
                             @default
                             <span class="inline-block px-4 py-2 text-xs font-semibold text-white rounded-lg bg-gray-400">
                                 {{ $mensalidade->mensa_contrato_status ?? '-' }}
                             </span>
+
                             @endswitch
                         </td>
+
                         <td class="py-3 pr-4">
                             {{ $mensalidade->mensa_contrato_pagamento?->format('d/m/Y') ?? '-' }}
                         </td>
+
+                        <td class="py-3 pr-4">
+                            <div class="flex justify-center gap-2 flex-wrap">
+
+                                @if($mensalidade->mensa_contrato_status === 'Comprovante enviado')
+
+                                <a href="{{ route('superadmin-comprovante', Crypt::encrypt($mensalidade->id_mensalidade_contrato)) }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style="background-color:#174ab9;color:white;"
+                                    class="px-4 py-2 rounded-lg shadow hover:bg-blue-800 transition">
+                                    Comprovante
+                                </a>
+
+                                <form
+                                    method="POST"
+                                    action="{{ route('superadmin-comprovante.aprovar', Crypt::encrypt($mensalidade->id_mensalidade_contrato)) }}"
+                                    onsubmit="return confirm('Deseja aprovar este comprovante?')">
+
+                                    @csrf
+                                    @method('PUT')
+
+                                    <button
+                                        type="submit"
+                                        class="px-4 py-2 rounded-lg shadow text-white hover:bg-[#166534] transition"
+                                        style="background-color:#15803d;">
+                                        Aprovar
+                                    </button>
+
+                                </form>
+
+                                <form
+                                    method="POST"
+                                    action="{{ route('superadmin-comprovante.rejeitar', Crypt::encrypt($mensalidade->id_mensalidade_contrato)) }}"
+                                    onsubmit="return confirm('Deseja rejeitar este comprovante?')">
+
+                                    @csrf
+                                    @method('PUT')
+                                    <button
+                                        type="submit"
+                                        class="px-4 py-2 rounded-lg shadow text-white hover:bg-[#b91c1c] transition"
+                                        style="background-color:#dc2626;">
+                                        Rejeitar
+                                    </button>
+                                </form>
+
+                                @endif
+
+                            </div>
+                        </td>
+
                     </tr>
                     @endforeach
                 </tbody>

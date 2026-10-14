@@ -33,6 +33,8 @@ use App\Http\Controllers\AdminUser\{
     AdminUserPlanoController,
     ContratoController,
     ContratoFinanceiroController,
+    VisitanteController,
+    VisitanteGradeController,
 };
 
 use App\Http\Controllers\{
@@ -183,6 +185,17 @@ Route::middleware(['auth', 'admin', 'degustacao'])->group(function () {
     Route::get('/alunos/{id}', [AlunoController::class, 'show'])->name('alunos.show');
     Route::delete('/alunos/{id}', [AlunoController::class, 'destroy'])->name('alunos.destroy');
 
+    // VISITANTES
+    Route::get('/visitantes', [VisitanteController::class, 'index'])->name('visitantes');
+    Route::post('/visitantes', [VisitanteController::class, 'store'])->name('visitantes.store');
+    Route::get('/visitantes/{id}/edit', [VisitanteController::class, 'edit'])->name('visitantes.edit');
+    Route::put('/visitantes/{id}', [VisitanteController::class, 'update'])->name('visitantes.update');
+    Route::delete('/visitantes/{id}', [VisitanteController::class, 'destroy'])->name('visitantes.destroy');
+
+    Route::get('/visitantes/{id}/grade', [VisitanteGradeController::class, 'index'])->name('visitantes.grade');
+    Route::post('/visitantes/{id}/grade', [VisitanteGradeController::class, 'store'])->name('visitantes.grade.store');
+    Route::delete('/visitante-grade/{id}', [VisitanteGradeController::class, 'destroy'])->name('visitantes.grade.destroy');
+
     // MATRÍCULA
     Route::get('/professor/{id}/turmas', [MatriculaController::class, 'getTurmasPorProfessor']);
     Route::get('/alunos/{id}/matricula', [MatriculaController::class, 'index'])->name('matricula');
@@ -256,6 +269,9 @@ Route::middleware(['auth', 'admin', 'degustacao'])->group(function () {
     Route::get('/frequencia/{id}/edit', [FrequenciaAlunoController::class, 'edit'])->name('frequencia.edit');
     Route::put('/frequencia/{id}', [FrequenciaAlunoController::class, 'update'])->name('frequencia.update');
     Route::post('/frequencia', [FrequenciaAlunoController::class, 'store'])->name('frequencia.store');
+
+    Route::get('/frequencia/relatorio/pdf', [FrequenciaAlunoController::class, 'relatorioPdf'])
+        ->name('frequencia.relatorio.pdf');
 
 
     // CONTROLE //

@@ -290,9 +290,8 @@
 
     @if($mensalidades->hasPages())
 
-    <div class="mt-6">
-        {{ $mensalidades->links() }}
-    </div>
+    <x-pagination-compact :paginator="$mensalidades" />
+
 
     @endif
 

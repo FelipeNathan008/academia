@@ -1,351 +1,210 @@
-@extends('layouts.dashboard')
-
-@section('title', 'Professores')
-@section('content')
-
-<style>
-    .professor-sem-graduacao td {
-        background-color: #fee2e2;
-    }
-
-    .professor-sem-graduacao:hover td {
-        background-color: #fecaca;
-    }
-</style>
-
-<x-alert-error />
-
-<!-- TOPO -->
-<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
-    <div class="flex items-center gap-4">
-        <a href="{{ url()->previous() }}"
-            class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
-            ← Voltar
-        </a>
-        <h2 class="text-3xl font-extrabold text-gray-800">
-            Professores
-        </h2>
-    </div>
-
-    <button onclick="toggleCadastro()"
-        class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow-md hover:bg-[#732920] hover:shadow-lg transition-all">
-        + Cadastrar Professor
-    </button>
-
-</div>
-
-
-<!-- FORMULÁRIO DE CADASTRO -->
-<div id="cadastroForm" class="hidden mb-10">
-    <form id="formCadastro" action="{{ route('professores.store') }}" method="POST" enctype="multipart/form-data" onsubmit=" bloquearSubmit(event, this)">
-        @csrf
-        <div class="bg-white rounded-2xl shadow-md p-8">
-            <h3 id="tituloCadastro" class="text-xl font-bold mb-6 text-gray-700">Cadastrar Professor</h3>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- NOME -->
-                <div>
-                    <label class="text-sm font-medium text-gray-600">Nome Completo</label>
-                    <input type="text" name="prof_nome" id="cad_nome" maxlength="120" required
-                        placeholder="Ex: João da Silva"
-                        oninput="validarNome(this)"
-                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
-                </div>
-
-                <!-- NASCIMENTO -->
-                <div>
-                    <label class="text-sm font-medium text-gray-600">Data de Nascimento</label>
-                    <input type="date" name="prof_nascimento" id="cad_nascimento" required
-                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
-                </div>
-
-                <!-- TELEFONE -->
-                <div>
-                    <label class="text-sm font-medium text-gray-600">Telefone</label>
-                    <input type="text"
-                        name="prof_telefone"
-                        id="prof_telefone"
-                        required
-                        placeholder="(99) 99999-9999"
-                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
-                </div>
-
-                <!-- DESCRIÇÃO -->
-                <div class="md:col-span-2">
-                    <label class="text-sm font-medium text-gray-600">Observações</label>
-                    <textarea name="prof_desc" id="cad_desc" required rows="3"
-                        placeholder="Ex: Professor de Judô, horários flexíveis"
-                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none"></textarea>
-                </div>
-
-                <!-- FOTO -->
-                <div class="md:col-span-2">
-                    <label class="text-sm font-medium text-gray-600">Foto do Professor</label>
-                    <input type="file" name="prof_foto" id="cad_foto" required accept="image/*"
-                        class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-50">
-                </div>
-            </div>
-
-            <!-- AÇÕES -->
-            <div class="flex justify-end gap-4 border-t pt-6 mt-8">
-                <button type="button" onclick="fecharCadastro()"
-                    class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">
-                    Cancelar
-                </button>
-                <button type="submit"
-                    class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920] transition">
-                    Salvar Professor
-                </button>
-            </div>
-        </div>
-    </form>
-</div>
-
-
-<!-- LISTAGEM -->
-<div class="bg-white rounded-2xl shadow-md p-6">
-    <h3 class="text-xl font-bold mb-6 text-gray-700">LISTA DE PROFESSORES</h3>
-
-    <!-- FILTROS -->
-    <div class="flex justify-center mb-8">
-        <div class="flex flex-wrap gap-4 items-end justify-center">
-
-            <!-- Nome -->
-            <div class="flex flex-col w-[260px]">
-                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
-                    Nome
-                </label>
-
-                <input type="text"
-                    id="filtroNomeProfessor"
-                    placeholder="Buscar por nome..."
-                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
-            </div>
-
-            <!-- Graduado -->
-            <div class="flex flex-col w-[200px]">
-                <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide text-center">
-                    Graduado
-                </label>
-
-                <select id="filtroGraduado"
-                    class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white
-                           focus:ring-2 focus:ring-[#8E251F] focus:outline-none text-center">
-
-                    <option value="">Todos</option>
-                    <option value="sim">Sim</option>
-                    <option value="nao">Não</option>
-
-                </select>
-            </div>
-
-            <!-- Limpar -->
-            <button id="limparFiltroProfessor"
-                class="h-[48px] px-6 rounded-xl bg-gray-300
-                       text-gray-800 font-semibold hover:bg-gray-400
-                       transition shadow-md">
-                Limpar filtro
-            </button>
-
-        </div>
-    </div>
-
-    <table class="w-full text-left border-collapse">
-        <thead>
-            <tr class="border-b border-gray-300 text-gray-600 text-sm">
-                <th class="py-3 px-4">Nome</th>
-                <th class="py-3 px-4">Foto</th>
-                <th class="py-3 px-4">Qtd. Alunos</th>
-                <th class="py-3 px-4">Ações</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @forelse ($professores as $professor)
-
-            @php
-            $professorGraduado = $professor->detalhes->where('professor_id_professor', $professor->id_professor)->count() > 0;
-            @endphp
-
-
-            <tr class="border-b transition linha-professor {{ !$professorGraduado? 'professor-sem-graduacao': 'hover:bg-gray-50' }}"
-                data-nome="{{ strtolower($professor->prof_nome ?? '') }}"
-                data-graduado="{{ $professorGraduado ? 'sim' : 'nao' }}">
-
-
-                <td class="py-3 px-4 font-medium text-gray-800">
-                    {{ Str::upper($professor->prof_nome) }}
-                </td>
-
-                <td class="py-3 px-4">
-                    @if($professor->prof_foto)
-                    <div class="w-12 h-12 overflow-hidden">
-                        <img src="{{ asset('images/professores/' . $professor->prof_foto) }}"
-                            alt="Foto" style="width:48px; height:48px; object-fit:cover;">
-                    </div>
-                    @else
-                    -
-                    @endif
-                </td>
-
-                <td class="py-3 px-4">
-                    <a href="{{ route('alunos.index', ['prof_nome' => $professor->prof_nome]) }}"
-                        style="
-            padding: 5px 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            border-radius: 9999px;
-            color: #ffffff;
-            background-color: #2563eb;
-        "
-                        class="inline-flex items-center justify-center shadow-sm hover:bg-blue-700 hover:shadow-md transition duration-200 cursor-pointer"
-                        title="Ver alunos deste professor">
-
-                        {{ $professor->qtd_aluno ?? 0 }}
-
-                    </a>
-                </td>
-
-
-                <td class="py-3 px-4 flex gap-2">
-
-                    <a href="{{ route('grades.aulas') }}?professor={{ Crypt::encrypt($professor->id_professor) }}"
-                        style="background-color: #275cce; color: white;"
-                        class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
-                        Aulas
-                    </a>
-
-                    <!-- Botão Graduações -->
-                    <a href="{{ route('detalhes-professor.index', Crypt::encrypt($professor->id_professor)) }}"
-                        style="background-color: #174ab9; color: white;"
-                        class="px-4 py-2 rounded-lg shadow hover:bg-[#1e40af] transition duration-200 text-center">
-                        Graduações
-                    </a>
-
-                    <a href="{{ route('professores.edit', Crypt::encrypt($professor->id_professor)) }}"
-                        style="background-color: #8E251F; color: white;"
-                        class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
-                        Editar
-                    </a>
-
-                    <form action="{{ route('professores.destroy', Crypt::encrypt($professor->id_professor)) }}" method="POST"
-                        onsubmit="return confirm('Deseja excluir este professor?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit"
-                            style="background-color: #c02600; color: white;"
-                            class="px-4 py-2 rounded-lg shadow hover:bg-[#D65A3E] transition duration-200">
-                            Excluir
-                        </button>
-                    </form>
-
-                </td>
-            </tr>
-
-            @empty
-            <tr>
-                <td colspan="5" class="text-center text-gray-500 py-6">Nenhum professor cadastrado</td>
-            </tr>
-            @endforelse
-        </tbody>
-
-    </table>
-</div>
-
-<!-- JS -->
-<script>
-    // Toggle Cadastro
-    function toggleCadastro() {
-        const form = document.getElementById('cadastroForm');
-        form.classList.toggle('hidden');
-        form.scrollIntoView({
-            behavior: 'smooth'
-        });
-        document.getElementById('formCadastro').reset();
-    }
-
-    function bloquearSubmit(event, form) {
-
-        if (!form.checkValidity()) {
-            return; // deixa validação normal do HTML
-        }
-
-        const btn = form.querySelector('button[type="submit"]');
-
-        if (btn) {
-            btn.disabled = true;
-            btn.innerText = 'Salvando...';
-        }
-    }
-
-    function fecharCadastro() {
-        document.getElementById('cadastroForm').classList.add('hidden');
-    }
-
-    // Validação de nome
-    function validarNome(input) {
-        input.value = input.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
-    }
-
-    const tel = document.getElementById('prof_telefone');
-
-    if (tel) {
-        tel.addEventListener('input', () => {
-            let v = tel.value.replace(/\D/g, '');
-
-            if (v.length > 11) v = v.slice(0, 11);
-
-            let f = '';
-            if (v.length > 0) f = '(' + v.slice(0, 2);
-            if (v.length >= 3) f += ') ' + v.slice(2, 7);
-            if (v.length >= 8) f += '-' + v.slice(7, 11);
-
-            tel.value = f;
-        });
-    }
-
-    // FILTROS DE PROFESSORES
-    document.addEventListener("DOMContentLoaded", function() {
-
-        const filtroNome = document.getElementById('filtroNomeProfessor');
-        const filtroGraduado = document.getElementById('filtroGraduado');
-        const limpar = document.getElementById('limparFiltroProfessor');
-        const linhas = document.querySelectorAll('.linha-professor');
-
-        function aplicarFiltroProfessor() {
-            const nome = filtroNome.value.toLowerCase().trim();
-            const graduado = filtroGraduado.value;
-
-            linhas.forEach(linha => {
-                const n = linha.dataset.nome || '';
-                const g = linha.dataset.graduado || '';
-                let mostrar = true;
-
-                if (nome && !n.includes(nome)) {
-                    mostrar = false;
-                }
-
-                if (graduado && g !== graduado) {
-                    mostrar = false;
-                }
-
-                linha.style.display = mostrar ? '' : 'none';
-            });
-        }
-
-        if (filtroNome) filtroNome.addEventListener('input', aplicarFiltroProfessor);
-        if (filtroGraduado) filtroGraduado.addEventListener('change', aplicarFiltroProfessor);
-
-        if (limpar) {
-            limpar.addEventListener('click', function() {
-                filtroNome.value = '';
-                filtroGraduado.value = '';
-                aplicarFiltroProfessor();
-            });
-        }
-
-    });
-</script>
-
-@endsection
+ @extends('layouts.dashboard')
+
+ @section('title', 'Professores')
+
+ @section('content')
+ <style>
+     .professor-sem-graduacao td {
+         background-color: #fffaf7;
+     }
+
+     .professor-sem-graduacao td:first-child {
+         box-shadow: inset 3px 0 0 #d97757;
+     }
+
+     .professor-sem-graduacao:hover td {
+         background-color: #fff3ed;
+     }
+ </style>
+
+ <x-alert-error />
+
+ <div class="w-full px-4 pt-2 pb-6 sm:px-6 lg:px-8">
+     <x-page-header title="Professores" :breadcrumbs="[['label' => 'Administração', 'url' => route('admin.administracao')], ['label' => 'Professores']]">
+         <x-slot:action>
+             <div class="flex flex-wrap items-center gap-3">
+                 <x-back-button :url="route('admin.administracao')" />
+                 <x-primary-button icon="plus" onclick="toggleCadastro()">Cadastrar professor</x-primary-button>
+             </div>
+         </x-slot:action>
+     </x-page-header>
+
+     <div id="cadastroForm" class="mb-8 hidden">
+         <form id="formCadastro" action="{{ route('professores.store') }}" method="POST" enctype="multipart/form-data" onsubmit="bloquearSubmit(event, this)">
+             @csrf
+             <x-form-card title="Cadastrar professor" description="Preencha os dados para cadastrar um novo professor.">
+                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                     <div>
+                         <label for="cad_nome" class="mb-2 block text-sm font-semibold text-gray-700">Nome completo</label>
+                         <input type="text" name="prof_nome" id="cad_nome" maxlength="120" required value="{{ old('prof_nome') }}" placeholder="Ex.: João da Silva" oninput="validarNome(this)" class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 placeholder:text-gray-400 outline-none transition focus:border-[#8E251F] focus:ring-2 focus:ring-[#8E251F]/10">
+                     </div>
+                     <div>
+                         <label for="cad_nascimento" class="mb-2 block text-sm font-semibold text-gray-700">Data de nascimento</label>
+                         <input type="date" name="prof_nascimento" id="cad_nascimento" required value="{{ old('prof_nascimento') }}" min="{{ now()->subYears(130)->format('Y-m-d') }}" max="{{ now()->subYears(16)->format('Y-m-d') }}" class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-[#8E251F] focus:ring-2 focus:ring-[#8E251F]/10">
+                     </div>
+                     <div>
+                         <label for="prof_telefone" class="mb-2 block text-sm font-semibold text-gray-700">Telefone</label>
+                         <input type="text" name="prof_telefone" id="prof_telefone" maxlength="15" required value="{{ old('prof_telefone') }}" placeholder="(99) 99999-9999" class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 placeholder:text-gray-400 outline-none transition focus:border-[#8E251F] focus:ring-2 focus:ring-[#8E251F]/10">
+                     </div>
+                     <div class="md:col-span-2">
+                         <label for="cad_desc" class="mb-2 block text-sm font-semibold text-gray-700">Observações</label>
+                         <textarea name="prof_desc" id="cad_desc" rows="3" required placeholder="Ex.: Professor de Judô, horários flexíveis" class="w-full resize-y rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 placeholder:text-gray-400 outline-none transition focus:border-[#8E251F] focus:ring-2 focus:ring-[#8E251F]/10">{{ old('prof_desc') }}</textarea>
+                     </div>
+                     <div class="md:col-span-2">
+                         <label for="cad_foto" class="mb-2 block text-sm font-semibold text-gray-700">Foto do professor</label>
+                         <input type="file" name="prof_foto" id="cad_foto" required accept="image/*" class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 file:mr-4 file:rounded-lg file:border-0 file:bg-gray-100 file:px-4 file:py-2 file:font-medium">
+                     </div>
+                 </div>
+                 <x-slot:actions>
+                     <x-secondary-button onclick="fecharCadastro()">Cancelar</x-secondary-button>
+                     <x-primary-button type="submit" icon="check">Salvar professor</x-primary-button>
+                 </x-slot:actions>
+             </x-form-card>
+         </form>
+     </div>
+
+     <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md">
+         <div class="border-b border-gray-200 px-6 py-5">
+             <form action="{{ url()->current() }}" method="GET">
+                 <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+                     <div class="w-full sm:max-w-sm">
+                         <x-search-input name="busca" id="filtroNomeProfessor" label="Buscar professor" :value="request('busca')" placeholder="Pesquise pelo nome..." />
+                     </div>
+                     <div class="w-full sm:max-w-xs">
+                         <label for="filtroGraduado" class="mb-2 block text-sm font-semibold text-gray-700">Graduação</label>
+                         <select name="graduacao" id="filtroGraduado" class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-[#8E251F] focus:ring-2 focus:ring-[#8E251F]/10">
+                             <option value="">Todos</option>
+                             <option value="sim" @selected(request('graduacao')==='sim' )>Graduado</option>
+                             <option value="nao" @selected(request('graduacao')==='nao' )>Sem graduação</option>
+                         </select>
+                     </div>
+                     <div class="flex flex-col gap-3 sm:flex-row">
+                         <x-primary-button type="submit" icon="search">Buscar</x-primary-button>
+                         <a href="{{ url()->current() }}" class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-200">Limpar</a>
+                     </div>
+                 </div>
+             </form>
+
+             <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+                 <p class="text-sm text-gray-500">Consulte os professores, suas graduações e os alunos vinculados.</p>
+                 <x-record-count :count="$professores->total()" singular="professor" plural="professores" />
+             </div>
+         </div>
+
+         <div class="p-4 sm:p-6">
+             @if ($professores->isEmpty())
+             @if (request()->filled('busca') || request()->filled('graduacao'))
+             <x-empty-state title="Nenhum professor encontrado" message="Tente alterar os filtros da pesquisa." :route="url()->current()" button-text="Limpar filtros" />
+             @else
+             <x-empty-state title="Nenhum professor cadastrado" message="Cadastre um professor para começar." button-type="button" button-action="toggleCadastro()" button-text="Cadastrar professor" />
+             @endif
+             @else
+             <div class="overflow-x-auto rounded-xl border border-gray-200">
+                 <table class="w-full border-collapse text-left">
+                     <thead class="bg-gray-700 text-white">
+                         <tr>
+                             <th class="border-r border-gray-500 px-5 py-4 text-xs font-bold uppercase tracking-wider">Nome</th>
+                             <th class="border-r border-gray-500 px-5 py-4 text-xs font-bold uppercase tracking-wider">Foto</th>
+                             <th class="border-r border-gray-500 px-5 py-4 text-center text-xs font-bold uppercase tracking-wider">Qtd. alunos</th>
+                             <th class="px-5 py-4 text-center text-xs font-bold uppercase tracking-wider">Ações</th>
+                         </tr>
+                     </thead>
+                     <tbody class="divide-y divide-gray-200 bg-white">
+                         @foreach ($professores as $professor)
+                         @php
+                         $professorGraduado = $professor->detalhes->isNotEmpty();
+                         @endphp
+                         <tr class="transition-colors {{ !$professorGraduado ? 'professor-sem-graduacao' : 'hover:bg-gray-50' }}">
+                             <td class="border-r border-gray-200 px-5 py-4">
+                                 <div class="flex flex-col gap-1">
+                                     <span class="text-sm font-semibold text-gray-800">{{ Str::upper($professor->prof_nome) }}</span>
+                                     @unless ($professorGraduado)
+                                     <span class="text-xs font-medium text-[#a65d42]">Graduação não cadastrada</span>
+                                     @endunless
+                                 </div>
+                             </td>
+                             <td class="border-r border-gray-200 px-5 py-4">
+                                 @if ($professor->prof_foto)
+                                 <img src="{{ asset('images/professores/' . $professor->prof_foto) }}" alt="Foto de {{ $professor->prof_nome }}" class="h-12 w-12 rounded-lg border border-gray-200 object-cover">
+                                 @else
+                                 <span class="text-sm text-gray-400">Sem foto</span>
+                                 @endif
+                             </td>
+                             <td class="border-r border-gray-200 px-5 py-4 text-center">
+                                 <a href="{{ route('alunos.index', ['prof_nome' => $professor->prof_nome]) }}" title="Ver alunos deste professor" class="inline-flex min-w-10 items-center justify-center rounded-full bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">
+                                     {{ $professor->qtd_aluno ?? 0 }}
+                                 </a>
+                             </td>
+                             <td class="px-5 py-4">
+                                 <x-table-actions
+                                     :extra-route="route('grades.aulas', ['professor' => Crypt::encrypt($professor->id_professor)])"
+                                     extra-text="Aulas"
+                                     extra-color="blue-dark"
+                                     :second-route="route('detalhes-professor.index', Crypt::encrypt($professor->id_professor))"
+                                     second-text="Graduações"
+                                     second-color="wine"
+                                     :edit-route="route('professores.edit', Crypt::encrypt($professor->id_professor))"
+                                     :delete-action="route('professores.destroy', Crypt::encrypt($professor->id_professor))"
+                                     :delete-id="'formExcluirProfessor'.$professor->id_professor"
+                                     delete-modal="modalExclusao" />
+                             </td>
+                         </tr>
+                         @endforeach
+                     </tbody>
+                 </table>
+             </div>
+             <div class="mt-5">
+                 <x-pagination-compact :paginator="$professores" />
+             </div>
+             @endif
+         </div>
+     </div>
+ </div>
+
+ <x-modal-confirmacao id="modalExclusao" titulo="Confirmar exclusão" mensagem="Deseja realmente excluir este professor?" texto-confirmar="Excluir" />
+
+ <script>
+     function toggleCadastro() {
+         const cadastro = document.getElementById('cadastroForm');
+         const abrir = cadastro.classList.contains('hidden');
+
+         cadastro.classList.toggle('hidden', !abrir);
+
+         if (abrir) {
+             cadastro.scrollIntoView({
+                 behavior: 'smooth',
+                 block: 'start'
+             });
+         }
+     }
+
+     function fecharCadastro() {
+         document.getElementById('cadastroForm').classList.add('hidden');
+     }
+
+     function bloquearSubmit(event, form) {
+         if (!form.checkValidity()) return;
+         const botao = form.querySelector('button[type="submit"]');
+         if (botao) {
+             botao.disabled = true;
+             botao.innerText = 'Salvando...';
+         }
+     }
+
+     function validarNome(input) {
+         input.value = input.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
+     }
+
+     const tel = document.getElementById('prof_telefone');
+     if (tel) {
+         tel.addEventListener('input', () => {
+             let v = tel.value.replace(/\D/g, '').slice(0, 11);
+             if (!v.length) {
+                 tel.value = '';
+                 return;
+             }
+             tel.value = v.length <= 2 ? '(' + v : '(' + v.slice(0, 2) + ') ' + v.slice(2, v.length > 10 ? 7 : 6) + (v.length > 6 ? '-' + v.slice(v.length > 10 ? 7 : 6) : '');
+         });
+     }
+ </script>
+ @endsection

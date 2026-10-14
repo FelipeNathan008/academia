@@ -134,32 +134,24 @@
 
         </div>
 
-        <!-- FILTRO POR LETRA -->
         <div class="max-w-7xl mx-auto mt-6 pt-5 border-t border-gray-100">
-
             <label class="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide block">
                 Filtrar pela primeira letra
             </label>
 
             <div class="flex flex-wrap gap-2">
-
                 @foreach (range('A', 'Z') as $letra)
-
                 <a
-                    href="{{ route('alunos.index', array_merge(request()->query(), ['letra' => $letra])) }}"
+                    href="{{ route('alunos.index', array_merge(request()->except('page'), ['letra' => $letra])) }}"
                     class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-lg font-bold text-sm transition shadow-sm
-                        {{ strtoupper(request('letra')) === $letra
-                            ? 'bg-[#8E251F] text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-[#8E251F] hover:text-white'
-                        }}
-                    ">
+                    {{ strtoupper(request('letra')) === $letra
+                        ? 'bg-[#8E251F] text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-[#8E251F] hover:text-white'
+                    }}">
                     {{ $letra }}
                 </a>
-
                 @endforeach
-
             </div>
-
         </div>
 
     </form>
@@ -376,9 +368,7 @@
             @endforelse
         </tbody>
     </table>
-    <div class="mt-6">
-        {{ $alunos->links() }}
-    </div>
-</div>
+    <x-pagination-compact :paginator="$alunos" />
 
+</div>
 @endsection

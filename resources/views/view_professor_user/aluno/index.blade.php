@@ -196,7 +196,7 @@
                         Detalhes
                     </a>
 
-            
+
                 </td>
 
             </tr>
@@ -211,9 +211,7 @@
         </tbody>
     </table>
 
-    <div class="mt-6">
-        {{ $alunos->links() }}
-    </div>
+    <x-pagination-compact :paginator="$alunos" />
 
 </div>
 

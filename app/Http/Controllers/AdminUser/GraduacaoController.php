@@ -128,16 +128,50 @@ class GraduacaoController extends Controller
             ->with('success', $msg);
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        $graduacoes = Graduacao::orderBy('gradu_ordem')
-            ->where('id_emp_id', $user->id_emp_id)
+
+        $query = Graduacao::with('modalidade')
+            ->where('id_emp_id', $user->id_emp_id);
+
+        if ($request->filled('modalidade')) {
+            $query->where('id_modalidade', $request->input('modalidade'));
+        }
+
+        if ($request->filled('nome')) {
+            $query->where('gradu_nome_cor', $request->input('nome'));
+        }
+
+        $graduacoes = $query
+            ->orderBy(
+                Modalidade::query()
+                    ->select('mod_nome')
+                    ->whereColumn('modalidade.id_modalidade', 'graduacao.id_modalidade')
+            )
+            ->orderBy('gradu_ordem')
+            ->paginate(30)
+            ->withQueryString();
+
+        $modalidades = Modalidade::where('id_emp_id', $user->id_emp_id)
+            ->orderBy('mod_nome')
             ->get();
 
-        $modalidades = Modalidade::orderBy('mod_nome')->get();
+        $nomesGraduacao = Graduacao::where('id_emp_id', $user->id_emp_id)
+            ->when($request->filled('modalidade'), function ($query) use ($request) {
+                $query->where('id_modalidade', $request->input('modalidade'));
+            })
+            ->select('gradu_nome_cor')
+            ->distinct()
+            ->orderBy('gradu_nome_cor')
+            ->pluck('gradu_nome_cor');
 
-        return view('view_admin_user.view_admin.view_graduacoes.index', compact('graduacoes', 'modalidades'));
+        $totalGraduacoes = $graduacoes->total();
+
+        return view(
+            'view_admin_user.view_admin.view_graduacoes.index',
+            compact('graduacoes', 'modalidades', 'nomesGraduacao', 'totalGraduacoes')
+        );
     }
 
     public function store(Request $request)

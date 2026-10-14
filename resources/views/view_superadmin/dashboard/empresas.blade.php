@@ -18,13 +18,132 @@
 
 <div class="mb-8">
     <div class="bg-white border-l-8 border-[#8E251F] rounded-2xl shadow-lg p-6">
+
         <p class="text-xs uppercase tracking-widest text-gray-500">Total de Empresas Clientes</p>
         <h3 class="text-2xl font-extrabold text-[#8E251F] mt-1">{{ $totalEmpresas }}</h3>
     </div>
 </div>
 
+<!-- FILTRO -->
+<div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+    <div class="flex flex-wrap gap-6 items-end justify-center max-w-6xl mx-auto">
+
+        <div class="flex flex-col w-[220px]">
+            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                Buscar Empresa
+            </label>
+
+            <input
+                type="text"
+                name="empresa"
+                form="formFiltrosEmpresas"
+                value="{{ request('empresa') }}"
+                placeholder="Nome ou apelido..."
+                class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+        </div>
+
+        <div class="flex flex-col w-[220px]">
+            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                Responsável
+            </label>
+
+            <input
+                type="text"
+                name="responsavel"
+                form="formFiltrosEmpresas"
+                value="{{ request('responsavel') }}"
+                placeholder="Nome do responsável..."
+                class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+        </div>
+
+        <div class="flex flex-col w-[180px]">
+            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                Status
+            </label>
+
+            <select
+                name="status"
+                form="formFiltrosEmpresas"
+                class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+
+                <option value="">Todos</option>
+
+                <option value="Cliente" @selected(request('status')==='Cliente' )>
+                    Cliente
+                </option>
+
+                <option value="Degustação" @selected(request('status')==='Degustação' )>
+                    Degustação
+                </option>
+
+            </select>
+        </div>
+
+        <div class="flex flex-col w-[180px]">
+            <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                Tipo
+            </label>
+
+            <select
+                name="tipo"
+                form="formFiltrosEmpresas"
+                class="border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+
+                <option value="">Todos</option>
+
+                @foreach(\App\Models\Empresa::whereNot('emp_tipo', 'PS')
+                ->whereNotNull('emp_tipo')
+                ->distinct()
+                ->orderBy('emp_tipo')
+                ->pluck('emp_tipo') as $tipo)
+
+                <option value="{{ $tipo }}" @selected(request('tipo')===$tipo)>
+                    {{ $tipo }}
+                </option>
+
+                @endforeach
+
+            </select>
+        </div>
+
+        <form
+            id="formFiltrosEmpresas"
+            method="GET"
+            action="{{ route('superadmin.empresas') }}"
+            class="flex gap-2 items-end">
+
+            <button
+                type="submit"
+                class="h-[48px] px-6 rounded-xl bg-[#8E251F] text-white hover:bg-[#732920] transition shadow-md">
+                Buscar
+            </button>
+
+            <a
+                href="{{ route('superadmin.empresas') }}"
+                class="h-[48px] px-6 rounded-xl bg-gray-300 text-gray-800 flex items-center justify-center hover:bg-gray-400 transition shadow-md">
+                Limpar
+            </a>
+
+        </form>
+
+    </div>
+</div>
+
 <div class="bg-white rounded-2xl shadow-md p-6">
     <h3 class="text-xl font-bold mb-6 text-gray-700">Listagem Geral</h3>
+
+    <h3 class="text-xl font-bold mb-6 text-gray-700 flex items-center gap-4 flex-wrap">
+        <span>EMPRESAS</span>
+
+        <span class="bg-gray-200 px-3 py-1 rounded-full text-sm">
+            Total: {{ $totalEmpresas }}
+        </span>
+
+        <span class="bg-gray-200 px-3 py-1 rounded-full text-sm">
+            Filtrados: {{ $empresas->total() }}
+        </span>
+    </h3>
+
 
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
@@ -154,7 +273,7 @@
     </div>
 
     @if($empresas->hasPages())
-    <div class="mt-6">{{ $empresas->links() }}</div>
+    <x-paginationact :paginator="$empresas" />
     @endif
 </div>
 <script>

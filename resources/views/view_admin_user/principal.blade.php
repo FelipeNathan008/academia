@@ -50,6 +50,12 @@
             Frequência / Aulas dos Alunos
         </a>
 
+        <a href="{{ route('visitantes') }}"
+            style="background-color: #2b6faa; color: white;"
+            class="px-4 py-3 rounded-xl shadow hover:opacity-90 transition text-center font-semibold">
+            Visitantes
+        </a>
+
     </div>
 
 </div>

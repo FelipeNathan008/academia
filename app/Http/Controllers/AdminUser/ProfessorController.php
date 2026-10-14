@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rules\Date;
 
 
 class ProfessorController extends Controller
@@ -24,15 +25,31 @@ class ProfessorController extends Controller
 
     public function index(Request $request)
     {
-
         $user = Auth::user();
 
-        $professores = Professor::where('id_emp_id', $user->id_emp_id)->get();
+        $query = Professor::with('detalhes')
+            ->where('id_emp_id', $user->id_emp_id);
+
+        if ($request->filled('busca')) {
+            $busca = trim($request->input('busca'));
+            $query->where('prof_nome', 'like', '%' . $busca . '%');
+        }
+
+        if ($request->input('graduacao') === 'sim') {
+            $query->whereHas('detalhes');
+        } elseif ($request->input('graduacao') === 'nao') {
+            $query->whereDoesntHave('detalhes');
+        }
+
+        $professores = $query
+            ->orderBy('prof_nome')
+            ->paginate(10)
+            ->withQueryString();
 
         $graduacoes = Graduacao::select('gradu_nome_cor')
             ->selectRaw('MAX(gradu_grau) as max_grau')
-            ->groupBy('gradu_nome_cor')
             ->where('id_emp_id', $user->id_emp_id)
+            ->groupBy('gradu_nome_cor')
             ->orderByRaw("
             CASE gradu_nome_cor
                 WHEN 'Faixa Branca' THEN 1
@@ -49,7 +66,6 @@ class ProfessorController extends Controller
         $modalidades = Modalidade::all();
 
         foreach ($professores as $professor) {
-
             $professor->grades = DB::table('grade_horario')
                 ->where('professor_id_professor', $professor->id_professor)
                 ->get();
@@ -60,47 +76,40 @@ class ProfessorController extends Controller
                 ->where('m.matri_status', 'Matriculado')
                 ->where('m.id_emp_id', $user->id_emp_id)
                 ->where('g.id_emp_id', $user->id_emp_id)
-                ->count(DB::raw('DISTINCT m.aluno_id_aluno'));
+                ->distinct('m.aluno_id_aluno')
+                ->count('m.aluno_id_aluno');
 
             $professor->alunos = DB::table('aluno as a')
                 ->join('matricula as m', 'a.id_aluno', '=', 'm.aluno_id_aluno')
                 ->join('grade_horario as g', 'm.grade_id_grade', '=', 'g.id_grade')
-
                 ->leftJoin('responsavel as r', 'a.responsavel_id_responsavel', '=', 'r.id_responsavel')
-
                 ->where('g.professor_id_professor', $professor->id_professor)
                 ->where('m.matri_status', 'Matriculado')
-
                 ->select(
                     'a.id_aluno',
                     'a.aluno_nome',
                     'a.aluno_nascimento',
                     'a.aluno_bolsista',
                     'a.aluno_foto',
-
                     'g.id_grade',
                     'g.grade_modalidade',
                     'g.grade_turma',
                     'g.grade_inicio',
                     'g.grade_fim',
                     'g.grade_dia_semana',
-
                     'r.id_responsavel',
-
                     DB::raw("EXISTS (
-                        SELECT 1 FROM mensalidade me
-                        JOIN detalhes_mensalidade d 
-                        ON me.id_mensalidade = d.mensalidade_id_mensalidade
-                        WHERE me.aluno_id_aluno = a.id_aluno
-                        AND d.det_mensa_data_venc < CURDATE()
-                        AND d.det_mensa_status != 'Pago'
-                    ) as atrasado"),
-
+                    SELECT 1 FROM mensalidade me
+                    JOIN detalhes_mensalidade d ON me.id_mensalidade = d.mensalidade_id_mensalidade
+                    WHERE me.aluno_id_aluno = a.id_aluno
+                    AND d.det_mensa_data_venc < CURDATE()
+                    AND d.det_mensa_status != 'Pago'
+                ) as atrasado"),
                     DB::raw("EXISTS (
-                        SELECT 1 FROM matricula m2
-                        WHERE m2.aluno_id_aluno = a.id_aluno
-                        AND m2.matri_status = 'Matriculado'
-                    ) as matriculado")
+                    SELECT 1 FROM matricula m2
+                    WHERE m2.aluno_id_aluno = a.id_aluno
+                    AND m2.matri_status = 'Matriculado'
+                ) as matriculado")
                 )
                 ->get();
         }
@@ -108,6 +117,7 @@ class ProfessorController extends Controller
         $professoresEmpresa = Professor::with('empresas')
             ->where('id_emp_id', $user->id_emp_id)
             ->get();
+
         return view(
             'view_admin_user.view_principal.view_professores.index',
             compact('professores', 'professoresEmpresa', 'graduacoes', 'detalhes', 'modalidades')
@@ -126,12 +136,21 @@ class ProfessorController extends Controller
 
         $request->validate([
             'prof_nome' => 'required|string|max:120',
-            'prof_nascimento' => 'required|date',
+            'prof_nascimento' => [
+                'required',
+                'date_format:Y-m-d',
+                'before_or_equal:' . now()->subYears(16)->format('Y-m-d'),
+                'after_or_equal:' . now()->subYears(130)->format('Y-m-d'),
+            ],
             'prof_telefone' => 'required|string|max:20',
             'prof_desc' => 'required|string',
             'prof_foto' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
+        ], [
+            'prof_nascimento.required' => 'Informe a data de nascimento do professor.',
+            'prof_nascimento.date_format' => 'Informe uma data de nascimento válida.',
+            'prof_nascimento.before_or_equal' => 'O professor deve ter pelo menos 16 anos.',
+            'prof_nascimento.after_or_equal' => 'A data de nascimento informada não é válida. Verifique se a idade não ultrapassa 130 anos.',
         ]);
-
         $filename = null;
 
         if ($request->hasFile('prof_foto')) {
@@ -187,12 +206,21 @@ class ProfessorController extends Controller
 
         $request->validate([
             'prof_nome' => 'required|string|max:120',
-            'prof_nascimento' => 'required|date',
+            'prof_nascimento' => [
+                'required',
+                'date_format:Y-m-d',
+                'before_or_equal:' . now()->subYears(16)->format('Y-m-d'),
+                'after_or_equal:' . now()->subYears(130)->format('Y-m-d'),
+            ],
             'prof_telefone' => 'required|string|max:20',
             'prof_desc' => 'required|string',
             'prof_foto' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
+        ], [
+            'prof_nascimento.required' => 'Informe a data de nascimento do professor.',
+            'prof_nascimento.date_format' => 'Informe uma data de nascimento válida.',
+            'prof_nascimento.before_or_equal' => 'O professor deve ter pelo menos 16 anos.',
+            'prof_nascimento.after_or_equal' => 'A data de nascimento informada não é válida. Verifique se a idade não ultrapassa 130 anos.',
         ]);
-
         // FOTO
         if ($request->hasFile('prof_foto')) {
             $this->removerFoto('professores', $professor->prof_foto);

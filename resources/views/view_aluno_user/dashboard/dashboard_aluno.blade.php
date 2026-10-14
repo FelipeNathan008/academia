@@ -203,6 +203,15 @@ use Illuminate\Support\Facades\Crypt;
 
                 <div class="p-4 rounded-xl bg-yellow-50 border border-yellow-200">
 
+                    @php
+                    $marcos = [
+                    ceil($meta * 0.25),
+                    ceil($meta * 0.50),
+                    ceil($meta * 0.75),
+                    $meta
+                    ];
+                    @endphp
+
                     <div class="flex justify-between items-center mb-2">
 
                         <span class="font-medium text-gray-700">
@@ -215,17 +224,47 @@ use Illuminate\Support\Facades\Crypt;
                             {{ $presencas }}/{{ $meta }}
                             ({{ $barraMeta }}%)
                         </span>
+
                     </div>
 
-                    <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="space-y-1">
 
-                        <div
-                            class="w-full bg-gray-200 rounded-full h-3 progress-meta"
-                            data-barra="{{ $barraMeta }}">
+                        <div class="flex justify-between text-[10px] text-gray-500">
+                            @foreach($marcos as $marco)
+                            <span>{{ $marco }}</span>
+                            @endforeach
+                        </div>
 
-                            <div
-                                class="h-3 rounded-full transition-all duration-500 progress-meta-bar">
+                        <div class="grid grid-cols-4 gap-1">
+
+                            @php
+                            $anterior = 0;
+                            @endphp
+
+                            @foreach($marcos as $marco)
+
+                            @php
+                            $intervalo = max($marco - $anterior, 1);
+
+                            $progressoSegmento = $meta > 0
+                            ? min(100, max(0, (($presencas - $anterior) / $intervalo) * 100))
+                            : 0;
+
+                            $completo = $progressoSegmento >= 100;
+
+                            $anterior = $marco;
+                            @endphp
+
+                            <div class="h-3 rounded-full bg-gray-200 overflow-hidden">
+
+                                <div
+                                    class="h-3 rounded-full transition-all duration-500"
+                                    style="width: {{ $progressoSegmento }}%; background-color: {{ $completo ? '#15803d' : '#facc15' }};">
+                                </div>
+
                             </div>
+
+                            @endforeach
 
                         </div>
 
@@ -286,16 +325,12 @@ use Illuminate\Support\Facades\Crypt;
             }
         });
 
-        document.querySelectorAll(".progress-meta").forEach(function(container) {
-            const barra = parseInt(container.dataset.barra);
-            const progressBar = container.querySelector(".progress-meta-bar");
-            progressBar.style.width = barra + "%";
-            progressBar.classList.add(barra >= 100 ? "bg-green-600" : "bg-yellow-500");
-        });
-
         document.querySelectorAll(".meta-texto").forEach(function(element) {
             const barra = parseInt(element.dataset.barra);
-            element.style.color = barra >= 100 ? "#16a34a" : "#a16207";
+
+            element.style.color = barra >= 100 ?
+                "#16a34a" :
+                "#a16207";
         });
 
     });

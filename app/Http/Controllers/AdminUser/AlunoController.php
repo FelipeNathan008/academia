@@ -157,11 +157,11 @@ class AlunoController extends Controller
             'id_emp_id',
             $user->id_emp_id
         )->count();
-        // LISTAGEM
+
         $alunos = $query
             ->orderBy('aluno_nome')
             ->paginate(10)
-            ->withQueryString();
+            ->appends($request->except('page'));
 
         return view(
             'view_admin_user.view_principal.view_alunos.index_sidebar',

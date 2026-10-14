@@ -41,20 +41,39 @@
         color: #D1D5DB;
     }
 
-
     /* Aluno */
     .header-aluno {
-        background: #8E173F;
-        border-bottom-color: #701232;
+        background: #DCE9F8;
+        border-bottom-color: #C5D8EE;
     }
 
     /* Texto do usuário no header do aluno */
     .header-aluno .header-user strong {
-        color: #FFFFFF;
+        color: #1F2937;
     }
 
     .header-aluno .header-user span {
-        color: #F5D5DF;
+        color: #64748B;
+    }
+
+    /* Links do aluno */
+    .header-aluno .header-link {
+        background: #174ab9;
+        color: #FFFFFF;
+    }
+
+    .header-aluno .header-link:hover {
+        background: #123F8A;
+    }
+
+    .header-aluno .header-link.active {
+        background: #123F8A;
+        box-shadow: 0 0 0 2px rgba(23, 74, 185, 0.12);
+    }
+
+    /* Avatar do aluno */
+    .header-aluno .avatar {
+        background: #174ab9;
     }
 
     .header-left {
@@ -296,7 +315,8 @@ $acessoRestrito = $degustacaoEncerrada || $contratoInadimplente || $contratoPaga
                     'aulas.*',
                     'aulas',
                     'grades.aulas',
-                    'grades.aulas.*'
+                    'grades.aulas.*',
+                    'visitantes*'
                 ) ? 'active' : '' }}">
                 Principal
             </a>

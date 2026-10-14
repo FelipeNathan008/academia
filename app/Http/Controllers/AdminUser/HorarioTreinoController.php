@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\AdminUser;
 
 use App\Http\Controllers\Controller;
-use App\Models\GradeHorario;
 use App\Models\HorarioTreino;
 use App\Models\Modalidade;
 use Illuminate\Http\Request;
@@ -11,18 +10,52 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
 
+
 class HorarioTreinoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
-        $horarios = HorarioTreino::with('gradeHorario')
-            ->where('id_emp_id', $user->id_emp_id)
-            ->get();
-        $modalidades = Modalidade::all();
+        $query = HorarioTreino::with('gradeHorario')
+            ->where('id_emp_id', $user->id_emp_id);
 
-        return view('view_admin_user.view_admin.view_horarios_de_treino.index', compact('horarios', 'modalidades'));
+        if ($request->filled('modalidade')) {
+            $query->where('hora_modalidade', $request->input('modalidade'));
+        }
+
+        if ($request->filled('dia')) {
+            $query->whereRaw(
+                "FIND_IN_SET(?, REPLACE(hora_semana, ' ', ''))",
+                [(int) $request->input('dia')]
+            );
+        }
+
+        if ($request->filled('hora')) {
+            $query->whereTime('hora_inicio', $request->input('hora'));
+        }
+
+        if ($request->input('status') === 'Vago') {
+            $query->whereDoesntHave('gradeHorario');
+        } elseif ($request->input('status') === 'Ocupado') {
+            $query->whereHas('gradeHorario');
+        }
+
+        $horarios = $query
+            ->orderBy('hora_inicio')
+            ->paginate(10)
+            ->withQueryString();
+
+        $totalHorarios = $horarios->total();
+
+        $modalidades = Modalidade::where('id_emp_id', $user->id_emp_id)
+            ->orderBy('mod_nome')
+            ->get();
+
+        return view(
+            'view_admin_user.view_admin.view_horarios_de_treino.index',
+            compact('horarios', 'modalidades', 'totalHorarios')
+        );
     }
 
     public function store(Request $request)

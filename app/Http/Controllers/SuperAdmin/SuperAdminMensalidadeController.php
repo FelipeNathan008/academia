@@ -21,7 +21,7 @@ class SuperAdminMensalidadeController extends Controller
                 'Rejeitado'
             ])
             ->orderBy('mensa_contrato_vencimento')
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
 
         $mensalidadesAtrasadas = MensalidadeContrato::whereDate(

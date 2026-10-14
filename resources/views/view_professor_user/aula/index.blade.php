@@ -393,9 +393,7 @@ $diasSelecionados = $diasPermitidos
 
     </table>
 
-    <div class="mt-6">
-        {{ $aulas->links() }}
-    </div>
+    <x-pagination-compact :paginator="$aulas" />
 
 </div>
 

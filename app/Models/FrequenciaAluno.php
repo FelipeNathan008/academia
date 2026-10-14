@@ -9,11 +9,13 @@ use Illuminate\Support\Facades\Auth;
 class FrequenciaAluno extends Model
 {
     protected $table = 'frequencia_aluno';
+
     protected $primaryKey = 'id_frequencia_aluno';
 
     protected $fillable = [
         'grade_horario_id_grade',
         'matricula_id_matricula',
+        'visitante_grade_id_visitante_grade',
         'freq_presenca',
         'freq_data_aula',
         'freq_observacao',
@@ -22,8 +24,13 @@ class FrequenciaAluno extends Model
 
     public function grade()
     {
-        return $this->belongsTo(GradeHorario::class, 'grade_horario_id_grade', 'id_grade');
+        return $this->belongsTo(
+            GradeHorario::class,
+            'grade_horario_id_grade',
+            'id_grade'
+        );
     }
+
     protected static function booted()
     {
         static::addGlobalScope('empresa', function (Builder $builder) {
@@ -32,8 +39,22 @@ class FrequenciaAluno extends Model
             }
         });
     }
+
     public function matricula()
     {
-        return $this->belongsTo(Matricula::class, 'matricula_id_matricula', 'id_matricula');
+        return $this->belongsTo(
+            Matricula::class,
+            'matricula_id_matricula',
+            'id_matricula'
+        );
+    }
+
+    public function visitanteGrade()
+    {
+        return $this->belongsTo(
+            VisitanteGrade::class,
+            'visitante_grade_id_visitante_grade',
+            'id_visitante_grade'
+        );
     }
 }

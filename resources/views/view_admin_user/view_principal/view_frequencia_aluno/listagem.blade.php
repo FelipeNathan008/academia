@@ -111,7 +111,7 @@
             <tr class="border-b hover:bg-gray-50 transition">
 
                 <td class="py-3 px-4 font-semibold">
-                    {{  Str::upper($grade->professor->prof_nome ?? '-') }}
+                    {{ Str::upper($grade->professor->prof_nome ?? '-') }}
                 </td>
 
                 <td class="py-3 px-4">
@@ -181,9 +181,7 @@
         </tbody>
     </table>
 
-    <div class="mt-6">
-        {{ $grades->links() }}
-    </div>
+    <x-pagination-compact :paginator="$grades" />
 
 </div>
 

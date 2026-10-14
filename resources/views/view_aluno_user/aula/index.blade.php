@@ -15,7 +15,7 @@
             </a>
         </li>
         <li>/</li>
-         <li>
+        <li>
             <a href="{{ route('aluno-grades.index') }}" class="hover:text-[#8E251F] transition">
                 Turmas
             </a>
@@ -90,12 +90,13 @@ $diasSelecionados = $grade->grade_dia_semana
 
 <!-- FILTRO -->
 <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
-    <div class="flex flex-wrap gap-6 items-end justify-center max-w-6xl mx-auto">
+    <div class="flex justify-center">
 
-        <div class="flex flex-col w-[220px]">
+        <div class="flex flex-col">
             <label class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
                 Filtrar por dia
             </label>
+
             <form method="GET" class="flex gap-2 items-end">
 
                 <input type="text"
@@ -125,6 +126,7 @@ $diasSelecionados = $grade->grade_dia_semana
 
     </div>
 </div>
+
 
 <!-- LISTAGEM -->
 <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
@@ -183,9 +185,8 @@ $diasSelecionados = $grade->grade_dia_semana
         </tbody>
     </table>
 
-    <div class="mt-6">
-        {{ $aulas->links() }}
-    </div>
+    <x-pagination-compact :paginator="$aulas" />
+
 
 </div>
 

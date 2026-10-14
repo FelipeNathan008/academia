@@ -3,154 +3,140 @@
 @section('title', 'Modalidades')
 
 @section('content')
-
-
 <x-alert-error />
-<!-- TOPO -->
-<div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
-    <div class="flex items-center gap-4">
-        <a href="{{ route('admin.administracao') }}"
-            class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
-            ← Voltar
-        </a>
-        <h2 class="text-3xl font-extrabold text-gray-800">Modalidades</h2>
+
+<div class="w-full px-4 pt-2 pb-6 sm:px-6 lg:px-8">
+
+    <x-page-header
+        title="Modalidades"
+        :breadcrumbs="[
+        ['label' => 'Administração', 'url' => route('admin.administracao')],
+        ['label' => 'Modalidades']
+    ]">
+        <x-slot:action>
+            <div class="flex flex-wrap items-center gap-3">
+                <x-back-button :url="route('admin.administracao')" />
+                <x-primary-button icon="plus" onclick="toggleCadastro()">Nova modalidade</x-primary-button>
+            </div>
+        </x-slot:action>
+    </x-page-header>
+
+
+    <div id="cadastroForm" class="mb-8 hidden">
+        <form id="formCadastro" action="{{ route('modalidades.store') }}" method="POST" onsubmit="bloquearSubmit(event, this)">
+            @csrf
+            <x-form-card title="Nova modalidade" description="Preencha os dados para cadastrar.">
+                <div>
+                    <label for="mod_nome" class="mb-2 block text-sm font-semibold text-gray-700">Nome da modalidade</label>
+                    <input type="text" id="mod_nome" name="mod_nome" maxlength="100" required placeholder="Ex.: Jiu-Jitsu" class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 placeholder:text-gray-400 outline-none transition focus:border-[#8E251F] focus:ring-2 focus:ring-[#8E251F]/10">
+                </div>
+
+                <div>
+                    <label for="mod_desc" class="mb-2 block text-sm font-semibold text-gray-700">Descrição</label>
+                    <textarea id="mod_desc" name="mod_desc" rows="4" maxlength="255" required placeholder="Descreva brevemente a modalidade..." class="w-full resize-y rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 placeholder:text-gray-400 outline-none transition focus:border-[#8E251F] focus:ring-2 focus:ring-[#8E251F]/10"></textarea>
+                </div>
+
+                <x-slot:actions>
+                    <x-secondary-button onclick="fecharCadastro()">Cancelar</x-secondary-button>
+                    <x-primary-button type="submit" icon="check">Salvar modalidade</x-primary-button>
+                </x-slot:actions>
+            </x-form-card>
+        </form>
     </div>
 
-    <button onclick="toggleCadastro()"
-        class="px-6 py-3 bg-[#8E251F] text-white rounded-xl shadow-md hover:bg-[#732920] hover:shadow-lg transition-all">
-        + Cadastrar Modalidade
-    </button>
-</div>
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md">
+        <div class="border-b border-gray-200 px-6 py-5">
+            <form action="{{ route('modalidades') }}" method="GET">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+                    <x-search-input name="busca" id="filtroModalidade" label="Buscar modalidade" :value="request('busca')" placeholder="Pesquise pelo nome ou descrição..." />
 
-<!-- FORMULÁRIO DE CADASTRO -->
-<div id="cadastroForm" class="hidden mb-10">
-    <form id="formCadastro" action="{{ route('modalidades.store') }}" method="POST" onsubmit="bloquearSubmit(event, this)">
-        @csrf
-        <div class="bg-white rounded-2xl shadow-md p-8">
-            <h3 class="text-xl font-bold mb-6 text-gray-700">Cadastrar Modalidade</h3>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Nome -->
-                <div>
-                    <label class="text-sm font-medium text-gray-600">Nome da Modalidade</label>
-                    <input type="text"
-                        name="mod_nome"
-                        maxlength="100"
-                        required
-                        placeholder="Ex: Jiu-Jitsu"
-                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+                    <div class="flex flex-col gap-3 sm:flex-row">
+                        <x-primary-button type="submit" icon="search">Buscar</x-primary-button>
+                        <a href="{{ route('modalidades') }}" class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-200">Limpar</a>
+                    </div>
                 </div>
+            </form>
 
-                <!-- Descrição -->
-                <div class="md:col-span-2">
-                    <label class="text-sm font-medium text-gray-600">Descrição</label>
-                    <textarea
-                        name="mod_desc"
-                        rows="3"
-                        required
-                        placeholder="Ex: Modalidade de arte marcial focada em luta no solo"
-                        class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none"></textarea>
-                </div>
-            </div>
-
-            <!-- AÇÕES -->
-            <div class="flex justify-end gap-4 border-t pt-6 mt-8">
-                <button type="button" onclick="fecharCadastro()"
-                    class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">
-                    Cancelar
-                </button>
-
-                <button type="submit"
-                    class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920] transition">
-                    Salvar Modalidade
-                </button>
+            <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+                <p class="text-sm text-gray-500">Consulte e gerencie as modalidades cadastradas.</p>
+                <x-record-count :count="$modalidades->total()" singular="modalidade" plural="modalidades" />
             </div>
         </div>
-    </form>
+
+        <div class="p-4 sm:p-6">
+            @if ($modalidades->isEmpty())
+            @if (request()->filled('busca'))
+            <x-empty-state title="Nenhuma modalidade encontrada" message="Tente pesquisar por outro nome ou descrição." :route="route('modalidades')" button-text="Limpar filtros" />
+            @else
+            <x-empty-state title="Nenhuma modalidade cadastrada" message="Cadastre uma modalidade para começar." button-type="button" button-action="toggleCadastro()" button-text="Cadastrar modalidade" />
+            @endif
+            @else
+            <div class="overflow-x-auto rounded-xl border border-gray-200">
+                <table class="w-full border-collapse text-left">
+                    <thead class="bg-gray-700 text-white">
+                        <tr>
+                            <th class="border-r border-gray-500 px-5 py-4 text-xs font-bold uppercase tracking-wider">Modalidade</th>
+                            <th class="border-r border-gray-500 px-5 py-4 text-xs font-bold uppercase tracking-wider">Descrição</th>
+                            <th class="px-5 py-4 text-center text-xs font-bold uppercase tracking-wider">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 bg-white">
+                        @foreach ($modalidades as $modalidade)
+                        <tr class="transition-colors hover:bg-gray-50">
+                            <td class="border-r border-gray-200 px-5 py-4 text-sm font-semibold text-gray-800">{{ $modalidade->mod_nome }}</td>
+                            <td class="border-r border-gray-200 px-5 py-4 text-sm leading-relaxed text-gray-600">{{ $modalidade->mod_desc }}</td>
+                            <td class="px-5 py-4">
+                                <x-table-actions
+                                    :edit-route="route('modalidades.edit', Crypt::encrypt($modalidade->id_modalidade))"
+                                    :delete-action="route('modalidades.destroy', Crypt::encrypt($modalidade->id_modalidade))"
+                                    :delete-id="'formExcluirModalidade'.$modalidade->id_modalidade"
+                                    delete-modal="modalExclusao" />
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-5">
+                <x-pagination-compact :paginator="$modalidades" />
+            </div>
+            @endif
+        </div>
+    </div>
 </div>
 
-<!-- LISTAGEM -->
-<div class="bg-white rounded-2xl shadow-md p-6">
-    <h3 class="text-xl font-bold mb-6 text-gray-700">Lista de Modalidades</h3>
+<x-modal-confirmacao id="modalExclusao" titulo="Confirmar exclusão" mensagem="Deseja realmente excluir esta modalidade?" texto-confirmar="Excluir" />
 
-    <table class="w-full text-left border-collapse">
-        <thead>
-            <tr class="border-b border-gray-300 text-gray-600 text-sm">
-                <th class="py-3 px-4">Nome</th>
-                <th class="py-3 px-4">Descrição</th>
-                <th class="py-3 px-4">Ações</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @forelse ($modalidades as $modalidade)
-            <tr class="border-b hover:bg-gray-50 transition">
-                <td class="py-3 px-4">{{ $modalidade->mod_nome }}</td>
-                <td class="py-3 px-4">{{ $modalidade->mod_desc }}</td>
-
-                <td class="py-3 px-4 flex gap-2">
-                    <!-- Editar -->
-                    <a href="{{ route('modalidades.edit',  Crypt::encrypt($modalidade->id_modalidade)) }}"
-                        style="background-color: #8E251F; color: white;"
-                        class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
-                        Editar
-                    </a>
-
-                    <!-- Excluir 
-                    <form action="{{ route('modalidades.destroy',  Crypt::encrypt($modalidade->id_modalidade)) }}"
-                        method="POST"
-                        onsubmit="return confirm('Deseja excluir esta modalidade?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit"
-                            style="background-color: #c02600; color: white;"
-                            class="px-4 py-2 rounded-lg shadow hover:bg-[#D65A3E] transition duration-200">
-                            Excluir
-                        </button>
-                    </form>-->
-                </td>
-            </tr>
-
-            @empty
-            <tr>
-                <td colspan="3" class="text-center text-gray-500 py-6">
-                    Nenhuma modalidade cadastrada
-                </td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-</div>
-
-<!-- JS -->
 <script>
     function bloquearSubmit(event, form) {
+        if (!form.checkValidity()) return;
 
-        if (!form.checkValidity()) {
-            return; // deixa validação normal do HTML
-        }
-
-        const btn = form.querySelector('button[type="submit"]');
-
-        if (btn) {
-            btn.disabled = true;
-            btn.innerText = 'Salvando...';
+        const botao = form.querySelector('button[type="submit"]');
+        if (botao) {
+            botao.disabled = true;
+            botao.innerText = 'Salvando...';
         }
     }
 
     function toggleCadastro() {
-        const form = document.getElementById('cadastroForm');
-        form.classList.toggle('hidden');
-        form.scrollIntoView({
-            behavior: 'smooth'
-        });
-        document.getElementById('formCadastro').reset();
+        const cadastro = document.getElementById('cadastroForm');
+        const formulario = document.getElementById('formCadastro');
+        const abrir = cadastro.classList.contains('hidden');
+
+        cadastro.classList.toggle('hidden', !abrir);
+
+        if (abrir) {
+            formulario.reset();
+            cadastro.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
     }
 
     function fecharCadastro() {
         document.getElementById('cadastroForm').classList.add('hidden');
     }
 </script>
-
 @endsection

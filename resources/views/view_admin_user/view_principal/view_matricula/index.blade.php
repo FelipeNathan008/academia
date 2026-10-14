@@ -205,6 +205,16 @@ $percentualUso = $limitePermitido > 0 ? min(($quantidadeMatriculas / $limitePerm
 
                 <div>
                     <label class="text-sm font-medium text-gray-600">Dia do vencimento</label>
+
+                    @if(strtolower($aluno->aluno_bolsista) === 'sim')
+                    <select id="matri_dia_vencimento" name="matri_dia_vencimento" disabled class="w-full border rounded-lg px-4 py-2 mt-1 bg-gray-100 text-gray-400 cursor-not-allowed">
+                        <option value="">Não se aplica — aluno bolsista</option>
+                    </select>
+
+                    <p class="mt-2 text-xs text-gray-500">
+                        Alunos bolsistas não possuem cobrança mensal.
+                    </p>
+                    @else
                     <select id="matri_dia_vencimento" name="matri_dia_vencimento" required class="w-full border rounded-lg px-4 py-2 mt-1">
                         <option value="">Selecione</option>
                         @foreach($diasVencimento as $dia)
@@ -219,12 +229,17 @@ $percentualUso = $limitePermitido > 0 ? min(($quantidadeMatriculas / $limitePerm
                             <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" />
                             </svg>
+
                             <div class="text-sm text-blue-800">
                                 <p class="font-semibold">Primeira mensalidade</p>
-                                <p class="mt-1">A entrada será gerada na data informada. A primeira mensalidade vencerá em <strong id="dataPrimeiraParcelaMatricula"></strong>.</p>
+                                <p class="mt-1">
+                                    A entrada será gerada na data informada. A primeira mensalidade vencerá em
+                                    <strong id="dataPrimeiraParcelaMatricula"></strong>.
+                                </p>
                             </div>
                         </div>
                     </div>
+                    @endif
                 </div>
 
                 <div>
@@ -354,6 +369,11 @@ $percentualUso = $limitePermitido > 0 ? min(($quantidadeMatriculas / $limitePerm
         const dataElement = document.getElementById('dataPrimeiraParcelaMatricula');
 
         if (!select || !dataMatriculaInput || !info || !dataElement) return;
+
+        if (select.disabled) {
+            info.classList.add('hidden');
+            return;
+        }
 
         const diaVencimento = parseInt(select.value);
         const dataMatricula = dataMatriculaInput.value;

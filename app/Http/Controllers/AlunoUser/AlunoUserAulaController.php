@@ -54,7 +54,7 @@ class AlunoUserAulaController extends Controller
 
         $aulas = $query
             ->orderBy('aula_inicio', 'desc')
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
 
         return view('view_aluno_user.aula.index', [
@@ -77,13 +77,14 @@ class AlunoUserAulaController extends Controller
             'aluno',
             'grade.professor'
         ])
-            ->where('matri_status', '=', 'Matriculado')
+            ->where('matri_status', 'Matriculado')
             ->whereHas('aluno', function ($q) use ($responsavel) {
                 $q->where('responsavel_id_responsavel', $responsavel->id_responsavel);
             });
 
-        // Para os filtros
         $todasMatriculas = (clone $query)->get();
+
+        $totalMatriculas = (clone $query)->count();
 
         if ($request->filled('aluno')) {
             $query->whereHas('aluno', function ($q) use ($request) {
@@ -109,14 +110,12 @@ class AlunoUserAulaController extends Controller
             });
         }
 
-        $totalMatriculas = (clone $query)->count();
-
         $matriculas = $query
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
 
         return view('view_aluno_user.aula.grades', [
-            'matriculas'      => $matriculas,
+            'matriculas' => $matriculas,
             'totalMatriculas' => $totalMatriculas,
             'alunos' => $todasMatriculas->pluck('aluno.aluno_nome')->filter()->unique()->sort()->values(),
             'professores' => $todasMatriculas->pluck('grade.professor.prof_nome')->filter()->unique()->sort()->values(),
@@ -124,6 +123,7 @@ class AlunoUserAulaController extends Controller
             'turmas' => $todasMatriculas->pluck('grade.grade_turma')->filter()->unique()->sort()->values(),
         ]);
     }
+
 
     // SHOW DA AULA
     public function show($id)

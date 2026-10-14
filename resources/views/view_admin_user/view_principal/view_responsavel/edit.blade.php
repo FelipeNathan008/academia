@@ -212,6 +212,25 @@
         input.value = v;
     }
 
+    function mascaraTelefone(input) {
+        let v = input.value.replace(/\D/g, '').slice(0, 11);
+        let formatado = '';
+
+        if (v.length > 0) {
+            formatado = '(' + v.slice(0, 2);
+        }
+
+        if (v.length >= 3) {
+            formatado += ') ' + v.slice(2, 7);
+        }
+
+        if (v.length >= 8) {
+            formatado += '-' + v.slice(7, 11);
+        }
+
+        input.value = formatado;
+    }
+
     function toggleCpfInput() {
         const checkbox = document.getElementById('alterarCpfCheck');
         const input = document.getElementById('resp_cpf_input');
@@ -226,6 +245,17 @@
             input.value = '';
         }
     }
+
+    const telefone = document.getElementById('resp_telefone');
+
+    if (telefone) {
+        telefone.addEventListener('input', function() {
+            mascaraTelefone(this);
+        });
+
+        mascaraTelefone(telefone);
+    }
 </script>
+
 
 @endsection

@@ -11,11 +11,17 @@ use Illuminate\Support\Facades\Auth;
 
 class TurmaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
+        $query = Turma::where('id_emp_id', $user->id_emp_id);
 
-        $turmas = Turma::where('id_emp_id', $user->id_emp_id)->get();
+        if ($request->filled('busca')) {
+            $busca = trim($request->input('busca'));
+            $query->where('turma_nome', 'like', '%' . $busca . '%');
+        }
+
+        $turmas = $query->orderBy('turma_nome')->paginate(10)->withQueryString();
 
         return view('view_admin_user.view_admin.view_turmas.index', compact('turmas'));
     }

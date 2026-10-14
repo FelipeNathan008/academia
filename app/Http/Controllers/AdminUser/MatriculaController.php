@@ -235,6 +235,8 @@ class MatriculaController extends Controller
             ->where('id_emp_id', $user->id_emp_id)
             ->firstOrFail();
 
+        $bolsista = strtolower($aluno->aluno_bolsista) === 'sim';
+
         $contrato = Contrato::with('detalheAtual')
             ->where('empresa_id', $user->id_emp_id)
             ->latest('id_contrato')
@@ -266,7 +268,7 @@ class MatriculaController extends Controller
             ->pluck('dia_vencimento')
             ->toArray();
 
-        if (empty($diasPermitidos)) {
+        if (!$bolsista && empty($diasPermitidos)) {
             return back()
                 ->withInput()
                 ->withErrors([
@@ -274,19 +276,33 @@ class MatriculaController extends Controller
                 ]);
         }
 
-        $request->validate([
+        $regras = [
             'matri_data' => [
                 'required',
                 'date',
                 'before_or_equal:today',
                 'after_or_equal:' . $aluno->aluno_nascimento,
             ],
-            'matri_desc'           => 'required|string|max:150',
-            'matri_categoria'      => 'required|string|max:120',
-            'matri_plano'          => 'required|string|max:40',
-            'matri_dia_vencimento' => ['required', 'integer', 'in:' . implode(',', $diasPermitidos)],
-            'grade_id_grade'       => 'required|exists:grade_horario,id_grade',
-        ], [
+            'matri_desc'      => 'required|string|max:150',
+            'matri_categoria' => 'required|string|max:120',
+            'matri_plano'     => 'required|string|max:40',
+            'grade_id_grade'  => 'required|exists:grade_horario,id_grade',
+        ];
+
+        if (!$bolsista) {
+            $regras['matri_dia_vencimento'] = [
+                'required',
+                'integer',
+                'in:' . implode(',', $diasPermitidos)
+            ];
+        } else {
+            $regras['matri_dia_vencimento'] = [
+                'nullable',
+                'integer'
+            ];
+        }
+
+        $request->validate($regras, [
             'matri_data.required'             => 'A data da matrícula é obrigatória.',
             'matri_data.date'                 => 'Informe uma data válida.',
             'matri_data.before_or_equal'      => 'Não é possível informar uma data futura.',
@@ -309,9 +325,11 @@ class MatriculaController extends Controller
             ->exists();
 
         if ($jaExiste) {
-            return back()->withErrors([
-                'grade_id_grade' => 'Erro: aluno já possui uma matrícula ativa na modalidade "' . $gradeNova->grade_modalidade . '". Encerre ou pause antes de cadastrar uma nova.'
-            ])->withInput();
+            return back()
+                ->withErrors([
+                    'grade_id_grade' => 'Erro: aluno já possui uma matrícula ativa na modalidade "' . $gradeNova->grade_modalidade . '". Encerre ou pause antes de cadastrar uma nova.'
+                ])
+                ->withInput();
         }
 
         DB::beginTransaction();
@@ -323,13 +341,13 @@ class MatriculaController extends Controller
                 'matri_data'           => $request->matri_data,
                 'matri_plano'          => $request->matri_plano,
                 'matri_categoria'      => $request->matri_categoria,
-                'matri_dia_vencimento' => $request->matri_dia_vencimento,
+                'matri_dia_vencimento' => $bolsista ? null : $request->matri_dia_vencimento,
                 'grade_id_grade'       => $request->grade_id_grade,
                 'matri_desc'           => $request->matri_desc,
                 'id_emp_id'            => $user->id_emp_id
             ]);
 
-            if (strtolower($aluno->aluno_bolsista) !== 'sim') {
+            if (!$bolsista) {
                 $diaVencimento = (int) $request->matri_dia_vencimento;
 
                 $grade = GradeHorario::where('id_grade', $request->grade_id_grade)
@@ -371,10 +389,6 @@ class MatriculaController extends Controller
                     default      => 12,
                 };
 
-                /*
- * Entrada
- * A data da entrada deve ser a própria data da matrícula.
- */
                 $dataMatricula = Carbon::parse($request->matri_data);
 
                 DetalhesMensalidade::create([
@@ -382,25 +396,12 @@ class MatriculaController extends Controller
                     'det_mensa_forma_pagamento'  => 'Pix',
                     'det_mensa_mes_vigente'      => 'Entrada',
                     'det_mensa_data_venc'        => $dataMatricula->toDateString(),
-                    'det_mensa_valor'             => number_format($preco->preco_modalidade, 2, '.', ''),
+                    'det_mensa_valor'            => number_format($preco->preco_modalidade, 2, '.', ''),
                     'det_mensa_data_pagamento'   => null,
                     'det_mensa_status'            => 'Em aberto',
                     'id_emp_id'                  => $user->id_emp_id
                 ]);
 
-                /*
- * Primeiro vencimento
- * A referência é a data da matrícula.
- *
- * Exemplo:
- * Matrícula: 10/09
- * Vencimento: dia 20
- * Primeiro vencimento: 20/09
- *
- * Matrícula: 25/09
- * Vencimento: dia 20
- * Primeiro vencimento: 20/10
- */
                 $primeiraData = $dataMatricula->copy()->startOfMonth();
 
                 $primeiraData->setDay(
@@ -437,11 +438,15 @@ class MatriculaController extends Controller
 
             DB::commit();
 
-            if (strtolower($aluno->aluno_bolsista) === 'sim') {
+            if ($bolsista) {
                 return redirect()
                     ->route('matricula', Crypt::encrypt($id))
                     ->with('success', 'Matrícula realizada com sucesso! (Aluno bolsista - sem geração de financeiro)');
             }
+
+            return redirect()
+                ->route('matricula', Crypt::encrypt($id))
+                ->with('success', 'Matrícula realizada com sucesso!');
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -449,10 +454,6 @@ class MatriculaController extends Controller
                 ->withInput()
                 ->with('error', $e->getMessage());
         }
-
-        return redirect()
-            ->route('matricula', Crypt::encrypt($id))
-            ->with('success', 'Matrícula realizada com sucesso!');
     }
 
     public function show($id)

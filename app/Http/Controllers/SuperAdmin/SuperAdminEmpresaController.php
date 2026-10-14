@@ -7,23 +7,53 @@ use App\Models\Empresa;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Http\Request;
 
 class SuperAdminEmpresaController extends Controller
 {
-    public function index()
+
+    public function index(Request $request)
     {
-        $empresas = Empresa::with([
+        $filtroEmpresa = $request->get('empresa');
+        $filtroResponsavel = $request->get('responsavel');
+        $filtroStatus = $request->get('status');
+        $filtroTipo = $request->get('tipo');
+
+        $query = Empresa::with([
             'filiais',
             'contratos.detalheAtual'
         ])
-            ->whereNot('emp_tipo', 'PS')
+            ->whereNot('emp_tipo', 'PS');
+
+        if ($filtroEmpresa) {
+            $query->where(function ($q) use ($filtroEmpresa) {
+                $q->where('emp_nome', 'like', '%' . $filtroEmpresa . '%')
+                    ->orWhere('emp_apelido', 'like', '%' . $filtroEmpresa . '%');
+            });
+        }
+
+        if ($filtroResponsavel) {
+            $query->where('emp_nome_responsavel', 'like', '%' . $filtroResponsavel . '%');
+        }
+
+        if ($filtroStatus) {
+            $query->where('emp_status', $filtroStatus);
+        }
+
+        if ($filtroTipo) {
+            $query->where('emp_tipo', $filtroTipo);
+        }
+
+        $totalEmpresas = (clone $query)->count();
+
+        $empresas = $query
             ->orderBy('emp_nome')
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
 
-        $totalEmpresas = Empresa::whereNot('emp_tipo', 'PS')->count();
-
-        $empresaIds = $empresas->getCollection()->pluck('id_empresa')->toArray();
+        $empresaIds = $empresas->getCollection()
+            ->pluck('id_empresa')
+            ->toArray();
 
         $contagensMatriculas = DB::table('matricula')
             ->select('id_emp_id', DB::raw('COUNT(*) as total'))
@@ -78,8 +108,19 @@ class SuperAdminEmpresaController extends Controller
             return $empresa;
         });
 
-        return view('view_superadmin.dashboard.empresas', compact('empresas', 'totalEmpresas'));
+        return view(
+            'view_superadmin.dashboard.empresas',
+            compact(
+                'empresas',
+                'totalEmpresas',
+                'filtroEmpresa',
+                'filtroResponsavel',
+                'filtroStatus',
+                'filtroTipo'
+            )
+        );
     }
+
 
     public function contratos($id)
     {
@@ -95,6 +136,22 @@ class SuperAdminEmpresaController extends Controller
         ])
             ->whereNot('emp_tipo', 'PS')
             ->findOrFail($id);
+
+        foreach ($empresa->contratos as $contrato) {
+            $contrato->detalhes
+                ->flatMap->mensalidades
+                ->each(function ($mensalidade) {
+                    if (
+                        $mensalidade->mensa_contrato_status === 'Pendente' &&
+                        $mensalidade->mensa_contrato_vencimento &&
+                        $mensalidade->mensa_contrato_vencimento->isPast()
+                    ) {
+                        $mensalidade->update([
+                            'mensa_contrato_status' => 'Atrasado'
+                        ]);
+                    }
+                });
+        }
 
         $contratos = $empresa->contratos->sortByDesc('id_contrato');
 

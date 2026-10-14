@@ -112,11 +112,18 @@
                 </p>
             </div>
 
-             <div>
+            <div>
                 <p class="text-xs uppercase text-gray-400">Dia de Vencimento</p>
-                <p class="text-lg font-semibold text-gray-800">
-                    {{ $matricula->matri_dia_vencimento }}
+
+                @if(strtolower($matricula->aluno->aluno_bolsista) === 'sim')
+                <p class="text-lg font-semibold text-gray-500">
+                    Não se aplica — aluno bolsista
                 </p>
+                @else
+                <p class="text-lg font-semibold text-gray-800">
+                    Dia {{ str_pad($matricula->matri_dia_vencimento, 2, '0', STR_PAD_LEFT) }}
+                </p>
+                @endif
             </div>
 
 

@@ -45,7 +45,7 @@ class ProfessorUserAulaController extends Controller
 
         $aulas = $query
             ->orderBy('aula_inicio', 'desc')
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
 
         return view('view_professor_user.aula.index', [

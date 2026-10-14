@@ -3,152 +3,106 @@
 @section('title', 'Aplicar Molde de Graduação')
 
 @section('content')
-
 <x-alert-error />
 
-<div class="flex items-center gap-4 mb-8">
-    <a href="{{ route('graduacoes.molde.index') }}"
-        class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 transition">
-        ← Voltar
-    </a>
-    <h2 class="text-3xl font-extrabold text-gray-800">
-        Aplicar molde: {{ $modalidadeMolde->mod_nome }}
-    </h2>
-</div>
+<div class="w-full px-4 pt-2 pb-6 sm:px-6 lg:px-8">
+    <x-page-header
+        title="Aplicar Molde de Graduação"
+        :breadcrumbs="[
+            ['label' => 'Administração', 'url' => route('admin.administracao')],
+            ['label' => 'Graduações', 'url' => route('graduacoes')],
+            ['label' => 'Moldes de Graduação', 'url' => route('graduacoes.molde.index')],
+            ['label' => 'Aplicar Molde']
+        ]" />
 
-<form id="formMolde" action="{{ route('graduacoes.molde.aplicar') }}" method="POST">
-    @csrf
-
-    <!-- MODALIDADE DESTINO -->
-    <div class="bg-white rounded-2xl shadow-md p-8 mb-6">
-        <label class="text-sm font-medium text-gray-600">
-            Aplicar para qual modalidade cadastrada?
-            <span class="text-red-600">*</span>
-        </label>
-
-        <select name="id_modalidade"
-            required
-            class="w-full md:w-1/2 border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
-            <option value="" selected disabled>Selecione uma modalidade</option>
-
-            @foreach ($modalidades as $modalidade)
-            <option value="{{ $modalidade->id_modalidade }}">
-                {{ $modalidade->mod_nome }}
-            </option>
-            @endforeach
-        </select>
-        <p class="text-xs text-gray-400 mt-2">
-            Se a modalidade que você precisa ainda não existe, cadastre-a primeiro na tela de Modalidades.
-        </p>
+    <div class="mb-6 flex items-center justify-between gap-3">
+        <p class="text-sm text-gray-500">Molde selecionado: <span class="font-semibold text-gray-800">{{ $modalidadeMolde->mod_nome }}</span></p>
+        <x-back-button :url="route('graduacoes.molde.index')" />
     </div>
 
-    @if ($modalidadeMolde->graduacoes->isEmpty())
+    <form id="formMolde" action="{{ route('graduacoes.molde.aplicar') }}" method="POST" onsubmit="bloquearSubmit(event, this)">
+        @csrf
 
-    <div class="bg-white rounded-2xl shadow-md p-10 text-center text-gray-500">
-        Este molde ainda não tem graduações cadastradas.
-    </div>
-
-    @else
-
-    <!-- TOOLBAR: BUSCA + SELECIONAR TUDO -->
-    <div class="bg-white rounded-2xl shadow-md p-4 mb-2 flex flex-col md:flex-row gap-4 md:items-center md:justify-between sticky top-0 z-20">
-        <div class="flex items-center gap-3 flex-1">
-            <input type="text" id="buscaMolde" placeholder="🔍 Buscar por nome / cor..."
-                class="border rounded-lg px-4 py-2 w-full md:w-80 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
-            <span id="contadorMolde" class="text-sm text-gray-500 whitespace-nowrap">
-                {{ $modalidadeMolde->graduacoes->count() }} selecionadas
-            </span>
-        </div>
-
-        <div class="flex gap-2">
-            <button type="button" id="btnSelecionarTodos"
-                class="px-4 py-2 text-sm border rounded-lg hover:bg-gray-100 transition">
-                Selecionar todos
-            </button>
-            <button type="button" id="btnLimparSelecao"
-                class="px-4 py-2 text-sm border rounded-lg hover:bg-gray-100 transition">
-                Limpar seleção
-            </button>
-        </div>
-    </div>
-
-    <!-- TABELA -->
-    <div class="bg-white rounded-2xl shadow-md overflow-hidden mb-24">
-        <div class="overflow-x-auto max-h-[65vh] overflow-y-auto">
-            <table class="w-full text-left border-collapse">
-                <thead class="sticky top-0 bg-gray-50 z-10">
-                    <tr class="border-b border-gray-300 text-gray-600 text-xs uppercase tracking-wide">
-                        <th class="py-3 px-4 w-10"></th>
-                        <th class="py-3 px-4">Nome / Cor</th>
-                        <th class="py-3 px-4 w-28">Ordem</th>
-                        <th class="py-3 px-4 w-32">Meta (aulas)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($modalidadeMolde->graduacoes as $i => $g)
-                    <tr class="border-b hover:bg-gray-50 transition linha-molde"
-                        data-nome="{{ strtolower($g->gradu_nome_cor) }}">
-
-                        <td class="py-2 px-4">
-                            <input type="checkbox" name="graduacoes[{{ $i }}][ativo]"
-                                value="1" checked
-                                class="w-4 h-4 accent-[#8E251F] checkbox-molde">
-                        </td>
-
-                        <td class="py-2 px-4">
-                            <div class="flex items-center gap-2">
-                                <span class="bolinha-faixa"
-                                    data-faixa="{{ strtolower($g->gradu_nome_cor) }}"
-                                    style="display:inline-block;width:16px;height:16px;border:2px solid #000;
-                                    border-radius:50%;flex-shrink:0;background-color:transparent;">
-                                </span>
-
-                                <span class="font-medium text-gray-800">
-                                    {{ $g->gradu_nome_cor }}
-                                </span>
-
-                                <input type="hidden"
-                                    name="graduacoes[{{ $i }}][gradu_nome_cor]"
-                                    value="{{ $g->gradu_nome_cor }}">
-                            </div>
-                        </td>
-                        
-                        <input type="hidden"
-                            name="graduacoes[{{ $i }}][gradu_grau]"
-                            value="0">
-
-                        <td class="py-2 px-4">
-                            <input type="number" name="graduacoes[{{ $i }}][gradu_ordem]"
-                                value="{{ $g->gradu_ordem }}" required
-                                class="w-full border rounded-lg px-3 py-1.5 text-sm">
-                        </td>
-
-                        <td class="py-2 px-4">
-                            <input type="number" name="graduacoes[{{ $i }}][gradu_meta]"
-                                value="{{ $g->gradu_meta }}" required
-                                class="w-full border rounded-lg px-3 py-1.5 text-sm">
-                        </td>
-                    </tr>
+        <x-form-card title="Modalidade de destino" description="Escolha a modalidade que receberá as graduações selecionadas.">
+            <div class="max-w-xl">
+                <label for="id_modalidade" class="mb-2 block text-sm font-semibold text-gray-700">Aplicar para qual modalidade? <span class="text-red-600">*</span></label>
+                <select id="id_modalidade" name="id_modalidade" required class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-[#8E251F] focus:ring-2 focus:ring-[#8E251F]/10">
+                    <option value="" selected disabled>Selecione uma modalidade</option>
+                    @foreach($modalidades as $modalidade)
+                    <option value="{{ $modalidade->id_modalidade }}" {{ old('id_modalidade') == $modalidade->id_modalidade ? 'selected' : '' }}>{{ $modalidade->mod_nome }}</option>
                     @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
+                </select>
+                <p class="mt-2 text-xs text-gray-500">Caso a modalidade ainda não esteja cadastrada, crie-a primeiro na tela de Modalidades.</p>
+            </div>
+        </x-form-card>
 
-    <div class="flex justify-end gap-4 mt-8">
-        <a href="{{ route('graduacoes.molde.index') }}"
-            class="px-5 py-2 border rounded-lg hover:bg-gray-100 transition">
-            Cancelar
-        </a>
+        @if($modalidadeMolde->graduacoes->isEmpty())
+            <div class="mt-6">
+                <x-empty-state
+                    title="Nenhuma graduação no molde"
+                    description="Este molde ainda não possui graduações cadastradas." />
+            </div>
+        @else
+            <div class="sticky top-0 z-20 mt-6 mb-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div class="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
+                        <div class="relative w-full sm:max-w-sm">
+                            <input type="text" id="buscaMolde" placeholder="Buscar por nome ou cor..." class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none transition focus:border-[#8E251F] focus:ring-2 focus:ring-[#8E251F]/10">
+                        </div>
+                        <span id="contadorMolde" class="text-sm text-gray-500">{{ $modalidadeMolde->graduacoes->count() }} selecionadas</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" id="btnSelecionarTodos" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100">Selecionar todos</button>
+                        <button type="button" id="btnLimparSelecao" class="rounded-lg border border-gray-300 bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-200">Limpar seleção</button>
+                    </div>
+                </div>
+            </div>
 
-        <button type="submit"
-            class="px-5 py-2 bg-[#8E251F] text-white rounded-lg shadow hover:bg-[#732920] transition">
-            Aplicar graduações selecionadas
-        </button>
-    </div>
+            <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div class="max-h-[65vh] overflow-auto">
+                    <table class="w-full border-collapse text-left">
+                        <thead class="sticky top-0 z-10 bg-gray-800 text-xs uppercase tracking-wide text-white">
+                            <tr>
+                                <th class="w-12 px-4 py-3"></th>
+                                <th class="px-4 py-3">Nome / Cor</th>
+                                <th class="w-28 px-4 py-3">Ordem</th>
+                                <th class="w-36 px-4 py-3">Meta (aulas)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($modalidadeMolde->graduacoes as $i => $g)
+                            <tr class="linha-molde border-b border-gray-100 transition last:border-0 hover:bg-gray-50" data-nome="{{ strtolower($g->gradu_nome_cor) }}">
+                                <td class="px-4 py-3">
+                                    <input type="checkbox" name="graduacoes[{{ $i }}][ativo]" value="1" checked class="checkbox-molde h-4 w-4 rounded border-gray-300 accent-[#8E251F] focus:ring-[#8E251F]">
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center gap-3">
+                                        <span class="bolinha-faixa inline-block h-4 w-4 shrink-0 rounded-full border-2 border-black" data-faixa="{{ strtolower($g->gradu_nome_cor) }}" style="background-color:transparent;"></span>
+                                        <span class="text-sm font-medium text-gray-800">{{ $g->gradu_nome_cor }}</span>
+                                        <input type="hidden" name="graduacoes[{{ $i }}][gradu_nome_cor]" value="{{ $g->gradu_nome_cor }}">
+                                    </div>
+                                    <input type="hidden" name="graduacoes[{{ $i }}][gradu_grau]" value="0">
+                                </td>
+                                <td class="px-4 py-3">
+                                    <input type="number" name="graduacoes[{{ $i }}][gradu_ordem]" value="{{ old("graduacoes.$i.gradu_ordem", $g->gradu_ordem) }}" min="1" required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none transition focus:border-[#8E251F] focus:ring-2 focus:ring-[#8E251F]/10">
+                                </td>
+                                <td class="px-4 py-3">
+                                    <input type="number" name="graduacoes[{{ $i }}][gradu_meta]" value="{{ old("graduacoes.$i.gradu_meta", $g->gradu_meta) }}" min="0" required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none transition focus:border-[#8E251F] focus:ring-2 focus:ring-[#8E251F]/10">
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-    @endif
-</form>
+            <div class="mt-5 flex flex-col-reverse justify-end gap-3 sm:flex-row">
+                <a href="{{ route('graduacoes.molde.index') }}" class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-200">Cancelar</a>
+                <x-primary-button type="submit" icon="check">Aplicar graduações selecionadas</x-primary-button>
+            </div>
+        @endif
+    </form>
+</div>
 
 <script src="{{ asset('js/faixas.js') }}"></script>
 <script>
@@ -162,26 +116,19 @@
     const btnLimpar = document.getElementById('btnLimparSelecao');
 
     function atualizarContador() {
-        const marcados = document.querySelectorAll('.checkbox-molde:checked').length;
-        contador.innerText = `${marcados} selecionadas`;
+        if (contador) contador.innerText = `${document.querySelectorAll('.checkbox-molde:checked').length} selecionadas`;
     }
 
     busca?.addEventListener('input', function() {
         const termo = this.value.trim().toLowerCase();
-
-        linhas.forEach(linha => {
-            const nome = linha.dataset.nome;
-            linha.style.display = nome.includes(termo) ? '' : 'none';
-        });
+        linhas.forEach(linha => linha.style.display = linha.dataset.nome.includes(termo) ? '' : 'none');
     });
 
     checkboxes.forEach(cb => cb.addEventListener('change', atualizarContador));
 
     btnTodos?.addEventListener('click', function() {
         linhas.forEach(linha => {
-            if (linha.style.display !== 'none') {
-                linha.querySelector('.checkbox-molde').checked = true;
-            }
+            if (linha.style.display !== 'none') linha.querySelector('.checkbox-molde').checked = true;
         });
         atualizarContador();
     });
@@ -191,7 +138,21 @@
         atualizarContador();
     });
 
+    function bloquearSubmit(event, form) {
+        if (!form.checkValidity()) return;
+        const selecionadas = form.querySelectorAll('.checkbox-molde:checked').length;
+        if (selecionadas === 0) {
+            event.preventDefault();
+            alert('Selecione pelo menos uma graduação para aplicar o molde.');
+            return;
+        }
+        const botao = form.querySelector('button[type="submit"]');
+        if (botao) {
+            botao.disabled = true;
+            botao.innerText = 'Aplicando...';
+        }
+    }
+
     atualizarContador();
 </script>
-
 @endsection

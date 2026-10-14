@@ -422,13 +422,9 @@ $diasSelecionados = $diasPermitidos
 
     </table>
 
-    <div class="mt-6">
-        {{ $aulas->links() }}
-    </div>
+    <x-pagination-compact :paginator="$aulas" />
 
 </div>
-
-
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/pt.js"></script>

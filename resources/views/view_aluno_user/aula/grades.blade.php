@@ -192,9 +192,9 @@
             @endforelse
         </tbody>
     </table>
-    <div class="mt-6">
-        {{ $matriculas->links() }}
-    </div>
+    
+    <x-pagination-compact :paginator="$matriculas" />
+
 </div>
 
 

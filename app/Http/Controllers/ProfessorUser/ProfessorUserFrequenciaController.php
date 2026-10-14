@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\professorUser;
 
 use App\Http\Controllers\Controller;
-use App\Models\DetalhesAluno;
+use Illuminate\Support\Facades\DB;
 use App\Models\GradeHorario;
 use App\Models\FrequenciaAluno;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
@@ -67,27 +66,39 @@ class ProfessorUserFrequenciaController extends Controller
                 ->values()
         );
 
-        // Datas paginadas
-        $datasPaginadas = FrequenciaAluno::where('grade_horario_id_grade', $grade->id_grade)
+        $totalDias = FrequenciaAluno::where('grade_horario_id_grade', $grade->id_grade)
+            ->where('id_emp_id', $user->id_emp_id)
+            ->selectRaw('DATE(freq_data_aula) as data')
+            ->groupBy(DB::raw('DATE(freq_data_aula)'))
+            ->get()
+            ->count();
+
+        $datasQuery = FrequenciaAluno::where('grade_horario_id_grade', $grade->id_grade)
             ->where('id_emp_id', $user->id_emp_id)
             ->when($filtroData, function ($query) use ($filtroData) {
                 $query->whereDate('freq_data_aula', $filtroData);
             })
-            ->select('freq_data_aula')
-            ->distinct()
-            ->orderByDesc('freq_data_aula')
+            ->selectRaw('DATE(freq_data_aula) as data')
+            ->groupBy(DB::raw('DATE(freq_data_aula)'))
+            ->orderByDesc('data');
+
+        $datasPaginadas = $datasQuery
             ->paginate(15)
             ->withQueryString();
 
-        $datasDaPagina = $datasPaginadas->getCollection()->pluck('freq_data_aula');
+        $datasDaPagina = $datasPaginadas->getCollection()
+            ->pluck('data')
+            ->map(fn($data) => \Carbon\Carbon::parse($data)->format('Y-m-d'));
 
         $dias = FrequenciaAluno::with('matricula.aluno')
             ->where('grade_horario_id_grade', $grade->id_grade)
             ->where('id_emp_id', $user->id_emp_id)
-            ->whereIn('freq_data_aula', $datasDaPagina)
+            ->whereIn(DB::raw('DATE(freq_data_aula)'), $datasDaPagina->toArray())
             ->orderByDesc('freq_data_aula')
             ->get()
-            ->groupBy('freq_data_aula');
+            ->groupBy(function ($registro) {
+                return \Carbon\Carbon::parse($registro->freq_data_aula)->format('Y-m-d');
+            });
 
         return view(
             'view_professor_user.frequencia_aluno.frequencia_dias_professor',
@@ -95,7 +106,8 @@ class ProfessorUserFrequenciaController extends Controller
                 'dias',
                 'grade',
                 'datasPaginadas',
-                'filtroData'
+                'filtroData',
+                'totalDias'
             )
         );
     }

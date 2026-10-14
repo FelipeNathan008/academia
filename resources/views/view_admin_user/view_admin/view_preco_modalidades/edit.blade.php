@@ -5,145 +5,87 @@
 @section('content')
 <x-alert-error />
 
-<div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-md p-8">
-    <h2 class="text-2xl font-bold mb-6 text-gray-800">
-        Editar Preço - {{ $valor->modalidade->mod_nome ?? 'Modalidade' }}
-    </h2>
+<div class="w-full px-4 pt-2 pb-6 sm:px-6 lg:px-8">
+    <x-page-header title="Editar Preço" :breadcrumbs="[
+        ['label' => 'Administração', 'url' => route('admin.administracao')],
+        ['label' => 'Preço por Modalidade', 'url' => route('preco-aula')],
+        ['label' => 'Editar Preço']
+    ]" />
 
-    <form action="{{ route('preco-aula.update',  Crypt::encrypt($valor->id_preco_modalidade)) }}" method="POST">
-        @csrf
-        @method('PUT')
+    <div class="mx-auto max-w-4xl">
+        <form id="formEdicao" action="{{ route('preco-aula.update', Crypt::encrypt($valor->id_preco_modalidade)) }}" method="POST" onsubmit="bloquearSubmit(event, this)">
+            @csrf
+            @method('PUT')
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <x-form-card title="Dados do preço" description="Altere as informações do valor cadastrado.">
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <div>
+                        <label for="modalidade_id" class="mb-2 block text-sm font-semibold text-gray-700">Modalidade</label>
+                        <select id="modalidade_id" name="modalidade_id" required class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-[#8E251F] focus:ring-2 focus:ring-[#8E251F]/10">
+                            @foreach ($modalidades as $modalidade)
+                            <option value="{{ $modalidade->id_modalidade }}" {{ old('modalidade_id', $valor->modalidade_id) == $modalidade->id_modalidade ? 'selected' : '' }}>{{ $modalidade->mod_nome }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-            <!-- Modalidade -->
-            <div>
-                <label class="text-sm font-medium text-gray-600">Modalidade</label>
-                <select name="modalidade_id" required
-                    class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
-                    @foreach($modalidades as $modalidade)
-                    <option value="{{ $modalidade->id_modalidade }}"
-                        {{ $modalidade->id_modalidade == $valor->modalidade_id ? 'selected' : '' }}>
-                        {{ $modalidade->mod_nome }}
-                    </option>
-                    @endforeach
-                </select>
-            </div>
+                    <div>
+                        <label for="preco_categoria" class="mb-2 block text-sm font-semibold text-gray-700">Categoria</label>
+                        <input type="text" id="preco_categoria" name="preco_categoria" value="{{ old('preco_categoria', $valor->preco_categoria) }}" maxlength="120" required placeholder="Ex.: Plano Família" class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-[#8E251F] focus:ring-2 focus:ring-[#8E251F]/10">
+                    </div>
 
-            <!-- Preço -->
-            <div>
-                <label class="text-sm font-medium text-gray-600">Preço da Aula</label>
+                    <div>
+                        <label for="preco_modalidade_mask" class="mb-2 block text-sm font-semibold text-gray-700">Preço da aula</label>
+                        <input type="text" id="preco_modalidade_mask" required inputmode="decimal" placeholder="R$ 0,00" class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-[#8E251F] focus:ring-2 focus:ring-[#8E251F]/10">
+                        <input type="hidden" name="preco_modalidade" id="preco_modalidade" value="{{ old('preco_modalidade', $valor->preco_modalidade) }}">
+                    </div>
 
-                <input type="text"
-                    id="preco_modalidade_mask"
-                    required
-                    class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
+                    <div>
+                        <label for="preco_plano" class="mb-2 block text-sm font-semibold text-gray-700">Plano</label>
+                        <select id="preco_plano" name="preco_plano" required class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-[#8E251F] focus:ring-2 focus:ring-[#8E251F]/10">
+                            @foreach (['Mensal', 'Trimestral', 'Semestral', 'Anual'] as $plano)
+                            <option value="{{ $plano }}" {{ old('preco_plano', $valor->preco_plano) === $plano ? 'selected' : '' }}>{{ $plano }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
 
-                <input type="hidden"
-                    name="preco_modalidade"
-                    id="preco_modalidade"
-                    value="{{ old('preco_modalidade', $valor->preco_modalidade) }}">
-            </div>
-
-            {{-- Categoria --}}
-            <div>
-                <label class="text-sm font-medium text-gray-600">
-                    Categoria
-                </label>
-
-                <input
-                    type="text"
-                    name="preco_categoria"
-                    value="{{ old('preco_categoria', $valor->preco_categoria) }}"
-                    required
-                    maxlength="120"
-                    class="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-[#8E251F] focus:outline-none">
-
-                @error('preco_categoria')
-                <span class="text-red-600 text-sm mt-1 block">
-                    {{ $message }}
-                </span>
-                @enderror
-            </div>
-
-            <!-- Plano -->
-            <div>
-                <label class="text-sm font-medium text-gray-600">Plano</label>
-                <select name="preco_plano" required
-                    class="w-full border rounded-lg px-4 py-2 mt-1">
-
-                    <option value="Mensal"
-                        {{ $valor->preco_plano == 'Mensal' ? 'selected' : '' }}>
-                        Mensal
-                    </option>
-
-                    <option value="Trimestral"
-                        {{ $valor->preco_plano == 'Trimestral' ? 'selected' : '' }}>
-                        Trimestral
-                    </option>
-
-                    <option value="Semestral"
-                        {{ $valor->preco_plano == 'Semestral' ? 'selected' : '' }}>
-                        Semestral
-                    </option>
-
-                    <option value="Anual"
-                        {{ $valor->preco_plano == 'Anual' ? 'selected' : '' }}>
-                        Anual
-                    </option>
-
-                </select>
-            </div>
-
-        </div>
-
-        <div class="flex justify-end gap-4 mt-6">
-            <a href="{{ route('preco-aula') }}"
-                class="px-5 py-2 border rounded-lg hover:bg-gray-100 transition">
-                Voltar
-            </a>
-
-            <button type="submit"
-                class="px-5 py-2 bg-[#8E251F] text-white rounded-lg hover:bg-[#732920] transition">
-                Salvar Alterações
-            </button>
-        </div>
-    </form>
+                <x-slot:actions>
+                    <x-back-button :url="route('preco-aula')" />
+                    <x-primary-button type="submit" icon="check">Salvar alterações</x-primary-button>
+                </x-slot:actions>
+            </x-form-card>
+        </form>
+    </div>
 </div>
 
 <script>
     const inputMask = document.getElementById('preco_modalidade_mask');
     const inputHidden = document.getElementById('preco_modalidade');
 
-    function aplicarMascara(valor) {
-        valor = valor.replace(/\D/g, '');
-        valor = (valor / 100).toFixed(2) + '';
-        valor = valor.replace(".", ",");
-        valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
-        return 'R$ ' + valor;
+    function formatarPreco(digitos) {
+        return digitos ? 'R$ ' + (Number(digitos) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
     }
 
-    window.addEventListener('load', function() {
-        let valorInicial = inputHidden.value;
+    function atualizarPreco() {
+        const digitos = inputMask.value.replace(/\D/g, '');
+        inputMask.value = formatarPreco(digitos);
+        inputHidden.value = digitos ? (Number(digitos) / 100).toFixed(2) : '';
+    }
 
-        if (valorInicial) {
-            let valorSemPonto = valorInicial.replace('.', '');
-            inputMask.value = aplicarMascara(valorSemPonto);
+    const precoInicial = Number(inputHidden.value);
+    if (Number.isFinite(precoInicial) && inputHidden.value !== '') {
+        inputMask.value = formatarPreco(String(Math.round(precoInicial * 100)));
+    }
+
+    inputMask.addEventListener('input', atualizarPreco);
+
+    function bloquearSubmit(event, form) {
+        if (!form.checkValidity()) return;
+        const botao = form.querySelector('button[type="submit"]');
+        if (botao) {
+            botao.disabled = true;
+            botao.innerText = 'Salvando...';
         }
-    });
-
-    inputMask.addEventListener('input', function(e) {
-
-        let valor = e.target.value.replace(/\D/g, '');
-        e.target.value = aplicarMascara(valor);
-
-        let valorBanco = e.target.value
-            .replace('R$ ', '')
-            .replace(/\./g, '')
-            .replace(',', '.');
-
-        inputHidden.value = valorBanco;
-    });
+    }
 </script>
-
 @endsection

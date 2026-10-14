@@ -204,6 +204,7 @@
 @endif
 
 <div class="bg-white rounded-2xl shadow-md p-6">
+
     <form method="GET"
         action="{{ route('professor-frequencia.dias', Crypt::encrypt($grade->id_grade)) }}"
         class="mb-6 flex justify-center">
@@ -235,6 +236,18 @@
 
     </form>
 
+    <h3 class="text-xl font-bold mb-6 text-gray-700 flex items-center gap-4 flex-wrap">
+        <span>DIAS REGISTRADOS</span>
+
+        <span class="bg-gray-200 px-3 py-1 rounded-full text-sm">
+            Total: {{ $totalDias }}
+        </span>
+
+        <span class="bg-gray-200 px-3 py-1 rounded-full text-sm">
+            Filtrados: {{ $datasPaginadas->total() }}
+        </span>
+    </h3>
+
     <table class="w-full text-left border-collapse">
         <thead>
             <tr class="border-b text-gray-600 text-sm">
@@ -248,6 +261,7 @@
             @forelse($dias as $data => $registros)
 
             <tr class="border-b linha-dia" data-dia="{{ $data }}">
+
                 <td class="py-3 px-4 font-semibold">
                     {{ \Carbon\Carbon::parse($data)->format('d/m/Y') }}
                 </td>
@@ -279,17 +293,22 @@
 
                 <td colspan="3" class="px-6 py-6">
 
-                    <form action="{{ route('professor-frequencia.alterarData') }}" method="POST"
+                    <form action="{{ route('professor-frequencia.alterarData') }}"
+                        method="POST"
                         onsubmit="return confirm('Alterar a data de TODOS os registros deste dia?')">
 
                         @csrf
                         @method('PUT')
 
-                        <input type="hidden" name="grade_id" value="{{ $grade->id_grade }}">
-                        <input type="hidden" name="data_atual" value="{{ $data }}">
+                        <input type="hidden"
+                            name="grade_id"
+                            value="{{ $grade->id_grade }}">
+
+                        <input type="hidden"
+                            name="data_atual"
+                            value="{{ $data }}">
 
                         <div class="flex flex-col md:flex-row md:items-end gap-4">
-
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
                                     Data Atual
@@ -299,7 +318,6 @@
                                     {{ \Carbon\Carbon::parse($data)->format('d/m/Y') }}
                                 </div>
                             </div>
-
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
                                     Nova Data
@@ -311,7 +329,6 @@
                                     class="px-3 py-2 border rounded-md text-sm"
                                     required>
                             </div>
-
                             <div>
                                 <button type="submit"
                                     class="px-4 py-2 text-xs font-semibold text-white rounded-lg shadow"
@@ -319,19 +336,13 @@
                                     Confirmar
                                 </button>
                             </div>
-
                         </div>
-
                     </form>
-
                 </td>
             </tr>
-            </td>
-            </tr>
 
-            <!-- DETALHES -->
-            <!-- ABA OCULTA COM DETALHES -->
             <tr id="detalhe-{{ $data }}" class="hidden bg-gray-50">
+
                 <td colspan="3" class="px-6 py-6">
 
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
@@ -343,7 +354,9 @@
                         </div>
 
                         <div class="overflow-x-auto">
+
                             <table class="w-full text-sm text-left">
+
                                 <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
                                     <tr>
                                         <th class="px-4 py-3">Aluno</th>
@@ -363,22 +376,26 @@
                                             {{ $registro->matricula->aluno->aluno_nome ?? '-' }}
                                         </td>
 
-
-
                                         <td class="px-4 py-2">
+
                                             @if($registro->freq_presenca == 'Presente')
+
                                             <span style="padding:2px 8px; font-size:0.75rem;
                                                 font-weight:600; border-radius:9999px;
                                                 color:#166534; background-color:#bbf7d0;">
                                                 Presente
                                             </span>
+
                                             @else
+
                                             <span style="padding:2px 8px; font-size:0.75rem;
                                                 font-weight:600; border-radius:9999px;
                                                 color:#b91c1c; background-color:#fee2e2;">
                                                 Falta
                                             </span>
+
                                             @endif
+
                                         </td>
 
                                         <td class="px-4 py-2">
@@ -386,24 +403,19 @@
                                         </td>
 
                                         <td class="px-4 py-3 text-center">
+
                                             <a href="{{ route('professor-frequencia.edit', Crypt::encrypt($registro->id_frequencia_aluno)) }}"
                                                 style="background-color: #8E251F; color: white;"
                                                 class="px-4 py-2 rounded-lg shadow hover:bg-[#732920] transition duration-200 text-center">
                                                 Editar
                                             </a>
                                         </td>
-
                                     </tr>
-
                                     @endforeach
-
                                 </tbody>
-
                             </table>
                         </div>
-
                     </div>
-
                 </td>
             </tr>
 
@@ -416,10 +428,11 @@
             @endforelse
         </tbody>
     </table>
-    <div class="mt-6">
-        {{ $datasPaginadas->links('pagination::tailwind') }}
-    </div>
+
+    <x-pagination-compact :paginator="$datasPaginadas" />
+
 </div>
+
 
 <script>
     document.querySelectorAll(".btn-editar").forEach(btn => {
@@ -459,25 +472,6 @@
     }
     document.addEventListener("DOMContentLoaded", function() {
 
-        const filtroDia = document.getElementById('filtroDia');
-        const limpar = document.getElementById('limparFiltroDia');
-        const linhas = document.querySelectorAll('.linha-dia');
-
-        function aplicarFiltro() {
-            const dia = filtroDia.value;
-
-            linhas.forEach(linha => {
-                linha.style.display =
-                    (!dia || linha.dataset.dia === dia) ? '' : 'none';
-            });
-        }
-
-        filtroDia?.addEventListener('change', aplicarFiltro);
-
-        limpar?.addEventListener('click', () => {
-            filtroDia.value = '';
-            aplicarFiltro();
-        });
 
         let aberto = null;
 

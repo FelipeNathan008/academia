@@ -12,22 +12,50 @@ use Illuminate\Support\Facades\Auth;
 
 class PrecoModalidadeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
+        $query = PrecoModalidade::with('modalidade')->where('id_emp_id', $user->id_emp_id);
 
-        $valores = PrecoModalidade::where('id_emp_id', $user->id_emp_id)
-            ->get();
+        if ($request->filled('modalidade')) {
+            $query->whereHas('modalidade', function ($q) use ($request, $user) {
+                $q->where('id_emp_id', $user->id_emp_id)
+                    ->where('mod_nome', 'like', '%' . trim($request->modalidade) . '%');
+            });
+        }
+
+        if ($request->filled('categoria')) {
+            $query->where('preco_categoria', 'like', '%' . trim($request->categoria) . '%');
+        }
+
+        if ($request->filled('plano')) {
+            $query->where('preco_plano', $request->plano);
+        }
+
+        if ($request->filled('preco')) {
+            $preco = preg_replace('/[^\d,]/', '', $request->preco);
+            $preco = str_replace(',', '.', $preco);
+
+            if (is_numeric($preco)) {
+                $query->where('preco_modalidade', (float) $preco);
+            }
+        }
+
+        $valores = $query->orderBy('preco_categoria')
+            ->paginate(10)
+            ->withQueryString();
 
         $modalidades = Modalidade::where('id_emp_id', $user->id_emp_id)
+            ->orderBy('mod_nome')
             ->get();
+
+        $totalValores = PrecoModalidade::where('id_emp_id', $user->id_emp_id)->count();
 
         return view(
             'view_admin_user.view_admin.view_preco_modalidades.index',
             compact('valores', 'modalidades')
         );
     }
-
     public function store(Request $request)
     {
         $user = Auth::user();
